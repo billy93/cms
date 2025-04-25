@@ -1,0 +1,61 @@
+{
+  "resources/css/style.css": {
+    "file": "css/style.min.css",
+    "src": "resources/css/style.css",
+    "isEntry": true
+  },
+  "resources/img/authentication/forgot-bg.jpg": {
+    "file": "icons/forgot-bg.jpg",
+    "src": "resources/img/authentication/forgot-bg.jpg"
+  },
+  "resources/img/authentication/login-bg.jpg": {
+    "file": "icons/login-bg.jpg",
+    "src": "resources/img/authentication/login-bg.jpg"
+  },
+  "resources/img/authentication/register-bg.jpg": {
+    "file": "icons/register-bg.jpg",
+    "src": "resources/img/authentication/register-bg.jpg"
+  },
+  "resources/img/authentication/reset-bg.jpg": {
+    "file": "icons/reset-bg.jpg",
+    "src": "resources/img/authentication/reset-bg.jpg"
+  },
+  "resources/img/theme/pattern-01.png": {
+    "file": "icons/pattern-01.png",
+    "src": "resources/img/theme/pattern-01.png"
+  },
+  "resources/img/theme/pattern-03.png": {
+    "file": "icons/pattern-03.png",
+    "src": "resources/img/theme/pattern-03.png"
+  },
+  "resources/img/theme/sidebar-bg-01.svg": {
+    "file": "icons/sidebar-bg-01.svg",
+    "src": "resources/img/theme/sidebar-bg-01.svg"
+  },
+  "resources/img/theme/sidebar-bg-02.svg": {
+    "file": "icons/sidebar-bg-02.svg",
+    "src": "resources/img/theme/sidebar-bg-02.svg"
+  },
+  "resources/img/theme/sidebar-bg-03.svg": {
+    "file": "icons/sidebar-bg-03.svg",
+    "src": "resources/img/theme/sidebar-bg-03.svg"
+  },
+  "resources/img/theme/sidebar-bg-04.svg": {
+    "file": "icons/sidebar-bg-04.svg",
+    "src": "resources/img/theme/sidebar-bg-04.svg"
+  },
+  "resources/img/theme/sidebar-bg-05.svg": {
+    "file": "icons/sidebar-bg-05.svg",
+    "src": "resources/img/theme/sidebar-bg-05.svg"
+  },
+  "resources/img/theme/sidebar-bg-06.svg": {
+    "file": "icons/sidebar-bg-06.svg",
+    "src": "resources/img/theme/sidebar-bg-06.svg"
+  },
+  "resources/js/script.js": {
+    "file": "js/script.js",
+    "name": "script",
+    "src": "resources/js/script.js",
+    "isEntry": true
+  }
+}
