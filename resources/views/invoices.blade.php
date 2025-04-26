@@ -416,13 +416,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    @forelse ($invoices as $invoice)
                                         <tr>
                                             <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
                                             </td>
                                             <td>
                                                 <div class="set-star rating-select"><i class="fa fa-star"></i></div>
                                             </td>
-                                            <td><a href="#" class="title-name">#1254058</a></td>
+                                            <td><a href="#" class="title-name">#{{ $invoice->id }}</a></td>
                                             <td>
                                                 <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
                                                             class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-01.svg')}}" alt="User Image"></a><a
@@ -433,11 +434,11 @@
                                                             src="{{URL::asset('/build/img/priority/truellysel.svg')}}" alt="User Image"></a><a href="#"
                                                         class="d-flex flex-column">Truelysell</a></h2>
                                             </td>
-                                            <td>21 May 2024</td>
-                                            <td>$2,15,000</td>
-                                            <td>$2,15,000</td>
-                                            <td>$0</td>
-                                            <td><span class="badge badge-pill badge-status bg-warning">Partially Paid</span></td>
+                                            <td>{{ $invoice->due_date}}</td>
+                                            <td>{{ $invoice->amount}}</td>
+                                            <td>{{ $invoice->amount}}</td>
+                                            <td>{{ $invoice->amount}}</td>
+                                            <td><span class="badge badge-pill badge-status bg-warning">{{ $invoice->status}}</span></td>
                                             <td>
                                                 <div class="dropdown table-action">
                                                     <a href="#" class="action-icon " data-bs-toggle="dropdown"
@@ -454,7 +455,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <tr >
+                                        <!-- <tr >
                                             <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
                                             </td>
                                             <td>
@@ -795,7 +796,12 @@
                                                     </div>
                                                 </div>
                                             </td>
+                                        </tr> -->
+                                        @empty
+                                        <tr>
+                                            <td colspan="11" class="text-center">No invoices found.</td>
                                         </tr>
+                                    @endforelse
                                     </tbody>
                                 </table>								
                             </div>

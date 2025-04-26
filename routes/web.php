@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomAuthController;
+use App\Http\Controllers\InvoicePageController;
 
 Route::get('deals-dashboard', [CustomAuthController::class, 'deals-dashboard']); 
 Route::get('index', [CustomAuthController::class, 'index'])->name('index');
@@ -778,9 +779,10 @@ Route::get('/estimations', function () {
     return view('estimations');
 })->name('estimations');
 
-Route::get('/invoices', function () {
-    return view('invoices');
-})->name('invoices');
+Route::get('/invoices', [InvoicePageController::class, 'index'])->name('invoices');
+// Route::get('/invoices', function () {
+//     return view('invoices');
+// })->name('invoices');
 
 Route::get('/proposals-grid', function () {
     return view('proposals-grid');
