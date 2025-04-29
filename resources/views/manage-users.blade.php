@@ -453,7 +453,6 @@
 														<input type="checkbox" id="select-all"><span class="checkmarks"></span>
 													</label>
 												</th>
-												<th class="no-sort"></th>
 												<th>Name</th>
 												<th>Phone</th>
 												<th>Email</th>
@@ -461,22 +460,56 @@
 												<th>Created</th>
 												<th>Last Activity</th>
 												<th>Status</th>
-												<th class="text-end">Action</th>
+												<th class="">Action</th>
 											</tr>
 										</thead>
 										<tbody>
-											
+											@foreach ($data as $user)
+												<tr>
+													<td>
+														<label class="checkboxs">
+															<input type="checkbox" class="select-user" value="{{ $user->id }}">
+															<span class="checkmarks"></span>
+														</label>
+													</td>
+													<td>{{ $user->name }}</td>
+													<td>{{ $user->phone ?? '-' }}</td>
+													<td>{{ $user->email }}</td>
+													<td>{{ $user->location ?? '-' }}</td>
+													<td>{{ $user->created_at->format('d M Y') }}</td>
+													<td>{{ $user->last_activity_at ? $user->last_activity_at->diffForHumans() : '-' }}</td>
+													<td>
+														@if ($user->status == 'active')
+															<span class="badge bg-success">Active</span>
+														@else
+															<span class="badge bg-secondary">Inactive</span>
+														@endif
+													</td>
+													<td class="">
+														<div class="dropdown table-action">
+															<a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false">
+																<i class="fa fa-ellipsis-v"></i>
+															</a>
+															<div class="dropdown-menu dropdown-menu-right">
+																<a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
+																	<i class="ti ti-edit text-blue"></i> Edit
+																</a>
+																<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_contact">
+																	<i class="ti ti-trash text-danger"></i> Delete
+																</a>
+															</div>
+														</div>
+													</td>
+												</tr>
+											@endforeach
 										</tbody>
 									</table>
 								</div>
-								<div class="row align-items-center">
-									<div class="col-md-6">
-										<div class="datatable-length"></div>
-									</div>
-									<div class="col-md-6">
-										<div class="datatable-paginate"></div>
-									</div>
-								</div>
+								@if($totalPage > 1)
+									@component('components.pagination', ['totalPage' => $totalPage, 'curPage' => $curPage])
+									@endcomponent
+								@endif
+								
 								<!-- /Manage Users List -->
 
 							</div>
@@ -491,3 +524,4 @@
 @component('components.model-popup')
 @endcomponent
 @endsection
+

@@ -5,7 +5,7 @@
     <div class="account-content">
         <div class="d-flex flex-wrap w-100 vh-100 overflow-hidden account-bg-01">
             <div class="d-flex align-items-center justify-content-center flex-wrap vh-100 overflow-auto p-4 w-50 bg-backdrop">
-                <form action="{{ url('custom-login') }}" method="POST" class="flex-fill"> 
+                <form action="{{ route('auth.signin') }}" method="POST" class="flex-fill"> 
                 @csrf
                     <div class="mx-auto mw-450">
                         <div class="text-center mb-4">
@@ -15,13 +15,18 @@
                             <h4 class="mb-2 fs-20">Sign In</h4>
                             <p>Access the CRMS panel using your email and passcode.</p>
                         </div>
+                        @if(session('access_denied'))
+                            <div class="alert alert-danger">
+                                {{ session('access_denied') }}
+                            </div>
+                        @endif
                         <div class="mb-3">
                             <label class="col-form-label">Email Address</label>
                             <div class="position-relative">
                                 <span class="input-icon-addon">
                                     <i class="ti ti-mail"></i>
                                 </span>
-                                <input type="text" class="form-control" name="email" id="email" value="user@dreamstechnologies.com">
+                                <input type="email" placeholder="example@mail.com" class="form-control" name="email" id="email" value="{{ old('email') }}" required>
                             </div>
                             <div class="text-danger pt-2">
                                 @error('0')
@@ -35,7 +40,7 @@
                         <div class="mb-3">
                             <label class="col-form-label">Password</label>
                             <div class="pass-group">
-                                <input type="password" class="pass-input form-control" name="password" id="password" value="123456">
+                                <input type="password" class="pass-input form-control" name="password" id="password" required>
                                 <span class="ti toggle-password ti-eye-off"></span>
                             </div>
                             <div class="text-danger pt-2">
@@ -49,7 +54,7 @@
                         </div>
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="form-check form-check-md d-flex align-items-center">
-                                <input class="form-check-input" type="checkbox" value="" id="checkebox-md" checked="">
+                                <input class="form-check-input" type="checkbox" name="remember" value="1" id="checkebox-md" checked="">
                                 <label class="form-check-label" for="checkebox-md">
                                     Remember Me
                                 </label>
