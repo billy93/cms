@@ -5827,7 +5827,7 @@ $(document).ready(function () {
 				$('.dataTables_length').appendTo('.datatable-length');
 			},
 			"ajax": {
-				"url": "/permissions",  // Sesuaikan dengan URL route controller
+				"url": "/api/permission",  // Sesuaikan dengan URL route controller
 				"type": "GET",
 				"dataSrc": function (json) {
 					// Pastikan data diubah ke format yang sesuai untuk DataTable
