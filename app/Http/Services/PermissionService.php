@@ -10,7 +10,7 @@ class PermissionService
     public function createPermission(array $data)
     {
         $permission = Permission::create([
-            'name' => $data['name'],
+            'module' => $data['module'],
             'description' => $data['description']
         ]);
         
@@ -37,7 +37,8 @@ class PermissionService
             throw new CustomApiException("Permission with ID {$id} not found", 404);
         }
 
-        return $permission->roles->makeHidden('pivot');
+        $permission->roles->makeHidden('pivot');
+        return $permission;  
     }
 
     public function updatePermission($id, array $data)
@@ -49,7 +50,7 @@ class PermissionService
         }
 
         $permission->update([
-            'name' => $data['name'],
+            'module' => $data['module'],
             'description' => $data['description']
         ]);
         
@@ -69,6 +70,5 @@ class PermissionService
         }
 
         $permission->delete();
-    
     }
 }

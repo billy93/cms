@@ -11,6 +11,7 @@ class RoleService
     {
         $role = Role::create([
             'name' => $data['name'],
+            'slug' => $data['slug'],
             'description' => $data['description']
         ]);
 
@@ -36,8 +37,9 @@ class RoleService
         if (!$role) {
             throw new CustomApiException("Role with ID {$id} not found", 404);
         }
-
-        return $role->permissions->makeHidden('pivot');
+        
+        $role->permissions->makeHidden('pivot');
+        return $role;
     }
 
     public function updateRole($id, array $data)
@@ -50,12 +52,14 @@ class RoleService
 
         $role->update([
             'name' => $data['name'],
+            'slug' => $data['slug'],
             'description' => $data['description'],
         ]);
 
-        if (isset($data['permission_ids'])) {
-            $role->permissions()->sync($data['permission_ids']);
-        }
+        // if (isset($data['permission_ids'])) {
+        //     $role->permissions()->sync($data['permission_ids']);
+        // }
+        $role->permissions()->sync($data['permission_ids'] ?? []);
 
         return $role->load('permissions')->permissions->makeHidden('pivot');
     }

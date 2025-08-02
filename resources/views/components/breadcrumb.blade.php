@@ -158,6 +158,7 @@
         'sms-gateways',
         'security',
         'roles-permissions',
+        'roles.index',
         'proposals-grid',
         'contracts-grid',
         'estimations-kanban',
@@ -165,6 +166,7 @@
         'contracts',
         'estimations',
         'invoices',
+        'invoices.index',
         'payments',
     ]))
     <!-- Page Header -->
@@ -204,6 +206,7 @@
                         'sms-gateways',
                         'security',
                         'roles-permissions',
+                        'roles.index',
                     ]))
                     <h4 class="page-title">{{ $title }} <span class="count-title">{{ $item1 }}</span></h4>
                 @endif
@@ -239,6 +242,7 @@
                         'sms-gateways',
                         'security',
                         'roles-permissions',
+                        'roles.index',
                     ]))
                     <h4 class="page-title">{{ $title }}</h4>
                 @endif

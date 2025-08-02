@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('invoice', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('project_id')->nullable();
             $table->string('bill_to');
             $table->string('ship_to');
-            $table->unsignedBigInteger('project_id')->nullable();
             $table->decimal('amount', 15, 2);
             $table->string('currency', 10);
             $table->date('invoice_date');
@@ -26,13 +26,13 @@ return new class extends Migration
             $table->text('description');
             $table->string('signature_name')->nullable();
             $table->string('signature_image')->nullable();
-            $table->text('notes');
-            $table->text('terms_and_conditions');
-            $table->decimal('subtotal', 15, 2)->default(0);
-            $table->decimal('discount', 5, 2)->default(0);
-            $table->decimal('extra_discount', 5, 2)->default(0);
-            $table->decimal('tax', 15, 2)->default(0);
-            $table->decimal('total', 15, 2)->default(0);
+            $table->text('notes')->nullable();
+            $table->text('terms_and_conditions')->nullable();
+            $table->decimal('subtotal', 15, 2)->default(0)->nullable();
+            $table->decimal('discount', 5, 2)->default(0)->nullable();
+            $table->decimal('extra_discount', 5, 2)->default(0)->nullable();
+            $table->decimal('tax', 15, 2)->default(0)->nullable();
+            $table->decimal('total', 15, 2)->default(0)->nullable();
             $table->timestamps();
         });
     }

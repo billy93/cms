@@ -3,8 +3,11 @@
 use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\BOQController;
 use App\Http\Middlewares\AuthMiddleware;
 
 // Route::get('deals-dashboard', [CustomAuthController::class, 'deals-dashboard']); 
@@ -26,6 +29,59 @@ Route::get('/', function () {
 })->name('index');
 
 Route::middleware([AuthMiddleware::class])->group(function () {
+    Route::post('/signout', [AuthController::class, 'signout'])->name('auth.signout');
+
+    Route::prefix('manage-users')->name('users.')
+    ->controller(UserController::class)->group(function () {
+        Route::get('/', 'index')->name('index');    
+        Route::post('/', 'create')->name('create');   
+        Route::get('/all', 'readAll')->name('readAll');  
+        Route::get('/{user_id}', 'read')->name('read');  
+        Route::put('/{user_id}', 'update')->name('update');  
+        Route::delete('/{user_id}', 'delete')->name('delete');  
+    });
+
+     Route::prefix('boq')->name('boq.')
+    ->controller(BOQController::class)->group(function () {
+        Route::get('/', 'index')->name('index');    
+        // Route::post('/', 'create')->name('create');   
+        // Route::get('/all', 'readAll')->name('readAll');  
+        // Route::get('/{user_id}', 'read')->name('read');  
+        // Route::put('/{user_id}', 'update')->name('update');  
+        // Route::delete('/{user_id}', 'delete')->name('delete');  
+    });
+
+    Route::prefix('roles-permissions')->name('roles.')
+    ->controller(RoleController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/{role_id}', 'read')->name('read'); 
+        Route::put('/{role_id}', 'update')->name('update'); 
+        Route::delete('/{role_id}', 'delete')->name('delete'); 
+    });
+
+    Route::prefix('permissions')->name('permissions.')
+    ->controller(PermissionController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/{permission_id}', 'read')->name('read'); 
+        Route::put('/{permission_id}', 'update')->name('update'); 
+        Route::delete('/{permission_id}', 'delete')->name('delete'); 
+    });
+
+
+    Route::prefix('invoices')->name('invoices.')
+    ->controller(InvoiceController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/{invoice_id}', 'read')->name('read'); 
+        Route::put('/{invoice_id}', 'update')->name('update'); 
+        Route::delete('/{invoice_id}', 'delete')->name('delete'); 
+    });
+
     Route::get('/deals-dashboard', function () {
         return view('deals-dashboard');
     })->name('deals-dashboard');
@@ -426,8 +482,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('lost-reason');
     })->name('lost-reason'); 
 
-    Route::get('/manage-users', [UserController::class, 'getUsers'])->name('manage-users'); 
-
     Route::get('/membership-addons', function () {
         return view('membership-addons');
     })->name('membership-addons'); 
@@ -523,10 +577,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/reset-password', function () {
         return view('reset-password');
     })->name('reset-password'); 
-
-    Route::get('/roles-permissions', function () {
-        return view('roles-permissions');
-    })->name('roles-permissions'); 
 
     Route::get('/security', function () {
         return view('security');
@@ -784,10 +834,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('estimations');
     })->name('estimations');
 
-    Route::get('/invoices', function () {
-        return view('invoices');
-    })->name('invoices');
-
     Route::get('/proposals-grid', function () {
         return view('proposals-grid');
     })->name('proposals-grid');
@@ -911,13 +957,4 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/plugin', function () {
         return view('plugin');
     })->name('plugin');
-
-    // // User
-    // Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    // Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    // Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
-
-    Route::get('/permission', [PermissionController::class, 'index'])->name('permission.index'); 
-    Route::get('/api/permission', [PermissionController::class, 'index'])->name('api.permission'); 
 });

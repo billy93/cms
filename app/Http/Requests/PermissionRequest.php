@@ -17,8 +17,10 @@ class PermissionRequest extends ApiFormRequest
 
     switch ($action) {
       case 'api.permissions.create':
+      case 'permissions.create':
         return $this->createRules();
       case 'api.permissions.update':
+      case 'permissions.update':
         return $this->updateRules();
       default:
         return [];
@@ -28,7 +30,7 @@ class PermissionRequest extends ApiFormRequest
   protected function createRules(): array
   {
     return [
-      'name' => 'required|string|max:255|unique:permissions,name',
+      'module' => 'required|string|max:255|unique:permissions,module',
       'description' => 'nullable|string|max:255',
       'role_ids' => 'sometimes|array',
       'role_ids.*' => 'integer|exists:roles,id',
@@ -39,7 +41,7 @@ class PermissionRequest extends ApiFormRequest
   {
     return [
       'id' => 'required|exists:permissions,id',
-      'name' => 'required|string|max:255|unique:permissions,name,' . $this->route('permission_id'),
+      'module' => 'required|string|max:255|unique:permissions,module,' . $this->route('permission_id'),
       'description' => 'nullable|string|max:255',
       'role_ids' => 'sometimes|array',
       'role_ids.*' => 'integer|exists:roles,id',
@@ -52,13 +54,13 @@ class PermissionRequest extends ApiFormRequest
       'id.required' => 'The permission ID is required.',
       'id.exists' => 'The specified permission does not exist.',
 
-      'name.required' => 'The name field is required.',
-      'name.string' => 'The name must be a string.',
-      'name.max' => 'The name may not be greater than 255 characters.',
-      'name.unique' => 'The name has already been taken.',
+      'module.required' => 'The module field is required.',
+      'module.string' => 'The module must be a string.',
+      'module.max' => 'The module may not be greater than :max characters.',
+      'module.unique' => 'The module has already been taken.',
       
       'description.string' => 'The description must be a string.',
-      'description.max' => 'The description may not be greater than 255 characters.',
+      'description.max' => 'The description may not be greater than :max characters.',
 
       'role_ids.array' => 'The role_ids field must be an array.',
       'role_ids.*.integer' => 'Each role ID must be an integer.',

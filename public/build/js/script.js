@@ -1978,4 +1978,708 @@ $(document).ready(function () {
 		})
 	}
 
+	// Extra ------------------------------------------------------------------------------------
+	const API_USERS = "/manage-users";
+	const API_ROLES = "/roles-permissions";
+	const API_PERMISSIONS = "/permissions";
+	let userIdToDelete = null;
+	let roleIdToDelete = null;
+	let isFormSubmitting = false;
+
+	$.ajaxSetup({
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		}
+	});
+
+	function showToast({ icon = 'success', title = 'Success', text = '', customClass = '' }) {
+		return Swal.fire({
+			icon,
+			title,
+			text,
+			timer: 4000,
+			showConfirmButton: false,
+			toast: true,
+			position: 'top-end',
+			customClass: {
+				popup: customClass || (icon === 'success' ? 'swal-toast-success' : 'swal-toast-error')
+			}
+		});
+	}
+
+
+	// --------------------------------------------- USERS ---------------------------------------------
+	// Add User
+	$(document).on('click', '#c_user_add', function (e) {
+		$('#addUser')[0].reset();
+		$('#addUser select').val('').trigger('change');
+		$('#addUser')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+		// .remove();
+	});
+
+	$('#addUser').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'POST',
+			data: formData,
+			success: function (response) {
+				const offcanvasEl = document.getElementById('offcanvas_add');
+				const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+				if (offcanvas) offcanvas.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#manage-users-list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully added!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#addUser .invalid-feedback').text('').hide();
+				$('#addUser .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#addUser [name="' + key + '"]');
+						const errorContainer = $('#addUser .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Creation failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+
+	// Edit User
+	$(document).on('click', '#c_user_edit', function (e) {
+		const userId = $(this).data('id');
+		const url = $(this).data('url');
+
+		$('#editUser').find('input, select, textarea, button').prop('disabled', true);
+		$('#editUser')[0].reset();
+		$('#editUser select').val('').trigger('change');
+		$('#editUser')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+		// .remove();
+		$('#editUser select[name="role_id"]').empty().append('<option value="">Loading...</option>');
+
+		const userRequest = $.ajax({ url, type: 'GET' });
+		const rolesRequest = $.ajax({ url: API_ROLES, type: 'GET' });
+
+		$.when(userRequest, rolesRequest).done(function (userRes, rolesRes) {
+			const user = userRes[0].data;
+			const roles = rolesRes[0].data;
+
+			$('#editUser input[name="name"]').val(user.name);
+			$('#editUser input[name="email"]').val(user.email);
+			$('#editUser input[name="phone"]').val(user.phone);
+			$('#editUser input[name="location"]').val(user.location);
+
+			$(`#editUser input[name="status"][value=${user.status}]`).prop('checked', true);
+
+			const select = $('#editUser select[name="role_id"]');
+			select.empty().append(`<option value="" ${!user.role_id ? 'selected' : ''}>-- Select Role --</option>`);
+			roles.forEach(role => {
+				const selected = role.id === user.role_id ? 'selected' : '';
+				select.append(`<option value="${role.id}" ${selected}>${role.name}</option>`);
+			});
+
+			$('#editUser').attr('action', `${API_USERS}/${userId}`);
+			$('#editUser').find('input, select, textarea, button').prop('disabled', false);
+		}).fail(function () {
+			alert('Failed to load user or roles');
+			$('#editUser').find('input, select, textarea, button').prop('disabled', false);
+		});
+	});
+
+	$('#editUser').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'PUT',
+			data: formData,
+			success: function (response) {
+				const offcanvasEl = document.getElementById('offcanvas_edit');
+				const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+				if (offcanvas) offcanvas.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#manage-users-list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully updated!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#editUser .invalid-feedback').text('').hide();
+				$('#editUser .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#editUser [name="' + key + '"]');
+						const errorContainer = $('#editUser .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Update failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+
+	// Delete User
+	$(document).on('click', '#c_user_delete', function (e) {
+		userIdToDelete = $(this).data('id');
+	});
+
+	$(document).on('click', '#trigger_delete_user', function (e) {
+		e.preventDefault();
+
+		if (isFormSubmitting) return;
+		if (!userIdToDelete) return;
+
+		isFormSubmitting = true;
+
+		$.ajax({
+			url: `${API_USERS}/${userIdToDelete}`,
+			method: 'DELETE',
+			success: function (response) {
+				userIdToDelete = null;
+
+				const modalEl = document.getElementById('delete_user_modal');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+
+				$('body').removeClass('modal-open');
+				$('.modal-backdrop').remove();
+
+				showToast({
+					text: response.message || 'Data has been successfully deleted!'
+				});
+
+				const table = $('#manage-users-list').DataTable();
+				table.ajax.reload(null, false);
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Deletion failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+	// --------------------------------------------- ROLES ---------------------------------------------
+	// Add Role
+	$(document).on('click', '#c_role_add', function (e) {
+		$('#addRole')[0].reset();
+		$('#addRole')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+	});
+
+	$('#addRole').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'POST',
+			data: formData,
+			success: function (response) {
+				const modalEl = document.getElementById('add_role');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#roles_list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully added!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#addRole .invalid-feedback').text('').hide();
+				$('#addRole .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#addRole [name="' + key + '"]');
+						const errorContainer = $('#addRole .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Creation failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+	// Edit Role
+	$(document).on('click', '#c_role_edit', function (e) {
+		const roleId = $(this).data('id');
+		const url = $(this).data('url');
+
+		$('#editRole').find('input, select, textarea, button').prop('disabled', true);
+		$('#editRole')[0].reset();
+		$('#editRole')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+
+		const roleRequest = $.ajax({ url, type: 'GET' });
+		const permissionsRequest = $.ajax({ url: API_PERMISSIONS, type: 'GET' });
+
+		$.when(roleRequest, permissionsRequest).done(function (roleRes, permissionsRes) {
+			const role = roleRes[0].data;
+			const currentPermissionIds = role.permissions.map(p => p.id);
+			const permissions = permissionsRes[0].data;
+
+			$('#editRole input[name="name"]').val(role.name);
+			$('#editRole input[name="slug"]').val(role.slug);
+			$('#editRole input[name="description"]').val(role.description);
+			// $('#editRole input[name="permission_ids[]"]').prop('checked', false);
+
+			const container = $('#editRole #edit-permissions-container');
+			container.empty();
+
+			permissions.forEach(perm => {
+				const isChecked = currentPermissionIds.includes(perm.id) ? 'checked' : '';
+				const checkbox = `
+					<div class="col-md-4">
+						<div class="form-check">
+							<input type="checkbox"
+								name="permission_ids[]"
+								value="${perm.id}"
+								class="form-check-input"
+								id="edit_perm_${perm.id}"
+								${isChecked}>
+							<label class="form-check-label" for="edit_perm_${perm.id}">
+								${perm.module}
+							</label>
+						</div>
+					</div>
+        `;
+				container.append(checkbox);
+			});
+
+
+			$('#editRole').attr('action', `${API_ROLES}/${roleId}`);
+			$('#editRole').find('input, select, textarea, button').prop('disabled', false);
+		}).fail(function () {
+			alert('Failed to load user or roles');
+			$('#editRole').find('input, select, textarea, button').prop('disabled', false);
+		});
+	});
+
+	$('#editRole').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'PUT',
+			data: formData,
+			success: function (response) {
+				const modalEl = document.getElementById('edit_role');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#roles_list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully updated!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#editRole .invalid-feedback').text('').hide();
+				$('#editRole .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#editRole [name="' + key + '"]');
+						const errorContainer = $('#editRole .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Update failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+	// Delete Role
+	$(document).on('click', '#c_role_delete', function (e) {
+		roleIdToDelete = $(this).data('id');
+	});
+
+	$(document).on('click', '#trigger_delete_role', function (e) {
+		e.preventDefault();
+
+		if (isFormSubmitting) return;
+		if (!roleIdToDelete) return;
+
+		isFormSubmitting = true;
+
+		$.ajax({
+			url: `${API_ROLES}/${roleIdToDelete}`,
+			method: 'DELETE',
+			success: function (response) {
+				roleIdToDelete = null;
+
+				const modalEl = document.getElementById('delete_role_modal');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+
+				$('body').removeClass('modal-open');
+				$('.modal-backdrop').remove();
+
+				showToast({
+					text: response.message || 'Data has been successfully deleted!'
+				});
+
+				const table = $('#roles_list').DataTable();
+				table.ajax.reload(null, false);
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Deletion failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+
+	// --------------------------------------------- PERMISSIONS ---------------------------------------------
+	// Add Permission
+	$(document).on('click', '#c_permission_add', function (e) {
+		$('#addPermission')[0].reset();
+		$('#addPermission')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+	});
+
+	$('#addPermission').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'POST',
+			data: formData,
+			success: function (response) {
+				const modalEl = document.getElementById('add_permission');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#permission_list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully added!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#addPermission .invalid-feedback').text('').hide();
+				$('#addPermission .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#addPermission [name="' + key + '"]');
+						const errorContainer = $('#addPermission .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Creation failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+	// Edit Permission
+	$(document).on('click', '#c_permission_edit', function (e) {
+		const permissionId = $(this).data('id');
+		const url = $(this).data('url');
+
+		$('#editPermission').find('input, select, textarea, button').prop('disabled', true);
+		$('#editPermission')[0].reset();
+		$('#editPermission')
+			.find('.is-invalid')
+			.removeClass('is-invalid')
+			.end()
+			.find('.invalid-feedback')
+			.text('');
+
+		const permissionRequest = $.ajax({ url, type: 'GET' });
+
+		$.when(permissionRequest).done(function (permissionRes) {
+			const permission = permissionRes.data;
+
+			$('#editPermission input[name="module"]').val(permission.module);
+			$('#editPermission input[name="description"]').val(permission.description);
+
+			$('#editPermission').attr('action', `${API_PERMISSIONS}/${permissionId}`);
+			$('#editPermission').find('input, select, textarea, button').prop('disabled', false);
+		}).fail(function () {
+			alert('Failed to load user or roles');
+			$('#editPermission').find('input, select, textarea, button').prop('disabled', false);
+		});
+	});
+
+	$('#editPermission').on('submit', function (e) {
+		e.preventDefault();
+		if (isFormSubmitting) return;
+
+		isFormSubmitting = true;
+		const form = $(this);
+		const actionUrl = form.attr('action');
+		const formData = form.serialize();
+
+		$.ajax({
+			url: actionUrl,
+			method: 'PUT',
+			data: formData,
+			success: function (response) {
+				const modalEl = document.getElementById('edit_permission');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+				$('body').removeClass('overflow-hidden');
+				const table = $('#permission_list').DataTable();
+				table.ajax.reload(null, false);
+
+				showToast({
+					text: response.message || 'Data has been successfully updated!'
+				});
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+				$('#editPermission .invalid-feedback').text('').hide();
+				$('#editPermission .form-control').removeClass('is-invalid');
+
+				if (xhr.status === 400 && res.errors) {
+					const errors = res.errors;
+
+					Object.keys(errors).forEach(function (key) {
+						const message = errors[key][0];
+						const input = $('#editPermission [name="' + key + '"]');
+						const errorContainer = $('#editPermission .invalid-feedback[data-name="' + key + '"]');
+
+						input.addClass('is-invalid');
+						if (errorContainer.length) {
+							errorContainer.text(message);
+						} else {
+							input.after('<div class="invalid-feedback d-flex text-danger">' + message + '</div>');
+						}
+					});
+				}
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Update failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
+
+	// Delete Permission
+	$(document).on('click', '#c_permission_delete', function (e) {
+		permissionIdToDelete = $(this).data('id');
+	});
+
+	$(document).on('click', '#trigger_delete_permission', function (e) {
+		e.preventDefault();
+
+		if (isFormSubmitting) return;
+		if (!permissionIdToDelete) return;
+
+		isFormSubmitting = true;
+
+		$.ajax({
+			url: `${API_PERMISSIONS}/${permissionIdToDelete}`,
+			method: 'DELETE',
+			success: function (response) {
+				permissionIdToDelete = null;
+
+				const modalEl = document.getElementById('delete_permission_modal');
+				const modalInstance = bootstrap.Modal.getInstance(modalEl);
+				if (modalInstance) modalInstance.hide();
+
+				$('body').removeClass('modal-open');
+				$('.modal-backdrop').remove();
+
+				showToast({
+					text: response.message || 'Data has been successfully deleted!'
+				});
+
+				const table = $('#permission_list').DataTable();
+				table.ajax.reload(null, false);
+			},
+			error: function (xhr) {
+				const res = xhr.responseJSON;
+
+				showToast({
+					icon: 'error',
+					title: 'Failed',
+					text: res?.message || xhr.statusText || 'Deletion failed. Please try again later.',
+				});
+			}
+		})
+			.always(function () {
+				isFormSubmitting = false
+			});
+	});
 });
+

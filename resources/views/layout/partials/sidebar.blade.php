@@ -102,6 +102,7 @@
                                 <li><a class="{{ Request::is('social-feed') ? 'active' : '' }}" href="{{url('social-feed')}}">Social Feed</a></li>
                                 <li><a class="{{ Request::is('kanban-view') ? 'active' : '' }}" href="{{url('kanban-view')}}">Kanban</a></li>
                                 <li><a class="{{ Request::is('invoice', 'invoice-details') ? 'active' : '' }}" href="{{url('invoice')}}">Invoices</a></li>
+                                <li><a class="{{ Request::is('boq') ? 'active' : '' }}" href="{{url('boq')}}">BoQ</a></li>
                             </ul>
                         </li>
                         <li class="submenu">
@@ -213,6 +214,11 @@
                                 <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
                         </li>
                         <li>
+                            <a class="{{ Request::is('boq') ? 'active' : '' }}"
+                                href="{{ url('boq') }}">
+                                <i class="ti ti-file-invoice"></i><span>BoQ</span></a>
+                        </li>
+                        <li>
                             <a class="{{ Request::is('payments') ? 'active' : '' }}" href="{{ url('payments') }}">
                                 <i class="ti ti-report-money"></i><span>Payments</span></a>
                         </li>
@@ -275,9 +281,12 @@
                         <li><a class="{{ Request::is('manage-users') ? 'active' : '' }}"
                                 href="{{ url('manage-users') }}"><i class="ti ti-users"></i><span>Manage
                                     Users</span></a></li>
-                        <li><a class="{{ Request::is('roles-permissions','permission') ? 'active' : '' }}"
+                        <li><a class="{{ Request::is('roles-permissions') ? 'active' : '' }}"
                                 href="{{ url('roles-permissions') }}"><i class="ti ti-navigation-cog"></i><span>Roles
                                     & Permissions</span></a></li>
+                        <li><a class="{{ Request::is('permissions') ? 'active' : '' }}"
+                                href="{{ url('permissions') }}"><i class="ti ti-lock-cog"></i></i><span>Permissions
+                                    </span></a></li>
                         <li><a class="{{ Request::is('delete-request') ? 'active' : '' }}"
                                 href="{{ url('delete-request') }}"><i class="ti ti-flag-question"></i><span>Delete
                                     Request</span></a></li>

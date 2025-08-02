@@ -10,6 +10,8 @@ class UserService
 {
     public function createUser(array $data)
     {
+		\Log::debug("CALCULATED PARAMS: " . json_encode($data, JSON_PRETTY_PRINT));
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],

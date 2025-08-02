@@ -9,7 +9,7 @@ class Permission extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['module', 'description'];
 
     public function roles()
     {
