@@ -5,20 +5,20 @@
     "isEntry": true
   },
   "resources/img/authentication/forgot-bg.jpg": {
-    "file": "icons/forgot-bg.jpg",
-    "src": "resources/img/authentication/forgot-bg.jpg"
+    "file": "icons/login-bg.jpg",
+    "src": "resources/img/authentication/login-bg.jpg"
   },
   "resources/img/authentication/login-bg.jpg": {
     "file": "icons/login-bg.jpg",
     "src": "resources/img/authentication/login-bg.jpg"
   },
   "resources/img/authentication/register-bg.jpg": {
-    "file": "icons/register-bg.jpg",
-    "src": "resources/img/authentication/register-bg.jpg"
+    "file": "icons/login-bg.jpg",
+    "src": "resources/img/authentication/login-bg.jpg"
   },
   "resources/img/authentication/reset-bg.jpg": {
-    "file": "icons/reset-bg.jpg",
-    "src": "resources/img/authentication/reset-bg.jpg"
+    "file": "icons/login-bg.jpg",
+    "src": "resources/img/authentication/login-bg.jpg"
   },
   "resources/img/theme/pattern-01.png": {
     "file": "icons/pattern-01.png",

@@ -21,6 +21,83 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## 🚀 Quick Start - CMS Bootstrap Admin Laravel
+
+### Prerequisites
+- PHP 8.2 or higher
+- Composer
+- Node.js & NPM
+- Database (MySQL/PostgreSQL/SQLite)
+
+### Installation & Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd laravel
+   ```
+
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Environment setup**
+   ```bash
+   # Copy environment file
+   copy .env.example .env
+   
+   # Generate application key
+   php artisan key:generate
+   ```
+
+4. **Configure database**
+   - Edit `.env` file and set your database credentials
+   - Run migrations: `php artisan migrate`
+
+5. **Build assets**
+   ```bash
+   npm run build
+   ```
+
+### 🎯 Running the Application
+
+**Easiest way (Recommended):**
+```bash
+composer run dev
+```
+
+This command will start:
+- Laravel development server
+- Queue listener
+- Vite development server (for assets)
+
+**Alternative methods:**
+```bash
+# Only Laravel server
+php artisan serve
+
+# Only build assets
+npm run dev
+```
+
+### 🌐 Access URLs
+- **Homepage**: `http://localhost:8000/`
+- **Dashboard**: `http://localhost:8000/dashboard`
+- **Login**: `http://localhost:8000/register`
+
+### 📁 Project Structure
+This is a **CMS Bootstrap Admin Laravel** application with features:
+- Dashboard & Analytics
+- CRM System (Leads, Deals, Contacts, Companies)
+- Project Management
+- Invoice & Billing
+- User Management
+- UI Components (Bootstrap-based admin template)
+- File Management
+- Email & Communication
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
