@@ -110,6 +110,7 @@
         'companies-grid',
         'companies',
         'company-details',
+        'customers',
         'company-reports',
         'company-settings',
         'connected-apps',
@@ -180,6 +181,7 @@
                         'company-details',
                         'company-settings',
                         'connected-apps',
+                        'customers',
                         'deals-details',
                         'countries',
                         'currencies',
@@ -241,6 +243,9 @@
                         'roles-permissions',
                     ]))
                     <h4 class="page-title">{{ $title }}</h4>
+                @endif
+                @if (Route::is(['customers']))
+                    <h4 class="page-title">Customers <span class="count-title">123</span></h4>
                 @endif
             </div>
             <div class="col-4 text-end">

@@ -154,7 +154,7 @@
                                     </ul>
                                 </li>
                                 <li class="submenu">
-                                    <a href="#" class="{{ Request::is('contacts', 'contact-grid', 'contact-details', 'companies', 'companies-grid', 'company-details', 
+                                    <a href="#" class="{{ Request::is('contacts', 'contact-grid', 'contact-details', 'companies', 'companies-grid', 'company-details', 'customers',
                                     'deals', 'deals-kanban', 'deals-details', 'leads', 'leads-details', 'leads-kanban', 'pipeline', 'campaign', 'campaign-complete', 'campaign-archieve',
                                     'projects', 'project-details', 'project-grid', 'tasks', 'tasks-completed', 'tasks-important', 'proposals', 'proposals-grid', 
                                     'contracts', 'contracts-grid', 'estimations', 'estimations-kanban', 'invoices', 'invoice-grid', 'payments', 'analytics', 
@@ -170,6 +170,10 @@
                                         <li>
                                             <a class="{{ Request::is('companies', 'companies-grid', 'company-details') ? 'active' : '' }}"
                                                 href="{{ url('companies') }}">Companies</a>
+                                        </li>
+                                        <li>
+                                            <a class="{{ Request::is('customers') ? 'active' : '' }}"
+                                                href="{{ url('customers') }}">Customers</a>
                                         </li>
                                         <li>
                                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"

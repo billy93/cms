@@ -1,3 +1,6 @@
+ <!-- CSRF Token -->
+ <meta name="csrf-token" content="{{ csrf_token() }}">
+
  <!-- Apple Touch Icon -->
  <link rel="apple-touch-icon" sizes="180x180" href="{{ url('//img/apple-touch-icon.png') }}">
 
@@ -296,6 +299,8 @@
          'language',
          'appearance',
          'form-select2',
+         'customers',
+         'suppliers',
          'form-vertical',
          'form-horizontal',
          'proposals-grid',

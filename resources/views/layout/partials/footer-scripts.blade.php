@@ -412,6 +412,8 @@
          'invoice-settings',
          'appearance',
          'form-select2',
+         'customers',
+         'suppliers',
          'form-vertical',
          'form-horizontal',
          'proposals-grid',
@@ -436,9 +438,9 @@
      <script src="{{ URL::asset('build/plugins/select2/js/select2.min.js') }}"></script>
  @endif
 
- @if (Route::is(['form-select2']))
-     <script src="{{ URL::asset('build/js/custom-select2.js') }}"></script>
- @endif
+ @if (Route::is(['form-select2', 'customers', 'suppliers']))
+    <script src="{{ URL::asset('build/js/custom-select2.js') }}"></script>
+@endif
 
  @if (Route::is([
          'activities',

@@ -168,6 +168,16 @@
                                     class="ti ti-building-community"></i><span>Companies</span></a>
                         </li>
                         <li>
+                            <a class="{{ Request::is('customers') ? 'active' : '' }}"
+                                href="{{ url('customers') }}"><i
+                                    class="ti ti-users"></i><span>Customers</span></a>
+                        </li>
+                        <li>
+                            <a class="{{ Request::is('suppliers') ? 'active' : '' }}"
+                                href="{{ url('suppliers') }}"><i
+                                    class="ti ti-truck"></i><span>Suppliers</span></a>
+                        </li>
+                        <li>
                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"
                                 href="{{ url('deals') }}"><i class="ti ti-medal"></i><span>Deals</span></a>
                         </li>

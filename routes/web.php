@@ -908,8 +908,25 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     })->name('layout-dark');
 
     Route::get('/plugin', function () {
-        return view('plugin');
-    })->name('plugin');
+    return view('plugin');
+})->name('plugin');
+
+// Customer routes
+Route::get('/customers', function () {
+    return view('customers.index');
+})->name('customers');
+
+Route::get('/customers/{id}', function ($id) {
+    return view('customers.detail', compact('id'));
+})->name('customers.detail');
+
+Route::get('/suppliers', function () {
+    return view('suppliers.index');
+})->name('suppliers');
+
+Route::get('/suppliers/{id}', function ($id) {
+    return view('suppliers.detail', compact('id'));
+})->name('suppliers.detail');
 
     // // User
     // Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
