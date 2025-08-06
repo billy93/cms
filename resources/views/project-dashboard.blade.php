@@ -96,7 +96,7 @@
 			</div>
 
             <div class="row">
-                <div class="col-md-6 d-flex">
+                <!-- <div class="col-md-6 d-flex">
                     <div class="card w-100">
                         <div class="card-header border-0 pb-0">
                             <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
@@ -150,8 +150,8 @@
                             <div id="project-stage"></div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6 ">
+                </div> -->
+                <!-- <div class="col-md-6 ">
                     <div class="card">
                         <div class="card-header border-0 pb-0">
                             <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
@@ -258,7 +258,7 @@
                             <div id="won-chart"></div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
