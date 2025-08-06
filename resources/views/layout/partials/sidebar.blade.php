@@ -60,10 +60,10 @@
                                 <i class="ti ti-layout-2"></i><span>Dashboard</span><span class="menu-arrow"></span>
                             </a>
                             <ul>
-                                <li><a class="{{ Request::is('deals-dashboard') ? 'active' : '' }}"
+                                <!-- <li><a class="{{ Request::is('deals-dashboard') ? 'active' : '' }}"
                                         href="{{ url('deals-dashboard') }}">Deals Dashboard</a></li>
                                 <li><a class="{{ Request::is('leads-dashboard') ? 'active' : '' }}"
-                                        href="{{ url('leads-dashboard') }}">Leads Dashboard</a></li>
+                                        href="{{ url('leads-dashboard') }}">Leads Dashboard</a></li> -->
                                 <li><a class="{{ Request::is('project-dashboard') ? 'active' : '' }}"
                                         href="{{ url('project-dashboard') }}">Project Dashboard</a></li>
                             </ul>
@@ -120,7 +120,7 @@
                         </li>
                     </ul>
                 </li>
-                <li>
+                <!-- <li>
                         <h6 class="submenu-hdr">Layout</h6>
                         <ul>
                                 <li>
@@ -154,7 +154,7 @@
                                         </a>
                                 </li>
                         </ul>
-                </li>
+                </li> -->
                 <li>
                     <h6 class="submenu-hdr">CRM</h6>
                     <ul>
@@ -237,7 +237,7 @@
                         </li>
                     </ul>
                 </li>
-                <li>
+                <!-- <li>
                     <h6 class="submenu-hdr">Reports</h6>
                     <ul>
                         <li class="submenu">
@@ -261,8 +261,8 @@
                             </ul>
                         </li>
                     </ul>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                     <h6 class="submenu-hdr">CRM Settings</h6>
                     <ul>
                         <li><a class="{{ Request::is('sources') ? 'active' : '' }}" href="{{ url('sources') }}"><i
@@ -278,7 +278,7 @@
                         <li><a class="{{ Request::is('calls') ? 'active' : '' }}" href="{{ url('calls') }}"><i
                                     class="ti ti-phone-check"></i><span>Calls</span></a></li>
                     </ul>
-                </li>
+                </li> -->
                 <li>
                     <h6 class="submenu-hdr">User Management</h6>
                     <ul>
@@ -293,7 +293,7 @@
                                     Request</span></a></li>
                     </ul>
                 </li>
-                <li>
+                <!-- <li>
                     <h6 class="submenu-hdr">Membership</h6>
                     <ul>
                         <li class="submenu">
@@ -312,8 +312,8 @@
                             </ul>
                         </li>
                     </ul>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                     <h6 class="submenu-hdr">Content</h6>
                     <ul>
                         <li><a class="{{ Request::is('pages') ? 'active' : '' }}" href="{{ url('pages') }}"><i
@@ -348,8 +348,8 @@
                         <li><a class="{{ Request::is('tickets') ? 'active' : '' }}" href="{{ url('tickets') }}"><i
                                     class="ti ti-ticket"></i><span>Tickets</span></a></li>
                     </ul>
-                </li>
-                <li>
+                </li>-->
+                <!-- <li>
                     <h6 class="submenu-hdr">Settings</h6>
                     <ul>
                         <li class="submenu">
@@ -450,8 +450,8 @@
                             </ul>
                         </li>
                     </ul>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                     <h6 class="submenu-hdr">Pages</h6>
                     <ul>
                         <li class="submenu">
@@ -500,8 +500,8 @@
                                 href="{{ url('under-maintenance') }}"><i class="ti ti-moneybag"></i><span>Under
                                     Maintenance</span></a></li>
                     </ul>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                     <h6 class="submenu-hdr">UI Interface</h6>
                     <ul>
                         <li class="submenu">
@@ -776,8 +776,8 @@
                                 </ul>
                         </li>
                     </ul>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                     <h6 class="submenu-hdr">Help</h6>
                     <ul>
                         <li><a href="javascript:void(0);"><i
@@ -806,7 +806,7 @@
                             </ul>
                         </li>
                     </ul>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>
