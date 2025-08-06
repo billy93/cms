@@ -69,7 +69,7 @@
                             </ul>
                         </li>
                         <li class="submenu">
-                            <a href="javascript:void(0);"
+                            <!-- <a href="javascript:void(0);"
                                 class="{{ Request::is('chat', 'calendar', 'email', 'todo', 'notes', 'file-manager', 'video-call', 'audio-call', 'call-history', 'social-feed', 'kanban-view', 'invoice', 'invoice-details') ? 'subdrop active' : '' }}"><i
                                     class="ti ti-brand-airtable"></i><span>Application</span><span
                                     class="menu-arrow"></span></a>
@@ -102,7 +102,7 @@
                                 <li><a class="{{ Request::is('social-feed') ? 'active' : '' }}" href="{{url('social-feed')}}">Social Feed</a></li>
                                 <li><a class="{{ Request::is('kanban-view') ? 'active' : '' }}" href="{{url('kanban-view')}}">Kanban</a></li>
                                 <li><a class="{{ Request::is('invoice', 'invoice-details') ? 'active' : '' }}" href="{{url('invoice')}}">Invoices</a></li>
-                            </ul>
+                            </ul> -->
                         </li>
                         <li class="submenu">
                                 <a href="#" class="{{ Request::is('dashboard', 'company', 'subscription', 'packages', 'domain', 'purchase-transaction') ? 'active subdrop' : '' }}">
@@ -181,7 +181,7 @@
                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"
                                 href="{{ url('deals') }}"><i class="ti ti-medal"></i><span>Deals</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('leads', 'leads-details', 'leads-kanban') ? 'active' : '' }}"
                                 href="{{ url('leads') }}"><i class="ti ti-chart-arcs"></i><span>Leads</span></a>
                         </li>
@@ -193,7 +193,7 @@
                             <a class="{{ Request::is('campaign', 'campaign-complete', 'campaign-archieve') ? 'active' : '' }}"
                                 href="{{ url('campaign') }}"><i
                                     class="ti ti-brand-campaignmonitor"></i><span>Campaign</span></a>
-                        </li>
+                        </li> -->
                         <li>
                             <a class="{{ Request::is('projects', 'project-details', 'project-grid') ? 'active' : '' }}"
                                 href="{{ url('projects') }}"><i class="ti ti-atom-2"></i><span>Projects</span></a>

@@ -19,15 +19,15 @@ Route::middleware(['guest'])->group(function () {
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return redirect()->route('dashboard');
+        return redirect()->route('project-dashboard');
     }
     return view('index');
 })->name('index');
 
 Route::middleware([AuthMiddleware::class])->group(function () {
-    Route::get('/deals-dashboard', function () {
-        return view('deals-dashboard');
-    })->name('deals-dashboard');
+    // Route::get('/deals-dashboard', function () {
+    //     return view('deals-dashboard');
+    // })->name('deals-dashboard');
 
     Route::get('/activities', function () {
         return view('activities');
@@ -856,7 +856,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     })->name('invoice-details');
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('project-dashboard');
     })->name('dashboard');
 
     Route::get('/company', function () {
