@@ -20,7 +20,7 @@
                     <div class="login-user-info">
                        <div class="login-heading">
                            <h4>Sign In</h4>
-                           <p>Access the CRMS panel using your email and passcode.</p>
+                           <p>Access the PCMI panel using your email and passcode.</p>
                        </div>
                        <div class="form-wrap">
                            <label class="col-form-label">Email Address</label>
@@ -79,7 +79,7 @@
                 </form>
             </div>
             <div class="copyright-text">
-               <p>Copyright &copy;2024 - CRMS</p>
+               <p>Copyright &copy;2025 - PCMI</p>
            </div>
         </div>
     </div>

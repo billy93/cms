@@ -4,7 +4,7 @@
     <!-- Logo -->
     <div class="header-left active">
         <a href="{{url('index')}}" class="logo logo-normal">
-            <img src="{{ URL::asset('build/img/logo.svg') }}" alt="Logo">
+            <img src="{{ URL::asset('build/img/panconvince-logo.png') }}" alt="Logo">
             <img src="{{ URL::asset('build/img/white-logo.svg') }}" class="white-logo" alt="Logo">
         </a>
         <a href="{{url('index')}}" class="logo-small">

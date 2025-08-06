@@ -9,11 +9,11 @@
                 @csrf
                     <div class="mx-auto mw-450">
                         <div class="text-center mb-4">
-                            <img src="{{ URL::asset('/build/img/logo.svg')}}" class="img-fluid" alt="Logo">
+                            <img src="{{ URL::asset('/build/img/panconvince-logo.png')}}" class="img-fluid" alt="Logo">
                         </div>
                         <div class="mb-4">
                             <h4 class="mb-2 fs-20">Sign In</h4>
-                            <p>Access the CRMS panel using your email and passcode.</p>
+                            <p>Access the PCMI panel using your email and passcode.</p>
                         </div>
                         @if(session('access_denied'))
                             <div class="alert alert-danger">
@@ -66,7 +66,7 @@
                         <div class="mb-3">
                             <button type="submit" class="btn btn-primary w-100">Sign In</button>
                         </div>
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <h6>New on our platform?<a href="{{url('register')}}" class="text-purple link-hover"> Create an account</a></h6>
                         </div>
                         <div class="form-set-login or-text mb-3">
@@ -88,9 +88,9 @@
                                     <img class="img-fluid  m-1" src="{{ URL::asset('/build/img/icons/apple-logo.svg')}}" alt="Apple">
                                 </a>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="text-center">
-                            <p class="fw-medium text-gray">Copyright &copy; 2024 - CRMS</p>
+                            <p class="fw-medium text-gray">Copyright &copy; 2025 - PCMI</p>
                         </div>
                     </div>
                 </form>
