@@ -291,7 +291,7 @@
     @if (Route::is(['invoice-settings']))
         <title>Invoice Settings | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
-    @if (Route::is(['invoices']))
+    @if (Route::is(['invoices', 'invoices.index']))
         <title>Invoice | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
     @if (Route::is(['language']))
@@ -327,8 +327,11 @@
     @if (Route::is(['lost-reason']))
         <title>Lost Reason | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
-    @if (Route::is(['manage-users']))
+    @if (Route::is(['manage-users', 'users.index']))
         <title>Manage users | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
+    @endif
+    @if (Route::is(['boq.index']))
+        <title>Bill of Quantity | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
     @if (Route::is(['membership-addons']))
         <title>Membership Addons | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
@@ -402,7 +405,7 @@
     @if (Route::is(['reset-password','reset-password-2','reset-password-3']))
         <title>Reset Password | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
-    @if (Route::is(['roles-permissions']))
+    @if (Route::is(['roles-permissions', 'roles.index']))
         <title>Roles Permissions | CRMS - Advanced Bootstrap 5 Admin Template for Customer Management</title>
     @endif
     @if (Route::is(['security']))

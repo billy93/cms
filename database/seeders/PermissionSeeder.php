@@ -11,19 +11,22 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            'manage-users',
-            'deals',
-            'deal-reports',
-            'deals-details',
-            'deals-kanban',
+            'manage-users' => 'User Management',
+            'deals' => 'Deals',
+            'deal-reports' => 'Deal Reports',
+            'deals-details' => 'Deal Details',
+            'deals-kanban' => 'Deals Kanban',
         ];
-
-        foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission, 'description' => ucfirst(str_replace('-', ' ', $permission))]);
+        
+        foreach ($permissions as $key => $value) {
+            Permission::firstOrCreate(
+                ['module' => $key],
+                ['description' => $value]
+            );
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
-        $userRole = Role::where('name', 'user')->first();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $userRole = Role::where('name', 'User')->first();
 
         if ($adminRole) {
             $adminRole->permissions()->sync(Permission::all()->pluck('id')); 
@@ -31,7 +34,7 @@ class PermissionSeeder extends Seeder
 
         if ($userRole) {
             $userRole->permissions()->sync([
-                Permission::where('name', 'manage-users')->first()->id,
+                Permission::where('module', 'manage-users')->first()->id,
             ]);
         }
     }

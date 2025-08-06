@@ -45,7 +45,7 @@
                                                 </ul>
                                             </div>
                                         </div>	
-                                        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add" ><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a>
+                                        <a href="javascript:void(0);" id="c_invoice_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add" ><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a>
                                     </div>
                                 </div>
                             </div>
@@ -397,22 +397,33 @@
 
                             <!-- Projects List -->
                             <div class="table-responsive custom-table">
-                                <table class="table datatable">
+								<table class="table" id="invoice_list" data-url="{{ route('invoices.index') }}">
+                                    asdsad
                                     <thead class="thead-light">
                                         <tr>
-                                            <th class="no-sort">
-                                                <label class="checkboxs"><input type="checkbox" id="select-all"><span class="checkmarks"></span></label>
-                                            </th>
-                                            <th></th>
                                             <th>Invoice ID</th>
                                             <th>Client</th>
                                             <th>Project</th>
+											<th>Created</th>
+											<th>Bill to</th>
+											<th>Ship to</th>
+											<th>Amount</th>
+											<th>Currency</th>
+											<th>Invoice Date</th>
                                             <th>Due Date</th>
-                                            <th>Amount</th>
-                                            <th>Paid Amount</th>
-                                            <th>Balance Amount</th>
+                                            <th>Payment Method</th>
+                                            <th>Description</th>
                                             <th>Status</th>
-                                            <th class="text-end">Action</th>
+                                            <th>Signature Name</th>
+                                            <th>Signature Image</th>
+                                            <th>Notes</th>
+                                            <th>Terms and conditions</th>
+                                            <th>Subtotal</th>
+                                            <th>Discount</th>
+                                            <th>Extra Discount</th>
+                                            <th>Tax</th>
+                                            <th>Total</th>
+                                            <th class="no-sort text-end">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -805,15 +816,18 @@
                                     </tbody>
                                 </table>								
                             </div>
-                            <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <div class="datatable-length"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="datatable-paginate"></div>
-                                </div>
-                            </div>
-                            <!-- /Projects List -->
+                            <div class="row align-items-center" style="row-gap: 1em;">
+								<div class="col-md-6">
+									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
+										<div class="datatable-info"></div>
+										<div class="datatable-length"></div>
+									</div>
+								</div>
+								<div class="col-md-6 flex-grow-1">
+									<div class="datatable-paginate"></div>
+								</div>
+							</div>
+							<!-- /Projects List -->
 
                         </div>
 					</div>

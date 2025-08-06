@@ -8,8 +8,9 @@
  <!-- Favicon -->
  <link rel="icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
  <link rel="shortcut icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
-
- @if (Route::is(['layout-rtl']))
+ <meta name="csrf-token" content="{{ csrf_token() }}">
+ 
+@if (Route::is(['layout-rtl']))
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="{{ url('build/css/bootstrap.rtl.min.css') }}">
 @endif
@@ -182,13 +183,14 @@
          'states',
          'sources',
          'roles-permissions',
+         'roles.index',
          'projects',
          'project-reports',
          'project-grid',
          'project-details',
          'project-dashboard',
          'pipeline',
-         'premission',
+         'permissions',
          'pages',
          'pages-list',
          'notes',
@@ -196,6 +198,7 @@
          'membership-addons',
          'membership-plans',
          'manage-users',
+         'users.index',
          'leads-kanban',
          'leads-details',
          'leads-reports',
@@ -211,6 +214,7 @@
          'estimations-kanban',
          'estimations',
          'invoices',
+         'invoices.index',
          'invoice-grid',
          'kanban-view',
          'invoice',
@@ -271,6 +275,7 @@
          'states',
          'sources',
          'roles-permissions',
+         'roles.index',
          'projects',
          'project-reports',
          'project-grid',
@@ -280,7 +285,7 @@
          'prefixes',
          'preference',
          'pipeline',
-         'premission',
+         'permissions',
          'pages',
          'pages-list',
          'notes',
@@ -288,6 +293,7 @@
          'membership-addons',
          'membership-plans',
          'manage-users',
+         'users.index',
          'localization',
          'leads-kanban',
          'leads-details',
@@ -310,6 +316,7 @@
          'estimations-kanban',
          'estimations',
          'invoices',
+         'invoices.index',
          'invoice-grid',
          'kanban-view',
          'invoice',
@@ -356,9 +363,11 @@
          'membership-addons',
          'membership-plans',
          'manage-users',
+         'users.index',
          'pipeline',
-         'premission',
+         'permissions',
          'roles-permissions',
+         'roles.index',
          'projects',
          'project-grid',
          'project-details',
@@ -376,6 +385,7 @@
          'estimations-kanban',
          'estimations',
          'invoices',
+         'invoices.index',
          'invoice-grid',
          'company',
          'subscription',
@@ -422,19 +432,21 @@
          'states',
          'sources',
          'roles-permissions',
+         'roles.index',
          'projects',
          'project-reports',
          'project-grid',
          'project-details',
          'project-dashboard',
          'pipeline',
-         'premission',
+         'permissions',
          'pages',
          'pages-list',
          'membership-transactions',
          'membership-addons',
          'membership-plans',
          'manage-users',
+         'users.index',
          'leads-kanban',
          'leads-details',
          'leads-reports',
@@ -446,6 +458,7 @@
          'estimations-kanban',
          'estimations',
          'invoices',
+         'invoices.index',
          'invoice-grid',
          'invoice',
          'dashboard',
@@ -549,3 +562,26 @@
 
  <!-- Main CSS -->
  <link rel="stylesheet" href="{{ url('build/css/style.css') }}">
+
+ <style>
+    .swal2-container {
+        max-width: 400px;
+        justify-content: flex-start;
+     }
+
+    .swal2-container .swal2-show {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .swal-toast-success {
+        background-color:rgb(250, 255, 250) !important; 
+    }
+    .swal-toast-error {
+        background-color:rgb(255, 250, 250) !important; 
+    }
+    
+    #invoice_list td {
+        vertical-align: baseline;
+    }
+ </style>

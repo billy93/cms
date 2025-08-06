@@ -1036,9 +1036,12 @@
                         <a class="dropdown-item" href="profile.html">
                             <i class="ti ti-user-pin"></i> My Profile
                         </a>
-                        <a class="dropdown-item" href="login.html">
-                            <i class="ti ti-lock"></i> Logout
-                        </a>
+                        <form action="{{ route('auth.signout') }}" method="post">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <i class="ti ti-lock"></i> Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </li>

@@ -17,8 +17,10 @@ class UserRequest extends ApiFormRequest
 
         switch ($action) {
             case 'api.users.create':
+            case 'users.create':
                 return $this->createRules();
             case 'api.users.update':
+            case 'users.update':
                 return $this->updateRules();
             default:
                 return [];
@@ -28,7 +30,7 @@ class UserRequest extends ApiFormRequest
     protected function createRules()
     {
         return [
-            'name' => 'required|string|max:2',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:20',
@@ -40,16 +42,9 @@ class UserRequest extends ApiFormRequest
 
     protected function updateRules()
     {
-        return [
+        return array_merge([
             'id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $this->route('user_id'),
-            'password' => 'sometimes|string|min:6',
-            'phone' => 'nullable|string|max:20',
-            'location' => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive,suspended',
-            'role_id' => 'nullable|exists:roles,id',
-        ];
+        ], $this->createRules());
     }
 
     public function messages()
@@ -60,22 +55,22 @@ class UserRequest extends ApiFormRequest
 
             'name.required' => 'The name field is required.',
             'name.string' => 'The name must be a string.',
-            'name.max' => 'The name may not be greater than 255 characters.',
+            'name.max' => 'The name may not be greater than :max characters.',
 
             'email.required' => 'The email field is required.',
             'email.email' => 'The email must be a valid email address.',
-            'email.max' => 'The email may not be greater than 255 characters.',
+            'email.max' => 'The email may not be greater than :max characters.',
             'email.unique' => 'The email has already been taken.',
 
             'password.required' => 'The password field is required.',
             'password.string' => 'The password must be a string.',
-            'password.min' => 'The password must be at least 6 characters.',
+            'password.min' => 'The password must be at least :min characters.',
 
             'phone.string' => 'The phone must be a string.',
-            'phone.max' => 'The phone may not be greater than 20 characters.',
+            'phone.max' => 'The phone may not be greater than :max characters.',
 
             'location.string' => 'The location must be a string.',
-            'location.max' => 'The location may not be greater than 255 characters.',
+            'location.max' => 'The location may not be greater than :max characters.',
 
             'status.required' => 'The status field is required.',
             'status.in' => 'The status must be one of: active, inactive, suspended.',
