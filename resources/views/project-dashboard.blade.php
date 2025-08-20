@@ -52,9 +52,9 @@
                                 <table class="table dataTable" id="recent-project">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>Priority</th>
-                                            <th>Name</th>
                                             <th>Client</th>
+                                            <th>Name</th>
+                                            <th>Priority</th>
                                             <th>Due Date</th>
                                         </tr>
                                     </thead>

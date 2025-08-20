@@ -66,7 +66,7 @@
                         <div class="mb-3">
                             <button type="submit" class="btn btn-primary w-100">Sign In</button>
                         </div>
-                        <!-- <div class="mb-3">
+                         <!-- <div class="mb-3">
                             <h6>New on our platform?<a href="{{url('register')}}" class="text-purple link-hover"> Create an account</a></h6>
                         </div>
                         <div class="form-set-login or-text mb-3">
@@ -88,7 +88,7 @@
                                     <img class="img-fluid  m-1" src="{{ URL::asset('/build/img/icons/apple-logo.svg')}}" alt="Apple">
                                 </a>
                             </div>
-                        </div> -->
+                        </div>  -->
                         <div class="text-center">
                             <p class="fw-medium text-gray">Copyright &copy; 2025 - PCMI</p>
                         </div>

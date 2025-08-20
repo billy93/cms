@@ -42,10 +42,10 @@
             <ul>
                 <li class="clinicdropdown">
                     <a href="{{ url('profile') }}">
-                        <img src="{{ URL::asset('/build/img/profiles/avatar-14.jpg') }}" class="img-fluid" alt="Profile">
+                        <img src="{{ URL::asset('/build/img/profiles/Ryan-Circle.png') }}" class="img-fluid" alt="Profile">
                         <div class="user-names">
-                            <h5>Adrian Davies</h5>
-                            <h6>Tech Lead</h6>
+                            <h5>Ryan Fadilla</h5>
+                            <h6>Project Manager</h6>
                         </div>
                     </a>
                 </li>
@@ -157,16 +157,25 @@
                         </ul>
                 </li> -->
                 <li>
-                    <h6 class="submenu-hdr">CRM</h6>
+                    <h6 class="submenu-hdr">Products</h6>
+                    <ul>
+                        <li><a class="{{ Request::is('manage-users') ? 'active' : '' }}"
+                                href="{{ url('manage-users') }}"><i class="ti ti-users"></i><span>Categories</span></a></li>
+                        <li><a class="{{ Request::is('roles-permissions') ? 'active' : '' }}"
+                                href="{{ url('roles-permissions') }}"><i class="ti ti-navigation-cog"></i><span>Products & Pricing</span></a></li>
+                    </ul>
+                </li>
+                <li>
+                    <h6 class="submenu-hdr">MAIN</h6>
                     <ul>
                         <li>
                             <a class="{{ Request::is('contacts', 'contact-grid', 'contact-details') ? 'active' : '' }}"
-                                href="{{ url('contacts') }}"><i class="ti ti-user-up"></i><span>Contacts</span></a>
+                                href="{{ url('contacts') }}"><i class="ti ti-user-up"></i><span>Bank Accounts</span></a>
                         </li>
                         <li>
                             <a class="{{ Request::is('companies', 'companies-grid', 'company-details') ? 'active' : '' }}"
                                 href="{{ url('companies') }}"><i
-                                    class="ti ti-building-community"></i><span>Companies</span></a>
+                                    class="ti ti-building-community"></i><span>Clients</span></a>
                         </li>
                         <li>
                             <a class="{{ Request::is('customers') ? 'active' : '' }}"
@@ -178,10 +187,10 @@
                                 href="{{ url('suppliers') }}"><i
                                     class="ti ti-truck"></i><span>Suppliers</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"
                                 href="{{ url('deals') }}"><i class="ti ti-medal"></i><span>Deals</span></a>
-                        </li>
+                        </li> -->
                         <!-- <li>
                             <a class="{{ Request::is('leads', 'leads-details', 'leads-kanban') ? 'active' : '' }}"
                                 href="{{ url('leads') }}"><i class="ti ti-chart-arcs"></i><span>Leads</span></a>
@@ -199,25 +208,25 @@
                             <a class="{{ Request::is('projects', 'project-details', 'project-grid') ? 'active' : '' }}"
                                 href="{{ url('projects') }}"><i class="ti ti-atom-2"></i><span>Projects</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('tasks', 'tasks-completed', 'tasks-important') ? 'active' : '' }}"
                                 href="{{ url('tasks') }}"><i class="ti ti-list-check"></i><span>Tasks</span></a>
-                        </li>
+                        </li> -->
                         <li>
                             <a class="{{ Request::is('proposals', 'proposals-grid') ? 'active' : '' }}"
                                 href="{{ url('proposals') }}">
                                 <i class="ti ti-file-star"></i><span>Proposals</span></a>
                         </li>
-                        <li>
+                         <!-- <li>
                             <a class="{{ Request::is('contracts', 'contracts-grid') ? 'active' : '' }}"
                                 href="{{ url('contracts') }}">
                                 <i class="ti ti-file-check"></i><span>Contracts</span></a>
-                        </li>
-                        <li>
+                        </li> -->
+                        <!-- <li>
                             <a class="{{ Request::is('estimations', 'estimations-kanban') ? 'active' : '' }}"
                                 href="{{ url('estimations') }}">
-                                <i class="ti ti-file-report"></i><span>Estimations</span></a>
-                        </li>
+                                <i class="ti ti-file-report"></i><span>Products</span></a>
+                        </li> -->
                         <li>
                             <a class="{{ Request::is('invoices', 'invoice-grid') ? 'active' : '' }}"
                                 href="{{ url('invoices') }}">
@@ -232,7 +241,7 @@
                             <a class="{{ Request::is('payments') ? 'active' : '' }}" href="{{ url('payments') }}">
                                 <i class="ti ti-report-money"></i><span>Payments</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('analytics') ? 'active' : '' }}" href="{{ url('analytics') }}"><i
                                     class="ti ti-chart-bar"></i><span>Analytics</span></a>
                         </li>
@@ -240,7 +249,7 @@
                             <a class="{{ Request::is('activities', 'activity-calls', 'activity-mail', 'activity-meeting', 'activity-task') ? 'active' : '' }}"
                                 href="{{ url('activities') }}"><i
                                     class="ti ti-bounce-right"></i><span>Activities</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                 </li>
                 <!-- <li>
