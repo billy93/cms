@@ -1,4 +1,4 @@
- <!-- jQuery -->
+<!-- jQuery -->
  <script src="{{ URL::asset('build/js/jquery-3.7.1.min.js') }}"></script>
 
  <!-- Bootstrap Core JS -->
@@ -598,7 +598,7 @@
      <script src="{{ URL::asset('build/plugins/stickynote/sticky.js') }}"></script>
  @endif
 
- @if (Route::is(['ui-toasts']))
+ @if (Route::is(['ui-toasts', 'categories', 'products']))
      <!-- Mask JS -->
      <script src="{{ URL::asset('build/plugins/toastr/toastr.min.js') }}"></script>
      <script src="{{ URL::asset('build/plugins/toastr/toastr.js') }}"></script>

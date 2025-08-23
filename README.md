@@ -78,7 +78,7 @@ This command will start:
 ```bash
 # Only Laravel server
 php artisan serve
-
+php -S localhost:8000 -t public
 # Only build assets
 npm run dev
 ```

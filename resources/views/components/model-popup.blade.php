@@ -12535,6 +12535,212 @@
     <!-- /Delete User -->
 @endif
 
+@if(Route::is(['categories']))
+<!-- Add Category Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_add_category">
+    <div class="offcanvas-header border-bottom">
+        <h4 class="offcanvas-title">Add New Category</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="add-category-form">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Category Name <span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" id="category_name" name="name" placeholder="Enter category name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- /Add Category Offcanvas -->
+
+<!-- Edit Category Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_edit_category">
+    <div class="offcanvas-header border-bottom">
+        <h4 class="offcanvas-title">Edit Category</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="edit-category-form">
+            <input type="hidden" id="edit_category_id" name="id">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Category Name <span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" id="edit_category_name" name="name" placeholder="Enter category name" required>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- /Edit Category Offcanvas -->
+@endif
+
+@if(Route::is(['products']))
+<!-- Add Product Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_add_product">
+    <div class="offcanvas-header border-bottom">
+        <h4 class="offcanvas-title">Add New Product</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="add-product-form">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Product Name <span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" id="product_name" name="name" placeholder="Enter product name" required>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Description</label>
+                        <textarea class="form-control" id="product_description" name="description" rows="3" placeholder="Enter product description"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="product_category_id" name="category_id" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Supplier</label>
+                        <select class="form-select" id="product_supplier_id" name="supplier_id">
+                            <option value="">Select Supplier</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label">Price <span class="text-danger">*</span></label>
+                        <input class="form-control" type="number" step="0.01" id="product_price" name="price" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label">Stock Quantity</label>
+                        <input class="form-control" type="number" id="product_stock_quantity" name="stock_quantity" placeholder="0">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">SKU</label>
+                        <input class="form-control" type="text" id="product_sku" name="sku" placeholder="Enter SKU">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="product_is_active" name="is_active" checked>
+                            <label class="form-check-label" for="product_is_active">
+                                Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- /Add Product Offcanvas -->
+
+<!-- Edit Product Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_edit_product">
+    <div class="offcanvas-header border-bottom">
+        <h4 class="offcanvas-title">Edit Product</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="edit-product-form">
+            <input type="hidden" id="edit_product_id" name="id">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Product Name <span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" id="edit_product_name" name="name" placeholder="Enter product name" required>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Description</label>
+                        <textarea class="form-control" id="edit_product_description" name="description" rows="3" placeholder="Enter product description"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="edit_product_category_id" name="category_id" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">Supplier</label>
+                        <select class="form-select" id="edit_product_supplier_id" name="supplier_id">
+                            <option value="">Select Supplier</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label">Price <span class="text-danger">*</span></label>
+                        <input class="form-control" type="number" step="0.01" id="edit_product_price" name="price" placeholder="0.00" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label">Stock Quantity</label>
+                        <input class="form-control" type="number" id="edit_product_stock_quantity" name="stock_quantity" placeholder="0">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label">SKU</label>
+                        <input class="form-control" type="text" id="edit_product_sku" name="sku" placeholder="Enter SKU">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_product_is_active" name="is_active">
+                            <label class="form-check-label" for="edit_product_is_active">
+                                Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- /Edit Product Offcanvas -->
+@endif
+
 @if(Route::is(['contact-reports']))
 	<!-- Download Report -->
     <div class="modal custom-modal fade" id="download_report" role="dialog">

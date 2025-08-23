@@ -7,7 +7,7 @@
     z-index: 1001;
     @include position(fixed,56px,null,0,0);
     @include transition(all 0.5s ease);
-    width: 276px;
+    width: 320px;
     @include respond-below(custom991) {
         margin-left: -575px;
         @include transition(all 0.4s ease);
@@ -639,7 +639,7 @@
             @include transition(all 0.2s ease);
         }
         .sidebar {
-            width: 276px;
+            width: 320px;
             .sidebar-menu{
                ul{
                    > li{
@@ -660,7 +660,7 @@
             }
         }
         .header-left{
-            width: 276px;
+            width: 320px;
         }
     }
     #toggle_btn {

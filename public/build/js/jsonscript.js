@@ -3792,237 +3792,237 @@ $(document).ready(function () {
 
 	// Proposals List
 
-	// if ($('#invoices-list').length > 0) {
-	// 	$('#invoices-list').DataTable({
-	// 		"bFilter": false,
-	// 		"bInfo": false,
-	// 		"ordering": true,
-	// 		"autoWidth": true,
-	// 		"language": {
-	// 			search: ' ',
-	// 			sLengthMenu: '_MENU_',
-	// 			searchPlaceholder: "Search",
-	// 			info: "_START_ - _END_ of _TOTAL_ items",
-	// 			"lengthMenu": "Show _MENU_ entries",
-	// 			paginate: {
-	// 				next: 'Next <i class=" fa fa-angle-right"></i> ',
-	// 				previous: '<i class="fa fa-angle-left"></i> Prev '
-	// 			},
-	// 		},
-	// 		initComplete: (settings, json) => {
-	// 			$('.dataTables_paginate').appendTo('.datatable-paginate');
-	// 			$('.dataTables_length').appendTo('.datatable-length');
-	// 		},
-	// 		"data": [
-	// 			{
-	// 				"id": "#1254058",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "NovaWave LLC",
-	// 				"pro_img": "build/img/priority/truellysel.svg",
-	// 				"client_img": "build/img/icons/company-icon-01.svg",
-	// 				"amount": "$2,15,000",
-	// 				"paid_amount": "$2,15,000",
-	// 				"balance_amount": "$0",
-	// 				"project": "Truelysell",
-	// 				"due_date": "21 May 2024",
-	// 				"status": "1",
-	// 				"status_name": "Partially Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254057",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "BlueSky Industries",
-	// 				"pro_img": "build/img/priority/project-01.svg",
-	// 				"client_img": "build/img/icons/company-icon-10.svg",
-	// 				"amount": "$1,45,000",
-	// 				"paid_amount": "$1,45,000",
-	// 				"balance_amount": "$0",
-	// 				"project": "Dreamschat",
-	// 				"due_date": "19 Oct 2023",
-	// 				"status": "0",
-	// 				"status_name": "Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254056",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "Silver Hawk",
-	// 				"pro_img": "build/img/priority/best.svg",
-	// 				"client_img": "build/img/icons/company-icon-08.svg",
-	// 				"amount": "$2,15,000",
-	// 				"paid_amount": "$1,00,000",
-	// 				"balance_amount": "$1,15,000",
-	// 				"project": "Truelysell",
-	// 				"due_date": "24 Oct 2023",
-	// 				"status": "1",
-	// 				"status_name": "Partially Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254055",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "Summit  Peak",
-	// 				"pro_img": "build/img/priority/project-02.svg",
-	// 				"client_img": "build/img/icons/company-icon-07.svg",
-	// 				"amount": "$4,80,380",
-	// 				"paid_amount": "$4,80,380",
-	// 				"balance_amount": "$0",
-	// 				"project": "Servbook",
-	// 				"due_date": "10 Nov 2023",
-	// 				"status": "0",
-	// 				"status_name": "Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254054",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "RiverStone Ventur",
-	// 				"pro_img": "build/img/priority/project-01.svg",
-	// 				"client_img": "build/img/icons/company-icon-05.svg",
-	// 				"amount": "$2,12,000",
-	// 				"paid_amount": "$0",
-	// 				"balance_amount": "$2,12,000",
-	// 				"project": "DreamPOS",
-	// 				"due_date": "18 Nov 2023",
-	// 				"status": "2",
-	// 				"status_name": "Unpaid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254053",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "CoastalStar Co.",
-	// 				"pro_img": "build/img/priority/dream-pos.svg",
-	// 				"client_img": "build/img/icons/company-icon-04.svg",
-	// 				"amount": "$3,50,000",
-	// 				"paid_amount": "$1,50,000",
-	// 				"balance_amount": "$2,00,000",
-	// 				"project": "Kofejob",
-	// 				"due_date": "20 Nov 2023",
-	// 				"status": "1",
-	// 				"status_name": "Partially Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254052",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "HarborView",
-	// 				"pro_img": "build/img/priority/servbook.svg",
-	// 				"client_img": "build/img/icons/company-icon-03.svg",
-	// 				"amount": "$1,23,000",
-	// 				"paid_amount": "$1,23,000",
-	// 				"balance_amount": "$1,23,000",
-	// 				"project": "Doccure",
-	// 				"due_date": "07 Dec 2023",
-	// 				"status": "3",
-	// 				"status_name": "Overdue",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254051",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "Golden Gate Ltd",
-	// 				"pro_img": "build/img/priority/truellysell.svg",
-	// 				"client_img": "build/img/icons/company-icon-02.svg",
-	// 				"amount": "$3,12,500",
-	// 				"paid_amount": "$3,12,500",
-	// 				"balance_amount": "$0",
-	// 				"project": "Best@laundry",
-	// 				"due_date": "14 Dec 2023",
-	// 				"status": "0",
-	// 				"status_name": "Paid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254050",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "Redwood Inc",
-	// 				"pro_img": "build/img/priority/dreamchat.svg",
-	// 				"client_img": "build/img/icons/company-icon-09.svg",
-	// 				"amount": "$4,18,000",
-	// 				"paid_amount": "$0",
-	// 				"balance_amount": "$4,18,000",
-	// 				"project": "Dreamsports",
-	// 				"due_date": "22 Dec 2023",
-	// 				"open_till": "07 Dec 2024 ",
-	// 				"status": "2",
-	// 				"status_name": "Unpaid",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": "#1254049",
-	// 				"si_no": "",
-	// 				"star": "",
-	// 				"sent_to": "NovaWave LLC",
-	// 				"pro_img": "build/img/priority/dreamchat.svg",
-	// 				"client_img": "build/img/icons/company-icon-01.svg",
-	// 				"amount": "$5,00,000",
-	// 				"paid_amount": "$5,00,000",
-	// 				"balance_amount": "$0",
-	// 				"project": "Truelysell",
-	// 				"due_date": "28 Dec 2023",
-	// 				"status": "0",
-	// 				"status_name": "Paid",
-	// 				"Action": ""
-	// 			},
-	// 		],
-	// 		"columns": [
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-	// 				}
-	// 			},
+	if ($('#invoices-list').length > 0) {
+		$('#invoices-list').DataTable({
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"data": [
+				{
+					"id": "#1254058",
+					"si_no": "",
+					"star": "",
+					"sent_to": "NovaWave LLC",
+					"pro_img": "build/img/priority/truellysel.svg",
+					"client_img": "build/img/icons/company-icon-01.svg",
+					"amount": "$2,15,000",
+					"paid_amount": "$2,15,000",
+					"balance_amount": "$0",
+					"project": "Truelysell",
+					"due_date": "21 May 2024",
+					"status": "1",
+					"status_name": "Partially Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254057",
+					"si_no": "",
+					"star": "",
+					"sent_to": "BlueSky Industries",
+					"pro_img": "build/img/priority/project-01.svg",
+					"client_img": "build/img/icons/company-icon-10.svg",
+					"amount": "$1,45,000",
+					"paid_amount": "$1,45,000",
+					"balance_amount": "$0",
+					"project": "Dreamschat",
+					"due_date": "19 Oct 2023",
+					"status": "0",
+					"status_name": "Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254056",
+					"si_no": "",
+					"star": "",
+					"sent_to": "Silver Hawk",
+					"pro_img": "build/img/priority/best.svg",
+					"client_img": "build/img/icons/company-icon-08.svg",
+					"amount": "$2,15,000",
+					"paid_amount": "$1,00,000",
+					"balance_amount": "$1,15,000",
+					"project": "Truelysell",
+					"due_date": "24 Oct 2023",
+					"status": "1",
+					"status_name": "Partially Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254055",
+					"si_no": "",
+					"star": "",
+					"sent_to": "Summit  Peak",
+					"pro_img": "build/img/priority/project-02.svg",
+					"client_img": "build/img/icons/company-icon-07.svg",
+					"amount": "$4,80,380",
+					"paid_amount": "$4,80,380",
+					"balance_amount": "$0",
+					"project": "Servbook",
+					"due_date": "10 Nov 2023",
+					"status": "0",
+					"status_name": "Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254054",
+					"si_no": "",
+					"star": "",
+					"sent_to": "RiverStone Ventur",
+					"pro_img": "build/img/priority/project-01.svg",
+					"client_img": "build/img/icons/company-icon-05.svg",
+					"amount": "$2,12,000",
+					"paid_amount": "$0",
+					"balance_amount": "$2,12,000",
+					"project": "DreamPOS",
+					"due_date": "18 Nov 2023",
+					"status": "2",
+					"status_name": "Unpaid",
+					"Action": ""
+				},
+				{
+					"id": "#1254053",
+					"si_no": "",
+					"star": "",
+					"sent_to": "CoastalStar Co.",
+					"pro_img": "build/img/priority/dream-pos.svg",
+					"client_img": "build/img/icons/company-icon-04.svg",
+					"amount": "$3,50,000",
+					"paid_amount": "$1,50,000",
+					"balance_amount": "$2,00,000",
+					"project": "Kofejob",
+					"due_date": "20 Nov 2023",
+					"status": "1",
+					"status_name": "Partially Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254052",
+					"si_no": "",
+					"star": "",
+					"sent_to": "HarborView",
+					"pro_img": "build/img/priority/servbook.svg",
+					"client_img": "build/img/icons/company-icon-03.svg",
+					"amount": "$1,23,000",
+					"paid_amount": "$1,23,000",
+					"balance_amount": "$1,23,000",
+					"project": "Doccure",
+					"due_date": "07 Dec 2023",
+					"status": "3",
+					"status_name": "Overdue",
+					"Action": ""
+				},
+				{
+					"id": "#1254051",
+					"si_no": "",
+					"star": "",
+					"sent_to": "Golden Gate Ltd",
+					"pro_img": "build/img/priority/truellysell.svg",
+					"client_img": "build/img/icons/company-icon-02.svg",
+					"amount": "$3,12,500",
+					"paid_amount": "$3,12,500",
+					"balance_amount": "$0",
+					"project": "Best@laundry",
+					"due_date": "14 Dec 2023",
+					"status": "0",
+					"status_name": "Paid",
+					"Action": ""
+				},
+				{
+					"id": "#1254050",
+					"si_no": "",
+					"star": "",
+					"sent_to": "Redwood Inc",
+					"pro_img": "build/img/priority/dreamchat.svg",
+					"client_img": "build/img/icons/company-icon-09.svg",
+					"amount": "$4,18,000",
+					"paid_amount": "$0",
+					"balance_amount": "$4,18,000",
+					"project": "Dreamsports",
+					"due_date": "22 Dec 2023",
+					"open_till": "07 Dec 2024 ",
+					"status": "2",
+					"status_name": "Unpaid",
+					"Action": ""
+				},
+				{
+					"id": "#1254049",
+					"si_no": "",
+					"star": "",
+					"sent_to": "NovaWave LLC",
+					"pro_img": "build/img/priority/dreamchat.svg",
+					"client_img": "build/img/icons/company-icon-01.svg",
+					"amount": "$5,00,000",
+					"paid_amount": "$5,00,000",
+					"balance_amount": "$0",
+					"project": "Truelysell",
+					"due_date": "28 Dec 2023",
+					"status": "0",
+					"status_name": "Paid",
+					"Action": ""
+				},
+			],
+			"columns": [
+				{
+					"render": function (data, type, row) {
+						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
+					}
+				},
 
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<a href="#" class="title-name">' + row['id'] + '</a>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<h2 class="d-flex align-items-center"><a href="company-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['client_img'] + '" alt="User Image"></a><a href="company-details">' + row['sent_to'] + '</a></h2>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['pro_img'] + '" alt="User Image"></a><a href="#">' + row['project'] + '</a></h2>';
-	// 				}
-	// 			},
-	// 			{ "data": "due_date" },
-	// 			{ "data": "amount" },
-	// 			{ "data": "paid_amount" },
-	// 			{ "data": "balance_amount" },
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					if (row['status'] == "0") { var class_name = "success"; var status_name = "Paid" } else if (row['status'] == "1") { var class_name = "warning"; var status_name = "Partially Paid" } else if (row['status'] == "2") { var class_name = "danger"; var status_name = "Unpaid" } else if (row['status'] == "3") { var class_name = "violet"; var status_name = "Overdue" }
-	// 					return '<span class="badge badge-pill badge-status bg-' + class_name + '" >' + status_name + '</span>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item " data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" href="#"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i> Delete</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a></div></div>';
-	// 				}
-	// 			},
+				{
+					"render": function (data, type, row) {
+						return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<a href="#" class="title-name">' + row['id'] + '</a>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<h2 class="d-flex align-items-center"><a href="company-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['client_img'] + '" alt="User Image"></a><a href="company-details">' + row['sent_to'] + '</a></h2>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['pro_img'] + '" alt="User Image"></a><a href="#">' + row['project'] + '</a></h2>';
+					}
+				},
+				{ "data": "due_date" },
+				{ "data": "amount" },
+				{ "data": "paid_amount" },
+				{ "data": "balance_amount" },
+				{
+					"render": function (data, type, row) {
+						if (row['status'] == "0") { var class_name = "success"; var status_name = "Paid" } else if (row['status'] == "1") { var class_name = "warning"; var status_name = "Partially Paid" } else if (row['status'] == "2") { var class_name = "danger"; var status_name = "Unpaid" } else if (row['status'] == "3") { var class_name = "violet"; var status_name = "Overdue" }
+						return '<span class="badge badge-pill badge-status bg-' + class_name + '" >' + status_name + '</span>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item " data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" href="#"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i> Delete</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a></div></div>';
+					}
+				},
 
-	// 		]
+			]
 
-	// 	});
-	// }
+		});
+	}
 
 	// Contracts List
 
@@ -5183,27 +5183,28 @@ $(document).ready(function () {
 	}
 
 	// Manage Users List
-	// if ($('#manage-users-list').length > 0) {
+
+	// if($('#manage-users-list').length > 0) {
 	// 	$('#manage-users-list').DataTable({
-	// 		"bFilter": false,
-	// 		"bInfo": false,
-	// 		"ordering": true,
-	// 		"autoWidth": true,
-	// 		"language": {
-	// 			search: ' ',
-	// 			sLengthMenu: '_MENU_',
-	// 			searchPlaceholder: "Search",
-	// 			info: "_START_ - _END_ of _TOTAL_ items",
-	// 			"lengthMenu": "Show _MENU_ entries",
-	// 			paginate: {
-	// 				next: 'Next <i class=" fa fa-angle-right"></i> ',
-	// 				previous: '<i class="fa fa-angle-left"></i> Prev '
-	// 			},
-	// 		},
-	// 		initComplete: (settings, json) => {
-	// 			$('.dataTables_paginate').appendTo('.datatable-paginate');
-	// 			$('.dataTables_length').appendTo('.datatable-length');
-	// 		},
+	// 		"bFilter": false, 
+	// 			"bInfo": false,
+	// 				"ordering": true,
+	// 			"autoWidth": true,
+	// 			"language": {
+	// 				search: ' ',
+	// 				sLengthMenu: '_MENU_',
+	// 				searchPlaceholder: "Search",
+	// 				info: "_START_ - _END_ of _TOTAL_ items",
+	// 				"lengthMenu":     "Show _MENU_ entries",
+	// 				paginate: {
+	// 					next: 'Next <i class=" fa fa-angle-right"></i> ',
+	// 					previous: '<i class="fa fa-angle-left"></i> Prev '
+	// 				},
+	// 				},
+	// 			initComplete: (settings, json)=>{
+	// 				$('.dataTables_paginate').appendTo('.datatable-paginate');
+	// 				$('.dataTables_length').appendTo('.datatable-length');
+	// 			},  
 	// 			"data":[
 	// 				{
 	// 					"id" : 1,
@@ -5386,250 +5387,251 @@ $(document).ready(function () {
 
 	// Delete Request
 
-	// if ($('#delete_request').length > 0) {
-	// 	$('#delete_request').DataTable({
-	// 		"bFilter": false,
-	// 		"bInfo": false,
-	// 		"ordering": true,
-	// 		"autoWidth": true,
-	// 		"language": {
-	// 			search: ' ',
-	// 			sLengthMenu: '_MENU_',
-	// 			searchPlaceholder: "Search",
-	// 			info: "_START_ - _END_ of _TOTAL_ items",
-	// 			lengthMenu: "Show _MENU_ entries",
-	// 			paginate: {
-	// 				next: 'Next <i class=" fa fa-angle-right"></i> ',
-	// 				previous: '<i class="fa fa-angle-left"></i> Prev '
-	// 			},
-	// 		},
-	// 		initComplete: (settings, json) => {
-	// 			$('.dataTables_paginate').appendTo('.datatable-paginate');
-	// 			$('.dataTables_length').appendTo('.datatable-length');
-	// 		},
-	// 		"data": [
-	// 			{
-	// 				"id": 1,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Darlee Robertson",
-	// 				"customer_image": "build/img/profiles/avatar-19.jpg",
-	// 				"customer_no": "Facility Manager",
-	// 				"created": "25 Sep 2023, 12:12 pm",
-	// 				"delete_request": "25 Sep 2023, 12:12 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 2,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Sharon Roy",
-	// 				"customer_image": "build/img/profiles/avatar-20.jpg",
-	// 				"customer_no": "Installer",
-	// 				"created": "27 Sep 2023, 07:40 am",
-	// 				"delete_request": "27 Sep 2023, 07:40 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 3,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Vaughan",
-	// 				"customer_image": "build/img/profiles/avatar-21.jpg",
-	// 				"customer_no": "Senior  Manager",
-	// 				"created": "29 Sep 2023, 08:20 am",
-	// 				"delete_request": "29 Sep 2023, 08:20 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 4,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Jessica",
-	// 				"customer_image": "build/img/profiles/avatar-23.jpg",
-	// 				"customer_no": "Test Engineer",
-	// 				"created": "25 Sep 2023, 12:12 pm",
-	// 				"delete_request": "25 Sep 2023, 12:12 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 5,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Carol Thomas",
-	// 				"customer_image": "build/img/profiles/avatar-16.jpg",
-	// 				"customer_no": "UI /UX Designer",
-	// 				"created": "02 Oct 2023, 10:10 am",
-	// 				"delete_request": "02 Oct 2023, 10:10 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 6,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Dawn Mercha",
-	// 				"customer_image": "build/img/profiles/avatar-22.jpg",
-	// 				"customer_no": "Technician",
-	// 				"created": "17 Oct 2023, 04:25 pm",
-	// 				"delete_request": "17 Oct 2023, 04:25 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 7,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Rachel Hampton",
-	// 				"customer_image": "build/img/profiles/avatar-24.jpg",
-	// 				"customer_no": "Software Developer",
-	// 				"created": "28 Oct 2023, 07:16 am",
-	// 				"delete_request": "28 Oct 2023, 07:16 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 8,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Jonelle Curtiss",
-	// 				"customer_image": "build/img/profiles/avatar-25.jpg",
-	// 				"customer_no": "Supervisor",
-	// 				"created": "08 Nov 2023, 06:10 am",
-	// 				"delete_request": "08 Nov 2023, 06:10 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 9,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Jonathan",
-	// 				"customer_image": "build/img/profiles/avatar-26.jpg",
-	// 				"customer_no": "Team Lead Dev",
-	// 				"created": "15 Nov 2023, 11:50 am",
-	// 				"delete_request": "15 Nov 2023, 11:50 am",
-	// 				"Action": ""
-	// 			}
-	// 			,
-	// 			{
-	// 				"id": 10,
-	// 				"si_no": "",
-	// 				"select": "",
-	// 				"customer_name": "Brook",
-	// 				"customer_image": "build/img/profiles/avatar-01.jpg",
-	// 				"customer_no": "Team Lead Dev ",
-	// 				"created": "25 Nov 2023, 06:34 pm",
-	// 				"delete_request": "25 Nov 2023, 06:34 pm",
-	// 				"Action": ""
-	// 			}
+	if ($('#delete_request').length > 0) {
+		$('#delete_request').DataTable({
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				lengthMenu: "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"data": [
+				{
+					"id": 1,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Darlee Robertson",
+					"customer_image": "build/img/profiles/avatar-19.jpg",
+					"customer_no": "Facility Manager",
+					"created": "25 Sep 2023, 12:12 pm",
+					"delete_request": "25 Sep 2023, 12:12 pm",
+					"Action": ""
+				},
+				{
+					"id": 2,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Sharon Roy",
+					"customer_image": "build/img/profiles/avatar-20.jpg",
+					"customer_no": "Installer",
+					"created": "27 Sep 2023, 07:40 am",
+					"delete_request": "27 Sep 2023, 07:40 am",
+					"Action": ""
+				},
+				{
+					"id": 3,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Vaughan",
+					"customer_image": "build/img/profiles/avatar-21.jpg",
+					"customer_no": "Senior  Manager",
+					"created": "29 Sep 2023, 08:20 am",
+					"delete_request": "29 Sep 2023, 08:20 am",
+					"Action": ""
+				},
+				{
+					"id": 4,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Jessica",
+					"customer_image": "build/img/profiles/avatar-23.jpg",
+					"customer_no": "Test Engineer",
+					"created": "25 Sep 2023, 12:12 pm",
+					"delete_request": "25 Sep 2023, 12:12 pm",
+					"Action": ""
+				},
+				{
+					"id": 5,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Carol Thomas",
+					"customer_image": "build/img/profiles/avatar-16.jpg",
+					"customer_no": "UI /UX Designer",
+					"created": "02 Oct 2023, 10:10 am",
+					"delete_request": "02 Oct 2023, 10:10 am",
+					"Action": ""
+				},
+				{
+					"id": 6,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Dawn Mercha",
+					"customer_image": "build/img/profiles/avatar-22.jpg",
+					"customer_no": "Technician",
+					"created": "17 Oct 2023, 04:25 pm",
+					"delete_request": "17 Oct 2023, 04:25 pm",
+					"Action": ""
+				},
+				{
+					"id": 7,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Rachel Hampton",
+					"customer_image": "build/img/profiles/avatar-24.jpg",
+					"customer_no": "Software Developer",
+					"created": "28 Oct 2023, 07:16 am",
+					"delete_request": "28 Oct 2023, 07:16 am",
+					"Action": ""
+				},
+				{
+					"id": 8,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Jonelle Curtiss",
+					"customer_image": "build/img/profiles/avatar-25.jpg",
+					"customer_no": "Supervisor",
+					"created": "08 Nov 2023, 06:10 am",
+					"delete_request": "08 Nov 2023, 06:10 am",
+					"Action": ""
+				},
+				{
+					"id": 9,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Jonathan",
+					"customer_image": "build/img/profiles/avatar-26.jpg",
+					"customer_no": "Team Lead Dev",
+					"created": "15 Nov 2023, 11:50 am",
+					"delete_request": "15 Nov 2023, 11:50 am",
+					"Action": ""
+				}
+				,
+				{
+					"id": 10,
+					"si_no": "",
+					"select": "",
+					"customer_name": "Brook",
+					"customer_image": "build/img/profiles/avatar-01.jpg",
+					"customer_no": "Team Lead Dev ",
+					"created": "25 Nov 2023, 06:34 pm",
+					"delete_request": "25 Nov 2023, 06:34 pm",
+					"Action": ""
+				}
 
-	// 		],
-	// 		"columns": [
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
-	// 				}
-	// 			},
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<h2 class="d-flex align-items-center"><a href="javascript:void(0);" class="avatar avatar-sm me-2"><img class="w-auto h-auto" src="' + row['customer_image'] + '" alt="User Image"></a><a href="javascript:void(0);" class="d-flex flex-column">' + row['customer_name'] + ' <span class="text-default">' + row['customer_no'] + ' </span></a></h2>';
-	// 				}
-	// 			},
-	// 			{ "data": "created" },
-	// 			{ "data": "delete_request" },
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<span class="badge badge-tag badge-success-light" data-bs-toggle="modal" data-bs-target="#delete_account">Confirm</span>';
-	// 				}
-	// 			},
-	// 		]
-	// 	});
-	// }
+			],
+			"columns": [
+				{
+					"render": function (data, type, row) {
+						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
+					}
+				},
+				{
+					"render": function (data, type, row) {
+						return '<h2 class="d-flex align-items-center"><a href="javascript:void(0);" class="avatar avatar-sm me-2"><img class="w-auto h-auto" src="' + row['customer_image'] + '" alt="User Image"></a><a href="javascript:void(0);" class="d-flex flex-column">' + row['customer_name'] + ' <span class="text-default">' + row['customer_no'] + ' </span></a></h2>';
+					}
+				},
+				{ "data": "created" },
+				{ "data": "delete_request" },
+				{
+					"render": function (data, type, row) {
+						return '<span class="badge badge-tag badge-success-light" data-bs-toggle="modal" data-bs-target="#delete_account">Confirm</span>';
+					}
+				},
+			]
+		});
+	}
 
 	// Roles
-	// if ($('#roles_list').length > 0) {
-	// 	$('#roles_list').DataTable({
-	// 		"bFilter": false,
-	// 		"bInfo": false,
-	// 		"ordering": true,
-	// 		"autoWidth": true,
-	// 		"language": {
-	// 			search: ' ',
-	// 			sLengthMenu: '_MENU_',
-	// 			searchPlaceholder: "Search",
-	// 			info: "_START_ - _END_ of _TOTAL_ items",
-	// 			"lengthMenu": "Show _MENU_ entries",
-	// 			paginate: {
-	// 				next: 'Next <i class=" fa fa-angle-right"></i> ',
-	// 				previous: '<i class="fa fa-angle-left"></i> Prev '
-	// 			},
-	// 		},
-	// 		initComplete: (settings, json) => {
-	// 			$('.dataTables_paginate').appendTo('.datatable-paginate');
-	// 			$('.dataTables_length').appendTo('.datatable-length');
-	// 		},
-	// 		"data": [
-	// 			{
-	// 				"id": 1,
-	// 				"si_no": "",
-	// 				"roles_name": "Admin",
-	// 				"created": "25 Sep 2023, 12:12 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 2,
-	// 				"si_no": "",
-	// 				"roles_name": "Company Owner",
-	// 				"created": "27 Sep 2023, 07:40 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 3,
-	// 				"si_no": "",
-	// 				"roles_name": "Deal Owner",
-	// 				"created": "29 Sep 2023, 08:20 am",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 4,
-	// 				"si_no": "",
-	// 				"roles_name": "Project Manager",
-	// 				"created": "25 Sep 2023, 12:12 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 5,
-	// 				"si_no": "",
-	// 				"roles_name": "Client",
-	// 				"created": "15 Oct 2023, 06:18 pm",
-	// 				"Action": ""
-	// 			},
-	// 			{
-	// 				"id": 6,
-	// 				"si_no": "",
-	// 				"roles_name": "Lead",
-	// 				"created": "29 Oct 2023, 03:10 pm",
-	// 				"Action": ""
-	// 			}
-	// 		],
-	// 		"columns": [
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-	// 				}
-	// 			},
-	// 			{ "data": "roles_name" },
-	// 			{ "data": "created" },
-	// 			{
-	// 				"render": function (data, type, row) {
-	// 					return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#edit_role"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="permission"><i class="ti ti-shield text-success"></i> Permission</a></div></div>';
-	// 				}
-	// 			}
-	// 		]
-	// 	});
-	// }
+
+	if ($('#roles_list').length > 0) {
+		$('#roles_list').DataTable({
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"data": [
+				{
+					"id": 1,
+					"si_no": "",
+					"roles_name": "Admin",
+					"created": "25 Sep 2023, 12:12 pm",
+					"Action": ""
+				},
+				{
+					"id": 2,
+					"si_no": "",
+					"roles_name": "Company Owner",
+					"created": "27 Sep 2023, 07:40 am",
+					"Action": ""
+				},
+				{
+					"id": 3,
+					"si_no": "",
+					"roles_name": "Deal Owner",
+					"created": "29 Sep 2023, 08:20 am",
+					"Action": ""
+				},
+				{
+					"id": 4,
+					"si_no": "",
+					"roles_name": "Project Manager",
+					"created": "25 Sep 2023, 12:12 pm",
+					"Action": ""
+				},
+				{
+					"id": 5,
+					"si_no": "",
+					"roles_name": "Client",
+					"created": "15 Oct 2023, 06:18 pm",
+					"Action": ""
+				},
+				{
+					"id": 6,
+					"si_no": "",
+					"roles_name": "Lead",
+					"created": "29 Oct 2023, 03:10 pm",
+					"Action": ""
+				}
+			],
+			"columns": [
+				{
+					"render": function (data, type, row) {
+						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
+					}
+				},
+				{ "data": "roles_name" },
+				{ "data": "created" },
+				{
+					"render": function (data, type, row) {
+						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#edit_role"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="permission"><i class="ti ti-shield text-success"></i> Permission</a></div></div>';
+					}
+				}
+			]
+		});
+	}
 
 	// Permission
 
@@ -5802,6 +5804,48 @@ $(document).ready(function () {
 	// 		]
 	// 	});
 	// }
+
+	if ($('#permission_list').length > 0) {
+		$('#permission_list').DataTable({
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"ajax": {
+				"url": "/api/permission",  // Sesuaikan dengan URL route controller
+				"type": "GET",
+				"dataSrc": function (json) {
+					// Pastikan data diubah ke format yang sesuai untuk DataTable
+					return json.data;
+				}
+			},
+			"columns": [
+				{ "data": "checkbox", "orderable": false },
+				{ "data": "module" },
+				{ "data": "sub_module" },
+				{ "data": "create_checkbox", "orderable": false },
+				{ "data": "edit_checkbox", "orderable": false },
+				{ "data": "view_checkbox", "orderable": false },
+				{ "data": "delete_checkbox", "orderable": false },
+				{ "data": "allow_checkbox", "orderable": false }
+			]
+		});
+	}
 
 	// Contact messages
 
@@ -8790,189 +8834,5 @@ $(document).ready(function () {
 		});
 	}
 
-	// Manage Users DataTable
-	if ($('#manage-users-list').length > 0) {
-		$('#manage-users-list').DataTable({
-			serverSide: true,
-			processing: true,
-			ajax: {
-				url: $('#manage-users-list').data("url")
-			},
-			order: [[0, 'desc']],
-			"bFilter": false,
-			"bInfo": true,
-			"ordering": true,
-			"autoWidth": true,
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				// info: "_START_ - _END_ of _TOTAL_ items",
-				// "lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-				$('.dataTables_info').appendTo('.datatable-info');
-			},
-			columns: [
-				{ data: "name", name: "name" },
-				{ data: "email", name: "email" },
-				{ data: "phone", name: "phone" },
-				{ data: "location", name: "location" },
-				{ data: "created_at", name: "created_at" },
-				{
-					data: "status",
-					name: "status",
-					"render": function (data, type, row) {
-						if (row['status'] == "active") { var class_name = "bg-success"; var status_name = "Active" } else if (row['status'] == "inactive") { var class_name = "bg-warning"; var status_name = "Inactive" } else { var class_name = "bg-danger"; var status_name = "Suspended" }
-						return '<span class="badge badge-pill badge-status ' + class_name + '" >' + status_name + '</span>';
-					}
-				},
-				{ data: "actions", name: "actions" }
-			]
-		});
-	}
 
-	// Roles DataTable
-	if ($('#roles_list').length > 0) {
-		$('#roles_list').DataTable({
-			serverSide: true,
-			processing: true,
-			ajax: {
-				url: $('#roles_list').data("url")
-			},
-			order: [[0, 'desc']],
-			"bFilter": false,
-			"bInfo": true,
-			"ordering": true,
-			"autoWidth": true,
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				// info: "_START_ - _END_ of _TOTAL_ items",
-				// "lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-				$('.dataTables_info').appendTo('.datatable-info');
-			},
-			columns: [
-				{ data: "name", name: "name" },
-				{ data: "description", name: "description" },
-				{ data: "created_at", name: "created_at" },
-				{ data: "actions", name: "actions" }
-			]
-		});
-	}
-
-
-	// Permissions DataTable
-	if ($('#permission_list').length > 0) {
-		console.log($('#permission_list').data("url"));
-
-		$('#permission_list').DataTable({
-			serverSide: true,
-			processing: true,
-			ajax: {
-				url: $('#permission_list').data("url")
-			},
-			order: [[0, 'desc']],
-			"bFilter": false,
-			"bInfo": true,
-			"ordering": true,
-			"autoWidth": true,
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				// info: "_START_ - _END_ of _TOTAL_ items",
-				// "lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-				$('.dataTables_info').appendTo('.datatable-info');
-			},
-			columns: [
-				{ data: "module", name: "module" },
-				{ data: "description", name: "description" },
-				{ data: "created_at", name: "created_at" },
-				{ data: "actions", name: "actions" }
-			]
-		});
-	}
-
-
-	// Invoice DataTable
-	if ($('#invoice_list').length > 0) {
-		$('#invoice_list').DataTable({
-			serverSide: true,
-			processing: true,
-			ajax: {
-				url: $('#invoice_list').data("url")
-			},
-			order: [[0, 'desc']],
-			"bFilter": false,
-			"bInfo": true,
-			"ordering": true,
-			"autoWidth": true,
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				// info: "_START_ - _END_ of _TOTAL_ items",
-				// "lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-				$('.dataTables_info').appendTo('.datatable-info');
-			},
-			columns: [
-				{ data: "id", name: "id" },
-				{ data: "client_id", name: "client_id" },
-				{ data: "project_id", name: "project_id" },
-				{ data: "created_at", name: "created_at" },
-				{ data: "bill_to", name: "bill_to" },
-				{ data: "ship_to", name: "ship_to" },
-				{ data: "amount", name: "amount" },
-				{ data: "currency", name: "currency" },
-				{ data: "invoice_date", name: "invoice_date" },
-				{ data: "due_date", name: "due_date" },
-				{ data: "payment_method", name: "payment_method" },
-				{ data: "description", name: "description" },
-				{ data: "status", name: "status" },
-				{ data: "signature_name", name: "signature_name" },
-				{ data: "signature_image", name: "signature_image" },
-				{ data: "notes", name: "notes" },
-				{ data: "terms_and_conditions", name: "terms_and_conditions" },
-				{ data: "subtotal", name: "subtotal" },
-				{ data: "discount", name: "discount" },
-				{ data: "extra_discount", name: "extra_discount" },
-				{ data: "tax", name: "tax" },
-				{ data: "total", name: "total" },
-				{ data: "actions", name: "actions" }
-			]
-		});
-	}
 });
-

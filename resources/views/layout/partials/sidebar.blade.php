@@ -159,10 +159,10 @@
                 <li>
                     <h6 class="submenu-hdr">Products</h6>
                     <ul>
-                        <li><a class="{{ Request::is('manage-users') ? 'active' : '' }}"
-                                href="{{ url('manage-users') }}"><i class="ti ti-users"></i><span>Categories</span></a></li>
-                        <li><a class="{{ Request::is('roles-permissions') ? 'active' : '' }}"
-                                href="{{ url('roles-permissions') }}"><i class="ti ti-navigation-cog"></i><span>Products & Pricing</span></a></li>
+                        <li><a class="{{ Request::is('categories') ? 'active' : '' }}"
+                                href="{{ url('categories') }}"><i class="ti ti-category"></i><span>Categories</span></a></li>
+                        <li><a class="{{ Request::is('products') ? 'active' : '' }}"
+                                href="{{ url('products') }}"><i class="ti ti-package"></i><span>Products</span></a></li>
                     </ul>
                 </li>
                 <li>

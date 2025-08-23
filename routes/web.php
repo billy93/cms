@@ -7,6 +7,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BOQController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Middlewares\AuthMiddleware;
 
 // Route::get('deals-dashboard', [CustomAuthController::class, 'deals-dashboard']); 
@@ -48,6 +50,27 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         // Route::get('/{user_id}', 'read')->name('read');  
         // Route::put('/{user_id}', 'update')->name('update');  
         // Route::delete('/{user_id}', 'delete')->name('delete');  
+    });
+
+    Route::prefix('categories')->name('categories.')
+    ->controller(CategoryController::class)->group(function () {
+        Route::post('/', 'store')->name('store');
+        Route::get('/all', 'index')->name('all');
+        Route::get('/active', 'getActiveCategories')->name('active');
+        Route::get('/{id}', 'show')->name('show');
+        Route::put('/{id}', 'update')->name('update');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+    });
+
+    Route::prefix('products')->name('products.')
+    ->controller(ProductController::class)->group(function () {
+        Route::post('/', 'store')->name('store');
+        Route::get('/all', 'index')->name('all');
+        Route::get('/category/{category}', 'getByCategory')->name('by-category');
+        Route::get('/supplier/{supplier}', 'getBySupplier')->name('by-supplier');
+        Route::get('/{id}', 'show')->name('show');
+        Route::put('/{id}', 'update')->name('update');
+        Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
     Route::prefix('roles-permissions')->name('roles.')
@@ -552,6 +575,10 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     Route::get('/projects', function () {
         return view('projects');
     })->name('projects');  
+
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
+
+    Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     Route::get('/register-2', function () {
         return view('register-2');

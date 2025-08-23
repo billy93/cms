@@ -1,4 +1,4 @@
- <!-- CSRF Token -->
+<!-- CSRF Token -->
  <meta name="csrf-token" content="{{ csrf_token() }}">
 
  <!-- Apple Touch Icon -->
@@ -478,7 +478,7 @@
  <link rel="stylesheet" href="{{ url('build/plugins/swiper/swiper.min.css') }}">
  @endif
 
- @if (Route::is(['ui-toasts']))
+ @if (Route::is(['ui-toasts', 'categories', 'products']))
  <!-- Toatr CSS -->
  <link rel="stylesheet" href="{{ url('build/plugins/toastr/toatr.css') }}">
  @endif

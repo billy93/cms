@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,
-            InvoiceSeeder::class
+            InvoiceSeeder::class,
+            ProductCategorySeeder::class,
+            ProductSeeder::class
         ]);
     }
 }

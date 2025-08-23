@@ -10,6 +10,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPicController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPicController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 
 Route::middleware('api')->group(function() {
   Route::post('signin', [AuthController:: class, 'signinJson'])->name('api.auth.signin');
@@ -94,6 +96,26 @@ Route::prefix('suppliers')->name('api.suppliers.')->group(function() {
     Route::delete('{picId}', [SupplierPicController::class, 'destroy'])->name('destroy');
     Route::get('active/list', [SupplierPicController::class, 'getActivePics'])->name('active');
   });
+});
+
+// Category routes
+Route::prefix('categories')->name('api.categories.')->group(function() {
+  Route::get('/all', [CategoryController::class, 'apiIndex'])->name('index');
+  Route::post('/store', [CategoryController::class, 'store'])->name('store');
+  Route::get('/show/{id}', [CategoryController::class, 'show'])->name('show');
+  Route::post('/update/{id}', [CategoryController::class, 'update'])->name('update');
+  Route::delete('/delete/{id}', [CategoryController::class, 'destroy'])->name('destroy');
+  Route::get('/active', [CategoryController::class, 'getActiveCategories'])->name('active');
+});
+
+// Product routes
+Route::prefix('products')->name('api.products.')->group(function() {
+  Route::get('/all', [ProductController::class, 'apiIndex'])->name('index');
+  Route::post('/store', [ProductController::class, 'store'])->name('store');
+  Route::get('/show/{id}', [ProductController::class, 'show'])->name('show');
+  Route::post('/update/{id}', [ProductController::class, 'update'])->name('update');
+  Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy');
+  Route::get('/active', [ProductController::class, 'getActiveProducts'])->name('active');
 });
 
 // Test route
