@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +33,7 @@ class ProductController extends Controller
     public function apiIndex(Request $request): JsonResponse
     {
         try {
-            $query = Product::with('supplier');
+            $query = Product::with(['supplier', 'category']);
 
             // Search functionality
             if ($request->filled('search')) {
@@ -44,8 +45,8 @@ class ProductController extends Controller
             }
 
             // Filter by category
-            if ($request->filled('category') && $request->category !== 'all') {
-                $query->where('category', $request->category);
+            if ($request->filled('category_id') && $request->category_id !== 'all') {
+                $query->where('category_id', $request->category_id);
             }
 
             // Filter by supplier
@@ -86,7 +87,7 @@ class ProductController extends Controller
                 'description' => 'nullable|string',
                 'unit' => 'required|string|max:32',
                 'base_cost' => 'required|numeric|min:0',
-                'category' => 'required|in:RAW_MATERIAL,FINISHED_GOODS,SERVICE',
+                'category_id' => 'required|exists:product_categories,id',
                 'supplier_id' => 'required|exists:suppliers,id'
             ]);
 
@@ -105,14 +106,14 @@ class ProductController extends Controller
                 'description' => $request->description,
                 'unit' => $request->unit,
                 'base_cost' => $request->base_cost,
-                'category' => $request->category,
+                'category_id' => $request->category_id,
                 'supplier_id' => $request->supplier_id
             ]);
 
             DB::commit();
 
-            // Load supplier relationship
-            $product->load('supplier');
+            // Load relationships
+            $product->load(['supplier', 'category']);
 
             return response()->json([
                 'success' => true,
@@ -135,7 +136,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $product = Product::with('supplier')->findOrFail($id);
+            $product = Product::with(['supplier', 'category'])->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -162,7 +163,7 @@ class ProductController extends Controller
                 'description' => 'nullable|string',
                 'unit' => 'required|string|max:32',
                 'base_cost' => 'required|numeric|min:0',
-                'category' => 'required|in:RAW_MATERIAL,FINISHED_GOODS,SERVICE',
+                'category_id' => 'required|exists:product_categories,id',
                 'supplier_id' => 'required|exists:suppliers,id'
             ]);
 
@@ -181,14 +182,14 @@ class ProductController extends Controller
                 'description' => $request->description,
                 'unit' => $request->unit,
                 'base_cost' => $request->base_cost,
-                'category' => $request->category,
+                'category_id' => $request->category_id,
                 'supplier_id' => $request->supplier_id
             ]);
 
             DB::commit();
 
-            // Load supplier relationship
-            $product->load('supplier');
+            // Load relationships
+            $product->load(['supplier', 'category']);
 
             return response()->json([
                 'success' => true,
@@ -234,11 +235,11 @@ class ProductController extends Controller
     /**
      * Get products by category
      */
-    public function getByCategory($category): JsonResponse
+    public function getByCategory($categoryId): JsonResponse
     {
         try {
-            $products = Product::with('supplier')
-                ->where('category', $category)
+            $products = Product::with(['supplier', 'category'])
+                ->where('category_id', $categoryId)
                 ->orderBy('name', 'asc')
                 ->get();
 
@@ -261,7 +262,7 @@ class ProductController extends Controller
     public function getBySupplier($supplierId): JsonResponse
     {
         try {
-            $products = Product::with('supplier')
+            $products = Product::with(['supplier', 'category'])
                 ->where('supplier_id', $supplierId)
                 ->orderBy('name', 'asc')
                 ->get();
@@ -275,6 +276,27 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving products: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all product categories
+     */
+    public function getCategories(): JsonResponse
+    {
+        try {
+            $categories = ProductCategory::orderBy('name', 'asc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving categories: ' . $e->getMessage()
             ], 500);
         }
     }

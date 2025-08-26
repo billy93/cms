@@ -45,7 +45,7 @@
                                             </ul>
                                         </div>
                                     </div>  
-                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_supplier"><i class="ti ti-square-rounded-plus me-2"></i>Add Supplier</a>
+                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#add_supplier"><i class="ti ti-square-rounded-plus me-2"></i>Add Supplier</a>
                                 </div>
                             </div>
                         </div>
@@ -220,17 +220,13 @@
 </div>
 <!-- /Page Wrapper -->
 
-<!-- Add Supplier Modal -->
-<div class="modal custom-modal fade" id="add_supplier" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Supplier</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<!-- Add Supplier Offcanvas -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="add_supplier">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Add New Supplier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
                 <form id="add_supplier_form">
                     <div class="row">
                         <div class="col-md-6">
@@ -331,23 +327,17 @@
                         <button type="submit" class="btn btn-primary submit-btn">Add Supplier</button>
                     </div>
                 </form>
-            </div>
-        </div>
     </div>
 </div>
-<!-- /Add Supplier Modal -->
+<!-- /Add Supplier Offcanvas -->
 
-<!-- Edit Supplier Modal -->
-<div class="modal custom-modal fade" id="edit_supplier" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Supplier</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<!-- Edit Supplier Offcanvas -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="edit_supplier">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Edit Supplier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
                 <form id="edit_supplier_form">
                     <input type="hidden" name="supplier_id" id="edit_supplier_id">
                     <div class="row">
@@ -489,8 +479,8 @@ $(document).ready(function() {
     // Load suppliers on page load
     loadSuppliers();
     
-    // Auto-generate supplier code when add modal opens
-    $('#add_supplier').on('show.bs.modal', function() {
+    // Auto-generate supplier code when add offcanvas opens
+    $('#add_supplier').on('show.bs.offcanvas', function() {
         // Generate suggested supplier code
         const timestamp = Date.now().toString().slice(-6);
         const suggestedCode = 'SUPP' + timestamp;
@@ -667,7 +657,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if(response.success) {
-                    $('#add_supplier').modal('hide');
+                    const addOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('add_supplier'));
+                    addOffcanvas.hide();
                     $('#add_supplier_form')[0].reset();
                     showAlert('success', 'Supplier added successfully');
                     loadSuppliers();
@@ -712,7 +703,8 @@ $(document).ready(function() {
                     $('#edit_status').val(supplier.status);
                     $('#edit_address').val(supplier.address);
                     $('#edit_notes').val(supplier.notes);
-                    $('#edit_supplier').modal('show');
+                    const editOffcanvas = new bootstrap.Offcanvas(document.getElementById('edit_supplier'));
+                    editOffcanvas.show();
                 }
             },
             error: function() {
@@ -736,7 +728,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if(response.success) {
-                    $('#edit_supplier').modal('hide');
+                    const editOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('edit_supplier'));
+                    editOffcanvas.hide();
                     showAlert('success', 'Supplier updated successfully');
                     loadSuppliers();
                 } else {
@@ -818,4 +811,4 @@ $(document).ready(function() {
     }
 });
 </script>
-@endpush 
+@endpush

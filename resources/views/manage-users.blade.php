@@ -491,9 +491,8 @@
 			</button>
 		</div>
 		<div class="offcanvas-body">
-			<form action="{{ route('users.create') }}" id="addUser">							
-				@csrf
-				@method('POST')
+			<form action="{{ route('users.create') }}" id="addUser" method="POST">							
+			@csrf
 				<div>
 					<!-- Basic Info -->
 					<div>
@@ -590,9 +589,10 @@
 					</button>
 			</div>
 			<div class="offcanvas-body">
-					<form action="{{ route('users.index') }}" id="editUser">							
-							@csrf
-							@method('PUT')
+					<form action="" id="editUser" method="POST">							
+				@csrf
+				@method('PUT')
+				<input type="hidden" name="user_id" id="edit_user_id">
 			
 							<!-- Basic Info -->
 							<div>

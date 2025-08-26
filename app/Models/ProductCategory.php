@@ -10,6 +10,11 @@ class ProductCategory extends Model
         'name'
     ];
 
-    // Note: Products table uses enum 'category' field, not foreign key relationship
-    // If you need to get products by category name, use where clause on category field
+    /**
+     * Get the products for the category.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'category_id');
+    }
 }

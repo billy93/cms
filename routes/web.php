@@ -66,7 +66,8 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     ->controller(ProductController::class)->group(function () {
         Route::post('/', 'store')->name('store');
         Route::get('/all', 'index')->name('all');
-        Route::get('/category/{category}', 'getByCategory')->name('by-category');
+        Route::get('/categories', 'getCategories')->name('categories');
+        Route::get('/category/{categoryId}', 'getByCategory')->name('by-category');
         Route::get('/supplier/{supplier}', 'getBySupplier')->name('by-supplier');
         Route::get('/{id}', 'show')->name('show');
         Route::put('/{id}', 'update')->name('update');

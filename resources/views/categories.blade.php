@@ -92,14 +92,14 @@
                                 <table class="table" id="categories-table">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th class="no-sort">
+                                            <!-- <th class="no-sort">
                                                 <label class="checkboxs"><input type="checkbox" id="select-all"><span class="checkmarks"></span></label>
-                                            </th>
+                                            </th> -->
                                             <th>Name</th>
-                                            <th>Products Count</th>
+                                            <!-- <th>Products Count</th> -->
                                             <th>Created Date</th>
                                             <th>Status</th>
-                                            <th class="text-end">Action</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="categories-tbody">
@@ -138,6 +138,15 @@ $(document).ready(function() {
     let sortBy = 'created_at';
     let sortOrder = 'desc';
 
+    function showAlert(type, message) {
+        if(type === 'success') {
+            alert('Success: ' + message);
+        } else {
+            alert('Error: ' + message);
+        }
+    }
+        
+
     // Load categories
     function loadCategories() {
         $.ajax({
@@ -160,7 +169,7 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error('Error loading categories:', xhr);
-                toastr.error('Failed to load categories');
+                showAlert('error', 'Failed to load categories');
             }
         });
     }
@@ -183,25 +192,11 @@ $(document).ready(function() {
             let row = `
                 <tr>
                     <td>
-                        <label class="checkboxs">
-                            <input type="checkbox" class="category-checkbox" data-id="${category.id}">
-                            <span class="checkmarks"></span>
-                        </label>
-                    </td>
-                    <td>
                         <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md">
-                                <span class="avatar-title rounded-circle bg-primary text-white">
-                                    ${category.name.charAt(0).toUpperCase()}
-                                </span>
-                            </div>
                             <div class="ms-2">
                                 <h6 class="fw-medium">${category.name}</h6>
                             </div>
                         </div>
-                    </td>
-                    <td>
-                        <span class="badge bg-light text-dark">${category.products_count || 0} Products</span>
                     </td>
                     <td>${new Date(category.created_at).toLocaleDateString()}</td>
                     <td>
@@ -230,8 +225,41 @@ $(document).ready(function() {
 
     // Render pagination
     function renderPagination(pagination) {
-        // Implementation for pagination rendering
-        $('.datatable-length').html(`Showing ${pagination.current_page} of ${pagination.last_page} pages`);
+        let infoHtml = `Showing ${((pagination.current_page - 1) * pagination.per_page) + 1} to ${Math.min(pagination.current_page * pagination.per_page, pagination.total)} of ${pagination.total} entries`;
+        $('.datatable-length').html(infoHtml);
+
+        let linksHtml = '';
+        if(pagination.last_page > 1) {
+            linksHtml += '<ul class="pagination">';
+            
+            // Previous button
+            if(pagination.current_page > 1) {
+                linksHtml += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(${pagination.current_page - 1})">Previous</a></li>`;
+            }
+
+            // Page numbers
+            for(let i = 1; i <= pagination.last_page; i++) {
+                if(i === pagination.current_page) {
+                    linksHtml += `<li class="page-item active"><a class="page-link" href="#">${i}</a></li>`;
+                } else {
+                    linksHtml += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
+                }
+            }
+
+            // Next button
+            if(pagination.current_page < pagination.last_page) {
+                linksHtml += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(${pagination.current_page + 1})">Next</a></li>`;
+            }
+            
+            linksHtml += '</ul>';
+        }
+        $('.datatable-paginate').html(linksHtml);
+    }
+
+    // Go to page function
+    window.goToPage = function(page) {
+        currentPage = page;
+        loadCategories();
     }
 
     // Search functionality
@@ -279,7 +307,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    toastr.success(response.message);
+                    //toastr.success(response.message);
+                    showAlert('success', response.message);
                     $('#offcanvas_add_category').offcanvas('hide');
                     $('#add-category-form')[0].reset();
                     loadCategories();
@@ -289,10 +318,10 @@ $(document).ready(function() {
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     Object.keys(errors).forEach(function(key) {
-                        toastr.error(errors[key][0]);
+                        showAlert('error', errors[key][0]);
                     });
                 } else {
-                    toastr.error('Failed to create category');
+                    showAlert('error', 'Failed to create category');
                 }
             }
         });
@@ -317,7 +346,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                toastr.error('Failed to load category data');
+                showAlert('error', 'Failed to load category data');
             }
         });
     });
@@ -341,7 +370,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    toastr.success(response.message);
+                    showAlert('success', response.message);
+                    // toastr.success(response.message);
                     $('#offcanvas_edit_category').offcanvas('hide');
                     loadCategories();
                 }
@@ -350,10 +380,10 @@ $(document).ready(function() {
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     Object.keys(errors).forEach(function(key) {
-                        toastr.error(errors[key][0]);
+                        showAlert('error', errors[key][0]);
                     });
                 } else {
-                    toastr.error('Failed to update category');
+                    showAlert('error', 'Failed to update category');
                 }
             }
         });
@@ -374,15 +404,15 @@ $(document).ready(function() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        toastr.success(response.message);
+                        showAlert('success', response.message);
                         loadCategories();
                     }
                 },
                 error: function(xhr) {
                     if (xhr.responseJSON && xhr.responseJSON.message) {
-                        toastr.error(xhr.responseJSON.message);
+                        showAlert('error', xhr.responseJSON.message);
                     } else {
-                        toastr.error('Failed to delete category');
+                        showAlert('error', 'Failed to delete category');
                     }
                 }
             });

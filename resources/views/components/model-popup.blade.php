@@ -12537,7 +12537,7 @@
 
 @if(Route::is(['categories']))
 <!-- Add Category Offcanvas -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_add_category">
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add_category">
     <div class="offcanvas-header border-bottom">
         <h4 class="offcanvas-title">Add New Category</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -12562,7 +12562,7 @@
 <!-- /Add Category Offcanvas -->
 
 <!-- Edit Category Offcanvas -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_edit_category">
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit_category">
     <div class="offcanvas-header border-bottom">
         <h4 class="offcanvas-title">Edit Category</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -12590,7 +12590,7 @@
 
 @if(Route::is(['products']))
 <!-- Add Product Offcanvas -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_add_product">
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add_product">
     <div class="offcanvas-header border-bottom">
         <h4 class="offcanvas-title">Add New Product</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -12632,19 +12632,19 @@
                         <input class="form-control" type="number" step="0.01" id="product_price" name="price" placeholder="0.00" required>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label">Stock Quantity</label>
                         <input class="form-control" type="number" id="product_stock_quantity" name="stock_quantity" placeholder="0">
                     </div>
-                </div>
-                <div class="col-md-12">
+                </div> -->
+                <!-- <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label">SKU</label>
                         <input class="form-control" type="text" id="product_sku" name="sku" placeholder="Enter SKU">
                     </div>
-                </div>
-                <div class="col-md-12">
+                </div> -->
+                <!-- <div class="col-md-12">
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="product_is_active" name="is_active" checked>
@@ -12653,7 +12653,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
@@ -12665,7 +12665,7 @@
 <!-- /Add Product Offcanvas -->
 
 <!-- Edit Product Offcanvas -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas_edit_product">
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit_product">
     <div class="offcanvas-header border-bottom">
         <h4 class="offcanvas-title">Edit Product</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -12708,19 +12708,19 @@
                         <input class="form-control" type="number" step="0.01" id="edit_product_price" name="price" placeholder="0.00" required>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label">Stock Quantity</label>
                         <input class="form-control" type="number" id="edit_product_stock_quantity" name="stock_quantity" placeholder="0">
                     </div>
-                </div>
-                <div class="col-md-12">
+                </div> -->
+                <!-- <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label">SKU</label>
                         <input class="form-control" type="text" id="edit_product_sku" name="sku" placeholder="Enter SKU">
                     </div>
-                </div>
-                <div class="col-md-12">
+                </div> -->
+                <!-- <div class="col-md-12">
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="edit_product_is_active" name="is_active">
@@ -12729,7 +12729,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>

@@ -42,9 +42,16 @@ class UserRequest extends ApiFormRequest
 
     protected function updateRules()
     {
-        return array_merge([
+        return [
             'id' => 'required|exists:users,id',
-        ], $this->createRules());
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $this->route('user_id'),
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'location' => 'nullable|string|max:255',
+            'status' => 'required|in:active,inactive,suspended',
+            'role_id' => 'nullable|exists:roles,id',
+        ];
     }
 
     public function messages()

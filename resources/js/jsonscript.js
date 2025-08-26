@@ -294,6 +294,220 @@ $(document).ready(function () {
 			]
 		});
 
+// User Management Form Handlers
+$(document).ready(function() {
+    // Handle Add User Form Submission
+    $('#addUser').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const formData = new FormData(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.text();
+        
+        // Clear previous errors
+        form.find('.invalid-feedback').hide().text('');
+        form.find('.form-control').removeClass('is-invalid');
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).text('Creating...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // Close offcanvas
+                    $('#offcanvas_add').offcanvas('hide');
+                    
+                    // Reset form
+                    form[0].reset();
+                    
+                    // Reload DataTable
+                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+                        $('#manage-users-list').DataTable().ajax.reload();
+                    }
+                    
+                    // Show success message
+                    toastr.success(response.message || 'User created successfully!');
+                } else {
+                    toastr.error(response.message || 'Failed to create user');
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    // Validation errors
+                    const errors = xhr.responseJSON.errors;
+                    $.each(errors, function(field, messages) {
+                        const input = form.find('[name="' + field + '"]');
+                        const feedback = form.find('[data-name="' + field + '"]');
+                        
+                        input.addClass('is-invalid');
+                        feedback.text(messages[0]).show();
+                    });
+                } else {
+                    toastr.error('An error occurred while creating user');
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+    
+    // Handle Edit User Form Submission
+    $('#editUser').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const formData = new FormData(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.text();
+        const userId = form.find('#edit_user_id').val();
+        
+        // Clear previous errors
+        form.find('.invalid-feedback').hide().text('');
+        form.find('.form-control').removeClass('is-invalid');
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).text('Saving...');
+        
+        $.ajax({
+            url: '/users/' + userId,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // Close offcanvas
+                    $('#offcanvas_edit').offcanvas('hide');
+                    
+                    // Reload DataTable
+                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+                        $('#manage-users-list').DataTable().ajax.reload();
+                    }
+                    
+                    // Show success message
+                    toastr.success(response.message || 'User updated successfully!');
+                } else {
+                    toastr.error(response.message || 'Failed to update user');
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    // Validation errors
+                    const errors = xhr.responseJSON.errors;
+                    $.each(errors, function(field, messages) {
+                        const input = form.find('[name="' + field + '"]');
+                        const feedback = form.find('[data-name="' + field + '"]');
+                        
+                        input.addClass('is-invalid');
+                        feedback.text(messages[0]).show();
+                    });
+                } else {
+                    toastr.error('An error occurred while updating user');
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+    
+    // Handle Edit Button Click in DataTable
+    $(document).on('click', '.edit-user-btn', function() {
+        const userId = $(this).data('user-id');
+        
+        // Fetch user data
+        $.ajax({
+            url: '/users/' + userId,
+            method: 'GET',
+            success: function(response) {
+                if (response.success && response.data) {
+                    const user = response.data;
+                    const form = $('#editUser');
+                    
+                    // Populate form fields
+                    form.find('#edit_user_id').val(user.id);
+                    form.find('[name="name"]').val(user.name);
+                    form.find('[name="email"]').val(user.email);
+                    form.find('[name="phone"]').val(user.phone || '');
+                    form.find('[name="location"]').val(user.location || '');
+                    form.find('[name="role_id"]').val(user.role_id || '').trigger('change');
+                    
+                    // Set status radio button
+                    if (user.status) {
+                        form.find('[name="status"][value="' + user.status + '"]').prop('checked', true);
+                    }
+                    
+                    // Update form action
+                    form.attr('action', '/users/' + userId);
+                    
+                    // Show edit offcanvas
+                    $('#offcanvas_edit').offcanvas('show');
+                } else {
+                    toastr.error('Failed to load user data');
+                }
+            },
+            error: function() {
+                toastr.error('An error occurred while loading user data');
+            }
+        });
+    });
+    
+    // Handle Delete User
+    let deleteUserId = null;
+    
+    $(document).on('click', '.delete-user-btn', function() {
+        deleteUserId = $(this).data('user-id');
+        $('#delete_user_modal').modal('show');
+    });
+    
+    $('#trigger_delete_user').on('click', function() {
+        if (!deleteUserId) return;
+        
+        const btn = $(this);
+        const originalText = btn.text();
+        
+        btn.prop('disabled', true).text('Deleting...');
+        
+        $.ajax({
+            url: '/users/' + deleteUserId,
+            method: 'DELETE',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#delete_user_modal').modal('hide');
+                    
+                    // Reload DataTable
+                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+                        $('#manage-users-list').DataTable().ajax.reload();
+                    }
+                    
+                    toastr.success(response.message || 'User deleted successfully!');
+                } else {
+                    toastr.error(response.message || 'Failed to delete user');
+                }
+            },
+            error: function() {
+                toastr.error('An error occurred while deleting user');
+            },
+            complete: function() {
+                btn.prop('disabled', false).text(originalText);
+                deleteUserId = null;
+            }
+        });
+    });
+});
+
+});
+
 	}
 
 	// Companies List
@@ -5184,206 +5398,66 @@ $(document).ready(function () {
 
 	// Manage Users List
 
-	// if($('#manage-users-list').length > 0) {
-	// 	$('#manage-users-list').DataTable({
-	// 		"bFilter": false, 
-	// 			"bInfo": false,
-	// 				"ordering": true,
-	// 			"autoWidth": true,
-	// 			"language": {
-	// 				search: ' ',
-	// 				sLengthMenu: '_MENU_',
-	// 				searchPlaceholder: "Search",
-	// 				info: "_START_ - _END_ of _TOTAL_ items",
-	// 				"lengthMenu":     "Show _MENU_ entries",
-	// 				paginate: {
-	// 					next: 'Next <i class=" fa fa-angle-right"></i> ',
-	// 					previous: '<i class="fa fa-angle-left"></i> Prev '
-	// 				},
-	// 				},
-	// 			initComplete: (settings, json)=>{
-	// 				$('.dataTables_paginate').appendTo('.datatable-paginate');
-	// 				$('.dataTables_length').appendTo('.datatable-length');
-	// 			},  
-	// 			"data":[
-	// 				{
-	// 					"id" : 1,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Darlee Robertson",
-	// 					"customer_image" : "build/img/profiles/avatar-19.jpg",
-	// 					"customer_no" : "Facility Manager",
-	// 					"phone" : "1234567890",
-	// 					"email" : "robertson@example.com",
-	// 					"location" : "Germany",
-	// 					"created" : "25 Sep 2023, 12:12 pm",
-	// 					"last_activity": "2 mins ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 2,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Sharon Roy",
-	// 					"customer_image" : "build/img/profiles/avatar-20.jpg",
-	// 					"customer_no" : "Installer",
-	// 					"phone" : "+1 989757485",
-	// 					"email" : "sharon@example.com",
-	// 					"location" : "USA",
-	// 					"created" : "27 Sep 2023, 07:40 am",
-	// 					"last_activity": "5 mins ago",
-	// 					"status" : "1",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 3,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Vaughan",
-	// 					"customer_image" : "build/img/profiles/avatar-21.jpg",
-	// 					"customer_no" : "Senior  Manager",
-	// 					"phone" : "+1 546555455",
-	// 					"email" : "vaughan12@example.com",
-	// 					"location" : "Canada",
-	// 					"created" : "29 Sep 2023, 08:20 am",
-	// 					"last_activity": "2 days ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 4,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Jessica",
-	// 					"customer_image" : "build/img/profiles/avatar-23.jpg",
-	// 					"customer_no" : "Test Engineer",
-	// 					"phone" : "+1 454478787",
-	// 					"email" : "jessica13@example.com",
-	// 					"location" : "India",
-	// 					"created" : "25 Sep 2023, 12:12 pm",
-	// 					"last_activity": "2 mins ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 5,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Carol Thomas",
-	// 					"customer_image" : "build/img/profiles/avatar-16.jpg",
-	// 					"customer_no" : "UI /UX Designer",
-	// 					"phone" : "+1 124547845",
-	// 					"email" : "caroltho3@example.com",
-	// 					"location" : "China",
-	// 					"created" : "02 Oct 2023, 10:10 am",
-	// 					"last_activity": "Online",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 6,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Dawn Mercha",
-	// 					"customer_image" : "build/img/profiles/avatar-22.jpg",
-	// 					"customer_no" : "Technician",
-	// 					"phone" : "+1 478845447",
-	// 					"email" : "dawnmercha@example.com",
-	// 					"location" : "Japan",
-	// 					"created" : "17 Oct 2023, 04:25 pm",
-	// 					"last_activity": "3 days ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 7,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Rachel Hampton",
-	// 					"customer_image" : "build/img/profiles/avatar-24.jpg",
-	// 					"customer_no" : "Software Developer",
-	// 					"phone" : "+1 215544845",
-	// 					"email" : "rachel@example.com",
-	// 					"location" : "Indonesia",
-	// 					"created" : "28 Oct 2023, 07:16 am",
-	// 					"last_activity": "10 days ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 8,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Jonelle Curtiss",
-	// 					"customer_image" : "build/img/profiles/avatar-25.jpg",
-	// 					"customer_no" : "Supervisor",
-	// 					"phone" : "+1 121145471",
-	// 					"email" : "jonelle@example.com",
-	// 					"location" : "Cuba",
-	// 					"created" : "08 Nov 2023, 06:10 am",
-	// 					"last_activity": "1 week go",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				},
-	// 				{
-	// 					"id" : 9,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Jonathan",
-	// 					"customer_image" : "build/img/profiles/avatar-26.jpg",
-	// 					"customer_no" : "Team Lead Dev",
-	// 					"phone" : "+1 321454789",
-	// 					"email" : "jonathan@example.com",
-	// 					"location" : "Isreal",
-	// 					"created" : "15 Nov 2023, 11:50 am",
-	// 					"last_activity": "1 day ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				}
-	// 				,
-	// 				{
-	// 					"id" : 10,
-	// 					"si_no" : "",
-	// 					"select" : "",
-	// 					"customer_name" : "Brook",
-	// 					"customer_image" : "build/img/profiles/avatar-01.jpg",
-	// 					"customer_no" : "Team Lead Dev ",
-	// 					"phone" : "+1 278907145",
-	// 					"email" : "brook@example.com",
-	// 					"location" : "Colombia",
-	// 					"created" : "25 Nov 2023, 06:34 pm",
-	// 					"last_activity": "8 mins ago",
-	// 					"status" : "0",
-	// 					"Action" : ""
-	// 				}
+	if($('#manage-users-list').length > 0) {
+		$('#manage-users-list').DataTable({
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": $('#manage-users-list').data('url'),
+				"type": "GET"
+			},
+			"bFilter": false, 
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu":     "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			"columns": [
+				{ "data": "name" },
+				{ "data": "email" },
+				{ "data": "phone" },
+				{ "data": "location" },
+				{ "data": "created_at" },
+				{ "data": "status", "render": function(data, type, row) {
+				if(data == 1 || data == '1' || data == 'active') {
+					return '<span class="badge bg-success">Active</span>';
+				} else {
+					return '<span class="badge bg-secondary">Inactive</span>';
+				}
+			}},
+				{ "data": "actions", "orderable": false, "searchable": false, "render": function(data, type, row) {
+				return '<div class="dropdown table-action">' +
+					'<a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">' +
+						'<i class="fa fa-ellipsis-v"></i>' +
+					'</a>' +
+					'<div class="dropdown-menu dropdown-menu-right">' +
+						'<a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
+							'<i class="ti ti-edit text-blue"></i> Edit' +
+						'</a>' +
+						'<a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
+							'<i class="ti ti-trash text-danger"></i> Delete' +
+						'</a>' +
+					'</div>' +
+				'</div>';
+			}}
+			],
+			initComplete: (settings, json)=>{
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			}
+		});
+	}
 
-	// 			],
-	// 		"columns": [
-	// 			{ "render": function ( data, type, row ){
-	// 				return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-	// 			}},
-	// 			{ "render": function ( data, type, row ){
-	// 				return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
-	// 			}},
-	// 			{ "render": function ( data, type, row ){
-	// 				return '<h2 class="d-flex align-items-center"><a href="javascript:void(0);" class="avatar avatar-sm me-2"><img class="w-auto h-auto" src="'+row['customer_image']+'" alt="User Image"></a><a href="javascript:void(0);" class="d-flex flex-column">'+row['customer_name']+' <span class="text-default">'+row['customer_no']+' </span></a></h2>';
-	// 			}},
-	// 			{ "data": "phone" },
-	// 			{ "data": "email" },
-	// 			{ "data": "location" },
-	// 			{ "data": "created" },
-	// 			{ "data": "last_activity" },
-	// 			{ "render": function ( data, type, row ){
-	// 				if(row['status'] == "0") { var class_name = "bg-success";var status_name ="Active" } else { var class_name = "bg-danger";var status_name ="Inactive"}
-	// 				return '<span class="badge badge-pill badge-status '+class_name+'" >'+status_name+'</span>';
-	// 			}},
-	// 			{ "render": function ( data, type, row ){
-	// 				return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_contact"><i class="ti ti-trash text-danger"></i> Delete</a></div></div>';
-	// 			}}
-	// 		]
-	// 	});
-	// }
+	// Delete Request
 
 	// Delete Request
 

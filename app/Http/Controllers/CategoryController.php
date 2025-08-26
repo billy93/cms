@@ -172,9 +172,9 @@ class CategoryController extends Controller
         try {
             $category = ProductCategory::findOrFail($id);
 
-            // Check if category name is used in products table (enum field)
+            // Check if category is used in products table (foreign key)
             $productsCount = DB::table('products')
-                ->where('category', $category->name)
+                ->where('category_id', $id)
                 ->count();
 
             if ($productsCount > 0) {

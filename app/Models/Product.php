@@ -12,7 +12,7 @@ class Product extends Model
         'description',
         'unit',
         'base_cost',
-        'category',
+        'category_id',
         'supplier_id'
     ];
 
@@ -28,5 +28,13 @@ class Product extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Get the category that owns the product.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 }

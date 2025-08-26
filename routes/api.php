@@ -116,6 +116,7 @@ Route::prefix('products')->name('api.products.')->group(function() {
   Route::post('/update/{id}', [ProductController::class, 'update'])->name('update');
   Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy');
   Route::get('/active', [ProductController::class, 'getActiveProducts'])->name('active');
+  Route::get('/categories', [ProductController::class, 'getCategories'])->name('categories');
 });
 
 // Test route

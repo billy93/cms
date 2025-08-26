@@ -83,11 +83,20 @@ class UserController extends Controller
 
 	public function create(UserRequest $request): JsonResponse
 	{
-		$user = $this->userService->createUser($request->validated());
-		return response()->json([
-			'status' => 'success',
-			'data' => $user
-		], 201);
+		try {
+			$user = $this->userService->createUser($request->validated());
+			return response()->json([
+				'success' => true,
+				'message' => 'User created successfully',
+				'data' => $user
+			], 201);
+		} catch (Exception $e) {
+			Log::error('Error creating user: ' . $e->getMessage());
+			return response()->json([
+				'success' => false,
+				'message' => 'Failed to create user'
+			], 500);
+		}
 	}
 
 	public function readAll(): JsonResponse
@@ -101,29 +110,54 @@ class UserController extends Controller
 
 	public function read($user_id): JsonResponse
 	{
-		$user = $this->userService->getUserById($user_id);
-		return response()->json([
-			'status' => 'success',
-			'data' => $user
-		], 200);
+		try {
+			$user = $this->userService->getUserById($user_id);
+			return response()->json([
+				'success' => true,
+				'data' => $user
+			], 200);
+		} catch (Exception $e) {
+			Log::error('Error reading user: ' . $e->getMessage());
+			return response()->json([
+				'success' => false,
+				'message' => 'Failed to load user data'
+			], 500);
+		}
 	}
 
 	public function update(UserRequest $request, $user_id): JsonResponse
 	{
-		$validatedData = $request->validated();
-		$user = $this->userService->updateUser($user_id, $validatedData);
-		return response()->json([
-			'status' => 'success',
-			'data' => $user
-		], 200);
+		try {
+			$validatedData = $request->validated();
+			$user = $this->userService->updateUser($user_id, $validatedData);
+			return response()->json([
+				'success' => true,
+				'message' => 'User updated successfully',
+				'data' => $user
+			], 200);
+		} catch (Exception $e) {
+			Log::error('Error updating user: ' . $e->getMessage());
+			return response()->json([
+				'success' => false,
+				'message' => 'Failed to update user'
+			], 500);
+		}
 	}
 
 	public function delete($user_id): JsonResponse
 	{
-		$this->userService->deleteUser($user_id);
-		return response()->json([
-			'status' => 'success',
-			'message' => "User with ID {$user_id} deleted successfully"
-		], 200);
+		try {
+			$this->userService->deleteUser($user_id);
+			return response()->json([
+				'success' => true,
+				'message' => 'User deleted successfully'
+			], 200);
+		} catch (Exception $e) {
+			Log::error('Error deleting user: ' . $e->getMessage());
+			return response()->json([
+				'success' => false,
+				'message' => 'Failed to delete user'
+			], 500);
+		}
 	}
 }

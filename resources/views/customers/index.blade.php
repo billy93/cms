@@ -45,7 +45,7 @@
                                             </ul>
                                         </div>
                                     </div>  
-                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_customer"><i class="ti ti-square-rounded-plus me-2"></i>Add Customer</a>
+                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#add_customer"><i class="ti ti-square-rounded-plus me-2"></i>Add Customer</a>
                                 </div>
                             </div>
                         </div>
@@ -212,17 +212,13 @@
 </div>
 <!-- /Page Wrapper -->
 
-<!-- Add Customer Modal -->
-<div class="modal custom-modal fade" id="add_customer" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Customer</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<!-- Add Customer Offcanvas -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="add_customer">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Add New Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
                 <form id="add_customer_form">
                     <div class="row">
                         <div class="col-md-6">
@@ -299,23 +295,17 @@
                         <button type="submit" class="btn btn-primary submit-btn">Add Customer</button>
                     </div>
                 </form>
-            </div>
-        </div>
     </div>
 </div>
-<!-- /Add Customer Modal -->
+<!-- /Add Customer Offcanvas -->
 
-<!-- Edit Customer Modal -->
-<div class="modal custom-modal fade" id="edit_customer" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Customer</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<!-- Edit Customer Offcanvas -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="edit_customer">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Edit Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
                 <form id="edit_customer_form">
                     <input type="hidden" name="customer_id" id="edit_customer_id">
                     <div class="row">
@@ -393,11 +383,9 @@
                         <button type="submit" class="btn btn-primary submit-btn">Update Customer</button>
                     </div>
                 </form>
-            </div>
-        </div>
     </div>
 </div>
-<!-- /Edit Customer Modal -->
+<!-- /Edit Customer Offcanvas -->
 
 <!-- Delete Customer Modal -->
 <div class="modal fade" id="delete_customer" role="dialog">
@@ -434,7 +422,7 @@ $(document).ready(function() {
     loadCustomers();
     
     // Auto-generate customer code when add modal opens
-    $('#add_customer').on('show.bs.modal', function() {
+    $('#add_customer').on('show.bs.offcanvas', function() {
         // Generate suggested customer code
         const timestamp = Date.now().toString().slice(-6);
         const suggestedCode = 'CUST' + timestamp;
@@ -654,7 +642,8 @@ $(document).ready(function() {
                     $('#edit_status').val(customer.status);
                     $('#edit_address').val(customer.address);
                     $('#edit_notes').val(customer.notes);
-                    $('#edit_customer').modal('show');
+                    const editOffcanvas = new bootstrap.Offcanvas(document.getElementById('edit_customer'));
+                    editOffcanvas.show();
                 }
             },
             error: function() {
@@ -678,7 +667,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if(response.success) {
-                    $('#edit_customer').modal('hide');
+                    const editOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('edit_customer'));
+                    editOffcanvas.hide();
                     showAlert('success', 'Customer updated successfully');
                     loadCustomers();
                 } else {
@@ -760,4 +750,4 @@ $(document).ready(function() {
     }
 });
 </script>
-@endpush 
+@endpush
