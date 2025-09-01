@@ -406,7 +406,7 @@
         <title>Reset Password | PCMI</title>
     @endif
     @if (Route::is(['roles-permissions', 'roles.index']))
-        <title>Roles Permissions | PCMI</title>
+<title>Roles | PCMI</title>
     @endif
     @if (Route::is(['security']))
         <title>Security | PCMI</title>

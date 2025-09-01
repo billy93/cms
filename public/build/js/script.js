@@ -1978,4 +1978,105 @@ $(document).ready(function () {
 		})
 	}
 
+	// Role Assign Menu Functionality
+	$(document).on('click', '#c_role_assign_menu', function(e) {
+		e.preventDefault();
+		const roleId = $(this).data('id');
+		const roleName = $(this).data('role-name');
+		
+		// Set role info in offcanvas
+		$('#assign_role_id').val(roleId);
+		$('#role_name_display').text(roleName);
+		
+		// Load menu assignments
+		loadMenuAssignments(roleId);
+	});
+	
+	function loadMenuAssignments(roleId) {
+		$.ajax({
+			url: `/roles-permissions/${roleId}/menu-assignments`,
+			method: 'GET',
+			success: function(response) {
+				if (response.success) {
+					renderMenuHierarchy(response.menus, response.assigned_menu_ids);
+				} else {
+					alert('Failed to load menu assignments');
+				}
+			},
+			error: function() {
+				alert('Error loading menu assignments');
+			}
+		});
+	}
+	
+	function renderMenuHierarchy(menus, assignedIds) {
+		let html = '';
+		
+		menus.forEach(function(menu) {
+			const isChecked = assignedIds.includes(menu.id) ? 'checked' : '';
+			html += `
+				<div class="form-check mb-2">
+					<input type="checkbox" class="form-check-input menu-checkbox" 
+						   id="menu_${menu.id}" name="menu_ids[]" value="${menu.id}" ${isChecked}>
+					<label class="form-check-label fw-bold" for="menu_${menu.id}">
+						${menu.label}
+					</label>
+				</div>
+			`;
+			
+			// Render children if any
+			if (menu.children && menu.children.length > 0) {
+				html += '<div class="ms-4">';
+				menu.children.forEach(function(child) {
+					const childChecked = assignedIds.includes(child.id) ? 'checked' : '';
+					html += `
+						<div class="form-check mb-1">
+							<input type="checkbox" class="form-check-input menu-checkbox" 
+								   id="menu_${child.id}" name="menu_ids[]" value="${child.id}" ${childChecked}>
+							<label class="form-check-label" for="menu_${child.id}">
+								${child.label}
+							</label>
+						</div>
+					`;
+				});
+				html += '</div>';
+			}
+		});
+		
+		$('#menu_hierarchy').html(html);
+	}
+	
+	// Handle assign menu form submission
+	$('#assignMenuForm').on('submit', function(e) {
+		e.preventDefault();
+		
+		const roleId = $('#assign_role_id').val();
+		const selectedMenus = [];
+		
+		$('.menu-checkbox:checked').each(function() {
+			selectedMenus.push($(this).val());
+		});
+		
+		$.ajax({
+			url: '/roles-permissions/assign-menus',
+			method: 'POST',
+			data: {
+				role_id: roleId,
+				menu_ids: selectedMenus,
+				_token: $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(response) {
+				if (response.success) {
+					alert('Menu assignments updated successfully!');
+					$('#offcanvas_assign_menu').offcanvas('hide');
+				} else {
+					alert('Failed to update menu assignments');
+				}
+			},
+			error: function() {
+				alert('Error updating menu assignments');
+			}
+		});
+	});
+
 });

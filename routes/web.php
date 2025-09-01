@@ -9,6 +9,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BOQController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\MenuController;
 use App\Http\Middlewares\AuthMiddleware;
 
 // Route::get('deals-dashboard', [CustomAuthController::class, 'deals-dashboard']); 
@@ -82,6 +83,20 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::get('/{role_id}', 'read')->name('read'); 
         Route::put('/{role_id}', 'update')->name('update'); 
         Route::delete('/{role_id}', 'delete')->name('delete'); 
+        Route::get('/{role_id}/menu-assignments', 'getMenuAssignments')->name('menu-assignments');
+        Route::post('/assign-menus', 'assignMenus')->name('assign-menus');
+    });
+
+    Route::prefix('manage-menus')->name('menus.')
+    ->controller(MenuController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/{menu}', 'show')->name('show'); 
+        Route::put('/{menu}', 'update')->name('update'); 
+        Route::delete('/{menu}', 'destroy')->name('destroy'); 
+        Route::patch('/{menu}/toggle-status', 'toggleStatus')->name('toggle-status');
+        Route::post('/reorder', 'reorder')->name('reorder');
+        Route::get('/parent-menus/list', 'getParentMenus')->name('parent-menus');
     });
 
     Route::prefix('permissions')->name('permissions.')

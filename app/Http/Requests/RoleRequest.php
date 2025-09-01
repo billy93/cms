@@ -34,8 +34,6 @@ class RoleRequest extends ApiFormRequest
     return [
       'name' => 'required|string|max:255|unique:roles,name', 
       'description' => 'nullable|string|max:255',
-      'permission_ids' => 'sometimes|array', 
-      'permission_ids.*' => 'integer|exists:permissions,id',
     ];
   }
 
@@ -45,8 +43,6 @@ class RoleRequest extends ApiFormRequest
       'id' => 'required|exists:roles,id',
       'name' => 'required|string|max:255|unique:roles,name,' . $this->route('role_id'),
       'description' => 'nullable|string|max:255',
-      'permission_ids' => 'sometimes|array', 
-      'permission_ids.*' => 'integer|exists:permissions,id',
     ];
   }
 
@@ -66,9 +62,7 @@ class RoleRequest extends ApiFormRequest
       'description.string' => 'The description must be a string.',
       'description.max' => 'The description may not be greater than :max characters.',
       
-      'permission_ids.array' => 'The permission_ids field must be an array.',
-      'permission_ids.*.integer' => 'Each permission ID must be an integer.',
-      'permission_ids.*.exists' => 'One or more selected permissions do not exist.',    
+    
     ];
   }
 

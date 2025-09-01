@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\RoleRequest;
 use App\Models\Role;
-use App\Models\Permission;
 use App\Http\Services\RoleService;
 use Exception;
 
@@ -51,10 +50,20 @@ class RoleController extends Controller
 								class="dropdown-item" 
 								href="#" 
 								data-id="'.$role->id.'" 
-								data-url="'.route('roles.read', ['role_id' => $role->id]).'"
-								data-bs-toggle="modal" 
-								data-bs-target="#edit_role">
+								data-url="'.route('roles.read', ['role_id' => $role->id]).'"  
+								data-bs-toggle="offcanvas" 
+								data-bs-target="#offcanvas_edit_role">
 									<i class="ti ti-edit text-blue"></i> Edit
+								</a>
+								<a 
+									id="c_role_assign_menu" 
+									class="dropdown-item" 
+									href="#" 
+									data-id="'.$role->id.'" 
+									data-role-name="'.$role->name.'" 
+									data-bs-toggle="offcanvas" 
+									data-bs-target="#offcanvas_assign_menu">
+									<i class="ti ti-menu-2 text-success"></i> Assign Menu
 								</a>
 								<a 
 									id="c_role_delete" 
@@ -77,8 +86,7 @@ class RoleController extends Controller
 				return $result; 
 			}
 
-			$permissions = Permission::all();
-			return view('roles-permissions', compact('permissions'));
+			return view('roles-permissions');
 		} 
 
     public function create(RoleRequest $request): JsonResponse
@@ -161,4 +169,61 @@ class RoleController extends Controller
         }
     }
 
+    public function getMenuAssignments($role_id): JsonResponse
+    {
+        try {
+            $role = Role::findOrFail($role_id);
+            $allMenus = \App\Models\Menu::with('children')->whereNull('parent_id')->orderBy('sort')->get();
+            $assignedMenuIds = \DB::table('menu_roles')->where('role_id', $role_id)->pluck('menu_id')->toArray();
+            
+            return response()->json([
+                'success' => true,
+                'role' => $role,
+                'menus' => $allMenus,
+                'assigned_menu_ids' => $assignedMenuIds
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error getting menu assignments: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get menu assignments'
+            ], 500);
+        }
+    }
+
+    public function assignMenus(Request $request): JsonResponse
+    {
+        try {
+            $roleId = $request->input('role_id');
+            $menuIds = $request->input('menu_ids', []);
+            
+            // Delete existing assignments
+            \DB::table('menu_roles')->where('role_id', $roleId)->delete();
+            
+            // Insert new assignments
+            if (!empty($menuIds)) {
+                $assignments = [];
+                foreach ($menuIds as $menuId) {
+                    $assignments[] = [
+                        'role_id' => $roleId,
+                        'menu_id' => $menuId,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }
+                \DB::table('menu_roles')->insert($assignments);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu assignments updated successfully'
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error assigning menus: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to assign menus'
+            ], 500);
+        }
+    }
 }

@@ -293,7 +293,8 @@ $(document).ready(function () {
 				}
 			]
 		});
-
+	}
+	
 	// Roles List DataTable
 	if ($('#roles_list').length > 0) {
 		var rolesTable = $('#roles_list').DataTable({
@@ -332,7 +333,7 @@ $(document).ready(function () {
 		});
 	}
 
-}
+
 
 
 	// Role Form Submission
@@ -352,7 +353,8 @@ $(document).ready(function () {
 			},
 			success: function(response) {
 				if (response.success) {
-					$('#add_role').modal('hide');
+					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_add_role'));
+					offcanvas.hide();
 					$('#addRole')[0].reset();
 					$('#roles_list').DataTable().ajax.reload();
 					
@@ -389,8 +391,11 @@ $(document).ready(function () {
 		var formData = new FormData(this);
 		var roleId = $(this).data('role-id');
 		
+		// Add method override for PUT request
+		formData.append('_method', 'PUT');
+		
 		$.ajax({
-			url: '/roles/' + roleId,
+			url: '/roles-permissions/' + roleId,
 			type: 'POST',
 			data: formData,
 			processData: false,
@@ -400,7 +405,8 @@ $(document).ready(function () {
 			},
 			success: function(response) {
 				if (response.success) {
-					$('#edit_role').modal('hide');
+					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_edit_role'));
+					offcanvas.hide();
 					$('#editRole')[0].reset();
 					$('#roles_list').DataTable().ajax.reload();
 					
@@ -510,6 +516,275 @@ $(document).ready(function () {
 		});
 	});
 
+// Menu Management
+if ($('#menus_list').length) {
+	$('#menus_list').DataTable({
+		"processing": true,
+		"serverSide": true,
+		"ajax": {
+			"url": $('#menus_list').data('url'),
+			"type": "GET"
+		},
+		"bFilter": false,
+		"bInfo": false,
+		"ordering": true,
+		"autoWidth": true,
+		"language": {
+			search: ' ',
+			sLengthMenu: '_MENU_',
+			searchPlaceholder: "Search",
+			info: "_START_ - _END_ of _TOTAL_ items",
+			"lengthMenu": "Show _MENU_ entries",
+			paginate: {
+				next: 'Next <i class=" fa fa-angle-right"></i> ',
+				previous: '<i class="fa fa-angle-left"></i> Prev '
+			},
+		},
+		initComplete: (settings, json) => {
+			$('.dataTables_paginate').appendTo('.datatable-paginate');
+			$('.dataTables_length').appendTo('.datatable-length');
+			$('.dataTables_info').appendTo('.datatable-info');
+		},
+		"columns": [
+			{ "data": "label" },
+			{ "data": "path" },
+			{ "data": "icon" },
+			{ "data": "parent_name" },
+			{ "data": "sort" },
+			{ "data": "is_active" },
+			{ "data": "created_at" },
+			{ "data": "actions", "orderable": false, "searchable": false }
+		]
+	});
+}
+
+// Menu Form Submission
+$('#addMenu').on('submit', function(e) {
+	e.preventDefault();
+	
+	var formData = new FormData(this);
+	
+	$.ajax({
+		url: $(this).attr('action'),
+		type: 'POST',
+		data: formData,
+		processData: false,
+		contentType: false,
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_add_menu'));
+				offcanvas.hide();
+				$('#addMenu')[0].reset();
+				$('#menus_list').DataTable().ajax.reload();
+				
+				// Show success message
+				toastr.success(response.message || 'Menu created successfully!');
+			}
+		},
+		error: function(xhr) {
+			var errors = xhr.responseJSON.errors;
+			if (errors) {
+				// Clear previous errors
+				$('.invalid-feedback').hide().text('');
+				$('.form-control').removeClass('is-invalid');
+				
+				// Show new errors
+				$.each(errors, function(field, messages) {
+					var $field = $('[name="' + field + '"]');
+					var $feedback = $('[data-name="' + field + '"]');
+					
+					$field.addClass('is-invalid');
+					$feedback.text(messages[0]).show();
+				});
+			} else {
+				toastr.error('An error occurred while creating the menu.');
+			}
+		}
+	});
+});
+
+// Edit Menu Form Submission
+$('#editMenu').on('submit', function(e) {
+	e.preventDefault();
+	
+	var formData = new FormData(this);
+	var menuId = $(this).data('menu-id');
+	
+	// Add method override for PUT request
+	formData.append('_method', 'PUT');
+	
+	$.ajax({
+		url: '/manage-menus/' + menuId,
+		type: 'POST',
+		data: formData,
+		processData: false,
+		contentType: false,
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_edit_menu'));
+				offcanvas.hide();
+				$('#editMenu')[0].reset();
+				$('#menus_list').DataTable().ajax.reload();
+				
+				// Show success message
+				toastr.success(response.message || 'Menu updated successfully!');
+			}
+		},
+		error: function(xhr) {
+			var errors = xhr.responseJSON.errors;
+			if (errors) {
+				// Clear previous errors
+				$('.invalid-feedback').hide().text('');
+				$('.form-control').removeClass('is-invalid');
+				
+				// Show new errors
+				$.each(errors, function(field, messages) {
+					var $field = $('[name="' + field + '"]');
+					var $feedback = $('[data-name="' + field + '"]');
+					
+					$field.addClass('is-invalid');
+					$feedback.text(messages[0]).show();
+				});
+			} else {
+				toastr.error('An error occurred while updating the menu.');
+			}
+		}
+	});
+});
+
+// Load Menu Data for Edit
+$(document).on('click', '#c_menu_edit', function(e) {
+	e.preventDefault();
+	
+	var menuId = $(this).data('id');
+	var url = $(this).data('url');
+	
+	$.ajax({
+		url: url,
+		type: 'GET',
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				var menu = response.data;
+				
+				// Populate form fields
+				$('#editMenu [name="label"]').val(menu.label);
+				$('#editMenu [name="path"]').val(menu.path);
+				$('#editMenu [name="icon"]').val(menu.icon);
+				$('#editMenu [name="parent_id"]').val(menu.parent_id);
+				$('#editMenu [name="sort"]').val(menu.sort);
+				$('#editMenu [name="is_active"]').prop('checked', menu.is_active == 1);
+				
+				// Set menu ID for form submission
+				$('#editMenu').data('menu-id', menuId);
+			}
+		},
+		error: function(xhr) {
+			toastr.error('Failed to load menu data.');
+		}
+	});
+});
+
+// Delete Menu
+$(document).on('click', '#c_menu_delete', function(e) {
+	e.preventDefault();
+	
+	var menuId = $(this).data('id');
+	var url = $(this).data('url');
+	
+	// Store the delete URL for the confirmation button
+	$('#trigger_delete_menu').data('url', url);
+});
+
+// Confirm Delete Menu
+$(document).on('click', '#trigger_delete_menu', function(e) {
+	e.preventDefault();
+	
+	var url = $(this).data('url');
+	
+	$.ajax({
+		url: url,
+		type: 'DELETE',
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				$('#delete_menu_modal').modal('hide');
+				$('#menus_list').DataTable().ajax.reload();
+				
+				// Show success message
+				toastr.success(response.message || 'Menu deleted successfully!');
+			}
+		},
+		error: function(xhr) {
+			toastr.error('Failed to delete menu.');
+		}
+	});
+});
+
+// Toggle Menu Status
+$(document).on('click', '#c_menu_toggle', function(e) {
+	e.preventDefault();
+	
+	var url = $(this).data('url');
+	
+	$.ajax({
+		url: url,
+		type: 'POST',
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				$('#menus_list').DataTable().ajax.reload();
+				toastr.success(response.message || 'Menu status updated successfully!');
+			}
+		},
+		error: function(xhr) {
+			toastr.error('Failed to update menu status.');
+		}
+	});
+});
+
+// Load Parent Menus for Add/Edit Forms
+function loadParentMenus() {
+	$.ajax({
+		url: '/manage-menus/get-parent-menus',
+		type: 'GET',
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		},
+		success: function(response) {
+			if (response.success) {
+				var options = '<option value="">Select Parent Menu</option>';
+				response.data.forEach(function(menu) {
+					options += '<option value="' + menu.id + '">' + menu.label + '</option>';
+				});
+				$('#addMenu [name="parent_id"]').html(options);
+				$('#editMenu [name="parent_id"]').html(options);
+			}
+		}
+	});
+}
+
+// Load parent menus when modals are opened
+$('#add_menu').on('show.bs.modal', function() {
+	loadParentMenus();
+});
+
+$('#edit_menu').on('show.bs.modal', function() {
+	loadParentMenus();
+});
+
 // User Management Form Handlers
 $(document).ready(function() {
     // Handle Add User Form Submission
@@ -598,6 +873,9 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
+                // Reset button state first
+                submitBtn.prop('disabled', false).text(originalText);
+                
                 if (response.success) {
                     // Close offcanvas
                     $('#offcanvas_edit').offcanvas('hide');
@@ -614,6 +892,9 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
+                // Reset button state first
+                submitBtn.prop('disabled', false).text(originalText);
+                
                 if (xhr.status === 422) {
                     // Validation errors
                     const errors = xhr.responseJSON.errors;
@@ -627,9 +908,6 @@ $(document).ready(function() {
                 } else {
                     toastr.error('An error occurred while updating user');
                 }
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).text(originalText);
             }
         });
     });

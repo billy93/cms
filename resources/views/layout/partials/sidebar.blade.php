@@ -1,3 +1,7 @@
+@php
+use App\Services\MenuService;
+@endphp
+
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
         <div class="modern-profile p-3 pb-0">
@@ -68,8 +72,8 @@
                                         href="{{ url('project-dashboard') }}">Project Dashboard</a></li>
                             </ul>
                         </li>
-                        <li class="submenu">
-                            <!-- <a href="javascript:void(0);"
+                        <!--<li class="submenu">
+                             <a href="javascript:void(0);"
                                 class="{{ Request::is('chat', 'calendar', 'email', 'todo', 'notes', 'file-manager', 'video-call', 'audio-call', 'call-history', 'social-feed', 'kanban-view', 'invoice', 'invoice-details') ? 'subdrop active' : '' }}"><i
                                     class="ti ti-brand-airtable"></i><span>Application</span><span
                                     class="menu-arrow"></span></a>
@@ -119,6 +123,7 @@
                                         <li><a class="{{ Request::is('purchase-transaction') ? 'active' : '' }}" href="{{url('purchase-transaction')}}">Purchase Transaction</a></li>
                                 </ul>
                         </li>
+                        -->
                     </ul>
                 </li>
                 <!-- <li>
@@ -156,37 +161,56 @@
                                 </li>
                         </ul>
                 </li> -->
+                @if(MenuService::canAccess('/categories') || MenuService::canAccess('/products'))
                 <li>
                     <h6 class="submenu-hdr">Products</h6>
                     <ul>
+                        @if(MenuService::canAccess('/categories'))
                         <li><a class="{{ Request::is('categories') ? 'active' : '' }}"
                                 href="{{ url('categories') }}"><i class="ti ti-category"></i><span>Categories</span></a></li>
+                        @endif
+                        @if(MenuService::canAccess('/products'))
                         <li><a class="{{ Request::is('products') ? 'active' : '' }}"
                                 href="{{ url('products') }}"><i class="ti ti-package"></i><span>Products</span></a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
+                @php
+                    $mainMenus = ['/contacts', '/companies', '/customers', '/suppliers', '/projects', '/proposals', '/invoices', '/boq', '/payments'];
+                    $hasMainAccess = collect($mainMenus)->some(fn($menu) => MenuService::canAccess($menu));
+                @endphp
+                @if($hasMainAccess)
                 <li>
                     <h6 class="submenu-hdr">MAIN</h6>
                     <ul>
+                        @if(MenuService::canAccess('/contacts'))
                         <li>
                             <a class="{{ Request::is('contacts', 'contact-grid', 'contact-details') ? 'active' : '' }}"
                                 href="{{ url('contacts') }}"><i class="ti ti-user-up"></i><span>Bank Accounts</span></a>
                         </li>
+                        @endif
+                        @if(MenuService::canAccess('/companies'))
                         <li>
                             <a class="{{ Request::is('companies', 'companies-grid', 'company-details') ? 'active' : '' }}"
                                 href="{{ url('companies') }}"><i
                                     class="ti ti-building-community"></i><span>Clients</span></a>
                         </li>
+                        @endif
+                        @if(MenuService::canAccess('/customers'))
                         <li>
                             <a class="{{ Request::is('customers') ? 'active' : '' }}"
                                 href="{{ url('customers') }}"><i
                                     class="ti ti-users"></i><span>Customers</span></a>
                         </li>
+                        @endif
+                        @if(MenuService::canAccess('/suppliers'))
                         <li>
                             <a class="{{ Request::is('suppliers') ? 'active' : '' }}"
                                 href="{{ url('suppliers') }}"><i
                                     class="ti ti-truck"></i><span>Suppliers</span></a>
                         </li>
+                        @endif
                         <!-- <li>
                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"
                                 href="{{ url('deals') }}"><i class="ti ti-medal"></i><span>Deals</span></a>
@@ -204,19 +228,23 @@
                                 href="{{ url('campaign') }}"><i
                                     class="ti ti-brand-campaignmonitor"></i><span>Campaign</span></a>
                         </li> -->
+                        @if(MenuService::canAccess('/projects'))
                         <li>
                             <a class="{{ Request::is('projects', 'project-details', 'project-grid') ? 'active' : '' }}"
                                 href="{{ url('projects') }}"><i class="ti ti-atom-2"></i><span>Projects</span></a>
                         </li>
+                        @endif
                         <!-- <li>
                             <a class="{{ Request::is('tasks', 'tasks-completed', 'tasks-important') ? 'active' : '' }}"
                                 href="{{ url('tasks') }}"><i class="ti ti-list-check"></i><span>Tasks</span></a>
                         </li> -->
+                        @if(MenuService::canAccess('/proposals'))
                         <li>
                             <a class="{{ Request::is('proposals', 'proposals-grid') ? 'active' : '' }}"
                                 href="{{ url('proposals') }}">
                                 <i class="ti ti-file-star"></i><span>Proposals</span></a>
                         </li>
+                        @endif
                          <!-- <li>
                             <a class="{{ Request::is('contracts', 'contracts-grid') ? 'active' : '' }}"
                                 href="{{ url('contracts') }}">
@@ -227,20 +255,26 @@
                                 href="{{ url('estimations') }}">
                                 <i class="ti ti-file-report"></i><span>Products</span></a>
                         </li> -->
+                        @if(MenuService::canAccess('/invoices'))
                         <li>
                             <a class="{{ Request::is('invoices', 'invoice-grid') ? 'active' : '' }}"
                                 href="{{ url('invoices') }}">
                                 <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
                         </li>
+                        @endif
+                        @if(MenuService::canAccess('/boq'))
                         <li>
                             <a class="{{ Request::is('boq') ? 'active' : '' }}"
                                 href="{{ url('boq') }}">
                                 <i class="ti ti-file-invoice"></i><span>BoQ</span></a>
                         </li>
+                        @endif
+                        @if(MenuService::canAccess('/payments'))
                         <li>
                             <a class="{{ Request::is('payments') ? 'active' : '' }}" href="{{ url('payments') }}">
                                 <i class="ti ti-report-money"></i><span>Payments</span></a>
                         </li>
+                        @endif
                         <!-- <li>
                             <a class="{{ Request::is('analytics') ? 'active' : '' }}" href="{{ url('analytics') }}"><i
                                     class="ti ti-chart-bar"></i><span>Analytics</span></a>
@@ -252,6 +286,7 @@
                         </li> -->
                     </ul>
                 </li>
+                @endif
                 <!-- <li>
                     <h6 class="submenu-hdr">Reports</h6>
                     <ul>
@@ -294,23 +329,42 @@
                                     class="ti ti-phone-check"></i><span>Calls</span></a></li>
                     </ul>
                 </li> -->
+                @php
+                    $userMgmtMenus = ['/manage-users', '/roles-permissions', '/manage-menus', '/permissions', '/delete-request'];
+                    $hasUserMgmtAccess = collect($userMgmtMenus)->some(fn($menu) => MenuService::canAccess($menu));
+                @endphp
+                @if($hasUserMgmtAccess)
                 <li>
                     <h6 class="submenu-hdr">User Management</h6>
                     <ul>
+                        @if(MenuService::canAccess('/manage-users'))
                         <li><a class="{{ Request::is('manage-users') ? 'active' : '' }}"
                                 href="{{ url('manage-users') }}"><i class="ti ti-users"></i><span>Manage
                                     Users</span></a></li>
+                        @endif
+                        @if(MenuService::canAccess('/roles-permissions'))
                         <li><a class="{{ Request::is('roles-permissions') ? 'active' : '' }}"
                                 href="{{ url('roles-permissions') }}"><i class="ti ti-navigation-cog"></i><span>Roles
                                     & Permissions</span></a></li>
+                        @endif
+                        @if(MenuService::canAccess('/manage-menus'))
+                        <li><a class="{{ Request::is('manage-menus') ? 'active' : '' }}"
+                                href="{{ url('manage-menus') }}"><i class="ti ti-menu-2"></i><span>Menu
+                                    Management</span></a></li>
+                        @endif
+                        @if(MenuService::canAccess('/permissions'))
                         <li><a class="{{ Request::is('permissions') ? 'active' : '' }}"
                                 href="{{ url('permissions') }}"><i class="ti ti-lock-cog"></i></i><span>Permissions
                                     </span></a></li>
+                        @endif
+                        @if(MenuService::canAccess('/delete-request'))
                         <li><a class="{{ Request::is('delete-request') ? 'active' : '' }}"
                                 href="{{ url('delete-request') }}"><i class="ti ti-flag-question"></i><span>Delete
                                     Request</span></a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
                 <!-- <li>
                     <h6 class="submenu-hdr">Membership</h6>
                     <ul>

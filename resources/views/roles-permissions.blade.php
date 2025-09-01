@@ -29,7 +29,7 @@
                                 </div>		
                                 <div class="col-sm-8">					
                                     <div class="text-sm-end">
-                                        <a href="javascript:void(0);" id="c_role_add" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_role"><i class="ti ti-square-rounded-plus me-2"></i>Add New Roles</a>
+                                        <a href="javascript:void(0);" id="c_role_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add_role"><i class="ti ti-square-rounded-plus me-2"></i>Add New Roles</a>
                                     </div>
                                 </div>
                             </div>
@@ -74,19 +74,15 @@
     <!-- /Page Wrapper -->
 
     <!-- Add Role -->
-    <div class="modal fade" id="add_role" role="dialog">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Role</h5>
-                    <button class="btn-close custom-btn-close border p-1 me-0 text-dark" data-bs-dismiss="modal" aria-label="Close">	
-                        <i class="ti ti-x"></i>
-                    </button>
-                </div>
-                <form action="{{ route('roles.create') }}" id="addRole">							
-                    @csrf
-                    @method('POST')
-                    <div class="modal-body">
+    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add_role">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Add Role</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form action="{{ route('roles.create') }}" id="addRole">												
+                @csrf
+                @method('POST')
                         <div class="mb-3">
                             <label class="col-form-label">Role Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
@@ -96,55 +92,27 @@
                             <label class="col-form-label">Description</label>
                             <input type="text" class="form-control" name="description">
                             <div class="invalid-feedback d-flex" data-name="description"></div>
-                        </div> 
-                        <div class="mb-0">
-                            <label class="col-form-label">Permissions</label>
-                            <div class="row">
-                                @foreach ($permissions as $permission)
-                                    <div class="col-md-4">
-                                        <div class="form-check">
-                                            <input
-                                                type="checkbox"
-                                                name="permission_ids[]"
-                                                value="{{ $permission->id }}"
-                                                class="form-check-input"
-                                                id="add_perm_{{ $permission->id }}">
-                                            <label class="form-check-label" for="add_perm_{{ $permission->id }}">
-                                                {{ $permission->module }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="invalid-feedback d-flex" data-name="permission_ids"></div>
                         </div>       
                     </div>
-                    <div class="modal-footer">
-                        <div class="d-flex align-items-center justify-content-end m-0">
-                            <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Create</button>
-                        </div>								
+                    <div class="d-flex align-items-center justify-content-end mt-4">
+                        <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create</button>
                     </div>
                 </form>
-            </div>
         </div>
     </div>
     <!-- /Add Role -->
 
     <!-- Edit Role -->
-    <div class="modal fade" id="edit_role" role="dialog">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Role</h5>
-                    <button class="btn-close custom-btn-close border p-1 me-0 text-dark" data-bs-dismiss="modal" aria-label="Close">	
-                        <i class="ti ti-x"></i>
-                    </button>
-                </div>
-                <form action="{{ route('roles.index') }}" id="editRole">							
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-body">
+    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit_role">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Edit Role</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form action="{{ route('roles.index') }}" id="editRole">												
+                @csrf
+                @method('PUT')
                         <div class="mb-3">
                             <label class="col-form-label">Role Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
@@ -154,37 +122,13 @@
                             <label class="col-form-label">Description</label>
                             <input type="text" class="form-control" name="description">
                             <div class="invalid-feedback d-flex" data-name="description"></div>
-                        </div>
-                        <div class="mb-0">
-                            <label class="col-form-label">Permissions</label>
-                            <div class="row" id="edit-permissions-container">
-                                @foreach ($permissions as $permission)
-                                    <div class="col-md-4">
-                                        <div class="form-check">
-                                            <input
-                                                type="checkbox"
-                                                name="permission_ids[]"
-                                                value="{{ $permission->id }}"
-                                                class="form-check-input"
-                                                id="edit_perm_{{ $permission->id }}">
-                                            <label class="form-check-label" for="edit_perm_{{ $permission->id }}">
-                                                {{ $permission->module }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="invalid-feedback d-flex" data-name="permission_ids"></div>
                         </div>       
                     </div>
-                    <div class="modal-footer">
-                        <div class="d-flex align-items-center justify-content-end m-0">
-                            <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                        </div>							
+                    <div class="d-flex align-items-center justify-content-end mt-4">
+                        <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form> 
-            </div>
         </div>
     </div>
     <!-- /Edit Role -->
@@ -210,6 +154,33 @@
 			</div>
 	</div>
 	<!-- /Delete Role -->
+
+	<!-- Assign Menu -->
+	<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_assign_menu">
+		<div class="offcanvas-header">
+			<h5 class="offcanvas-title">Assign Menu to <span id="role_name_display"></span></h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+			<form id="assignMenuForm">
+				@csrf
+				<input type="hidden" id="assign_role_id" name="role_id">
+				
+				<div class="mb-3">
+					<label class="col-form-label">Menu Hierarchy</label>
+					<div class="menu-hierarchy" id="menu_hierarchy">
+						<!-- Menu hierarchy will be loaded here -->
+					</div>
+				</div>
+				
+				<div class="d-flex justify-content-end">
+					<button type="button" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</button>
+					<button type="submit" class="btn btn-primary">Save Assignment</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- /Assign Menu -->
       
     @component('components.model-popup')
     @endcomponent

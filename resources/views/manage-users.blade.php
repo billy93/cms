@@ -652,6 +652,9 @@
 															<label class="col-form-label">Role</label>
 															<select class="select" name="role_id">
 																	<option value="">-- Selelct Role --</option>
+																	@foreach ($roles as $role)
+																		<option value="{{ $role->id }}">{{ $role->name }}</option>
+																	@endforeach
 															</select>
 															<div class="invalid-feedback d-flex" data-name="role_id"></div>
 													</div>

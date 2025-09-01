@@ -11,7 +11,6 @@ class RoleService
     {
         $role = Role::create([
             'name' => $data['name'],
-            'slug' => $data['slug'] ?? \Illuminate\Support\Str::slug($data['name']),
             'description' => $data['description']
         ]);
 
