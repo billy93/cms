@@ -598,7 +598,7 @@
      <script src="{{ URL::asset('build/plugins/stickynote/sticky.js') }}"></script>
  @endif
 
- @if (Route::is(['ui-toasts', 'categories', 'products']))
+ @if (Route::is(['ui-toasts', 'categories', 'products', 'roles.index', 'permission.index']))
      <!-- Mask JS -->
      <script src="{{ URL::asset('build/plugins/toastr/toastr.min.js') }}"></script>
      <script src="{{ URL::asset('build/plugins/toastr/toastr.js') }}"></script>

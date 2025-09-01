@@ -294,6 +294,222 @@ $(document).ready(function () {
 			]
 		});
 
+	// Roles List DataTable
+	if ($('#roles_list').length > 0) {
+		var rolesTable = $('#roles_list').DataTable({
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": $('#roles_list').data('url'),
+				"type": "GET"
+			},
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+				$('.dataTables_info').appendTo('.datatable-info');
+			},
+			"columns": [
+				{ "data": "name" },
+				{ "data": "description" },
+				{ "data": "formatted_created_at" },
+				{ "data": "actions", "orderable": false, "searchable": false }
+			]
+		});
+	}
+
+}
+
+
+	// Role Form Submission
+	$('#addRole').on('submit', function(e) {
+		e.preventDefault();
+		
+		var formData = new FormData(this);
+		
+		$.ajax({
+			url: $(this).attr('action'),
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(response) {
+				if (response.success) {
+					$('#add_role').modal('hide');
+					$('#addRole')[0].reset();
+					$('#roles_list').DataTable().ajax.reload();
+					
+					// Show success message
+					toastr.success(response.message || 'Role created successfully!');
+				}
+			},
+			error: function(xhr) {
+				var errors = xhr.responseJSON.errors;
+				if (errors) {
+					// Clear previous errors
+					$('.invalid-feedback').hide().text('');
+					$('.form-control').removeClass('is-invalid');
+					
+					// Show new errors
+					$.each(errors, function(field, messages) {
+						var $field = $('[name="' + field + '"]');
+						var $feedback = $('[data-name="' + field + '"]');
+						
+						$field.addClass('is-invalid');
+						$feedback.text(messages[0]).show();
+					});
+				} else {
+					toastr.error('An error occurred while creating the role.');
+				}
+			}
+		});
+	});
+
+	// Edit Role Form Submission
+	$('#editRole').on('submit', function(e) {
+		e.preventDefault();
+		
+		var formData = new FormData(this);
+		var roleId = $(this).data('role-id');
+		
+		$.ajax({
+			url: '/roles/' + roleId,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(response) {
+				if (response.success) {
+					$('#edit_role').modal('hide');
+					$('#editRole')[0].reset();
+					$('#roles_list').DataTable().ajax.reload();
+					
+					// Show success message
+					toastr.success(response.message || 'Role updated successfully!');
+				}
+			},
+			error: function(xhr) {
+				var errors = xhr.responseJSON.errors;
+				if (errors) {
+					// Clear previous errors
+					$('.invalid-feedback').hide().text('');
+					$('.form-control').removeClass('is-invalid');
+					
+					// Show new errors
+					$.each(errors, function(field, messages) {
+						var $field = $('[name="' + field + '"]');
+						var $feedback = $('[data-name="' + field + '"]');
+						
+						$field.addClass('is-invalid');
+						$feedback.text(messages[0]).show();
+					});
+				} else {
+					toastr.error('An error occurred while updating the role.');
+				}
+			}
+		});
+	});
+
+	// Load Role Data for Edit
+	$(document).on('click', '#c_role_edit', function(e) {
+		e.preventDefault();
+		
+		var roleId = $(this).data('id');
+		var url = $(this).data('url');
+		
+		$.ajax({
+			url: url,
+			type: 'GET',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(response) {
+				if (response.success) {
+					var role = response.data;
+					
+					// Populate form fields
+					$('#editRole [name="name"]').val(role.name);
+					$('#editRole [name="description"]').val(role.description);
+					
+					// Set role ID for form submission
+					$('#editRole').data('role-id', roleId);
+					
+					// Handle permissions if they exist
+					if (role.permissions) {
+						// Clear all checkboxes first
+						$('#edit-permissions-container input[type="checkbox"]').prop('checked', false);
+						
+						// Check the permissions that the role has
+						role.permissions.forEach(function(permission) {
+							$('#edit-permissions-container input[value="' + permission.id + '"]').prop('checked', true);
+						});
+					}
+				}
+			},
+			error: function(xhr) {
+				toastr.error('Failed to load role data.');
+			}
+		});
+	});
+
+	// Delete Role
+	$(document).on('click', '#c_role_delete', function(e) {
+		e.preventDefault();
+		
+		var roleId = $(this).data('id');
+		var url = $(this).data('url');
+		
+		// Store the delete URL for the confirmation button
+		$('#trigger_delete_role').data('url', url);
+	});
+
+	// Confirm Delete Role
+	$(document).on('click', '#trigger_delete_role', function(e) {
+		e.preventDefault();
+		
+		var url = $(this).data('url');
+		
+		$.ajax({
+			url: url,
+			type: 'DELETE',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(response) {
+				if (response.success) {
+					$('#delete_role_modal').modal('hide');
+					$('#roles_list').DataTable().ajax.reload();
+					
+					// Show success message
+					toastr.success(response.message || 'Role deleted successfully!');
+				}
+			},
+			error: function(xhr) {
+				toastr.error('Failed to delete role.');
+			}
+		});
+	});
+
 // User Management Form Handlers
 $(document).ready(function() {
     // Handle Add User Form Submission
@@ -376,7 +592,7 @@ $(document).ready(function() {
         submitBtn.prop('disabled', true).text('Saving...');
         
         $.ajax({
-            url: '/users/' + userId,
+            url: '/manage-users/' + userId,
             method: 'POST',
             data: formData,
             processData: false,
@@ -424,7 +640,7 @@ $(document).ready(function() {
         
         // Fetch user data
         $.ajax({
-            url: '/users/' + userId,
+            url: '/manage-users/' + userId,
             method: 'GET',
             success: function(response) {
                 if (response.success && response.data) {
@@ -476,7 +692,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).text('Deleting...');
         
         $.ajax({
-            url: '/users/' + deleteUserId,
+            url: '/manage-users/' + deleteUserId,
             method: 'DELETE',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -505,10 +721,6 @@ $(document).ready(function() {
         });
     });
 });
-
-});
-
-	}
 
 	// Companies List
 
@@ -5623,89 +5835,7 @@ $(document).ready(function() {
 		});
 	}
 
-	// Roles
 
-	if ($('#roles_list').length > 0) {
-		$('#roles_list').DataTable({
-			"bFilter": false,
-			"bInfo": false,
-			"ordering": true,
-			"autoWidth": true,
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				info: "_START_ - _END_ of _TOTAL_ items",
-				"lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-			},
-			"data": [
-				{
-					"id": 1,
-					"si_no": "",
-					"roles_name": "Admin",
-					"created": "25 Sep 2023, 12:12 pm",
-					"Action": ""
-				},
-				{
-					"id": 2,
-					"si_no": "",
-					"roles_name": "Company Owner",
-					"created": "27 Sep 2023, 07:40 am",
-					"Action": ""
-				},
-				{
-					"id": 3,
-					"si_no": "",
-					"roles_name": "Deal Owner",
-					"created": "29 Sep 2023, 08:20 am",
-					"Action": ""
-				},
-				{
-					"id": 4,
-					"si_no": "",
-					"roles_name": "Project Manager",
-					"created": "25 Sep 2023, 12:12 pm",
-					"Action": ""
-				},
-				{
-					"id": 5,
-					"si_no": "",
-					"roles_name": "Client",
-					"created": "15 Oct 2023, 06:18 pm",
-					"Action": ""
-				},
-				{
-					"id": 6,
-					"si_no": "",
-					"roles_name": "Lead",
-					"created": "29 Oct 2023, 03:10 pm",
-					"Action": ""
-				}
-			],
-			"columns": [
-				{
-					"render": function (data, type, row) {
-						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-					}
-				},
-				{ "data": "roles_name" },
-				{ "data": "created" },
-				{
-					"render": function (data, type, row) {
-						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#edit_role"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="permission"><i class="ti ti-shield text-success"></i> Permission</a></div></div>';
-					}
-				}
-			]
-		});
-	}
 
 	// Permission
 
@@ -8907,6 +9037,4 @@ $(document).ready(function() {
 
 		});
 	}
-
-
 });

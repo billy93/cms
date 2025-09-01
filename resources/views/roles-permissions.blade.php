@@ -91,11 +91,6 @@
                             <label class="col-form-label">Role Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
                             <div class="invalid-feedback d-flex" data-name="name"></div>
-                        </div>    
-                        <div class="mb-3">
-                            <label class="col-form-label">Slug <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="slug" readonly>
-                            <div class="invalid-feedback d-flex" data-name="slug"></div>
                         </div>
                         <div class="mb-3">
                             <label class="col-form-label">Description</label>
@@ -154,11 +149,6 @@
                             <label class="col-form-label">Role Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="name" required>
                             <div class="invalid-feedback d-flex" data-name="name"></div>
-                        </div>    
-                        <div class="mb-3">
-                            <label class="col-form-label">Slug <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="slug" readonly>
-                            <div class="invalid-feedback d-flex" data-name="slug"></div>
                         </div>
                         <div class="mb-3">
                             <label class="col-form-label">Description</label>
@@ -167,7 +157,23 @@
                         </div>
                         <div class="mb-0">
                             <label class="col-form-label">Permissions</label>
-                            <div class="row" id="edit-permissions-container"></div>
+                            <div class="row" id="edit-permissions-container">
+                                @foreach ($permissions as $permission)
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input
+                                                type="checkbox"
+                                                name="permission_ids[]"
+                                                value="{{ $permission->id }}"
+                                                class="form-check-input"
+                                                id="edit_perm_{{ $permission->id }}">
+                                            <label class="form-check-label" for="edit_perm_{{ $permission->id }}">
+                                                {{ $permission->module }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                             <div class="invalid-feedback d-flex" data-name="permission_ids"></div>
                         </div>       
                     </div>
@@ -207,25 +213,5 @@
       
     @component('components.model-popup')
     @endcomponent
-    @push('scripts')
-        <script>
-        function slugify(text) {
-            return text.toString().toLowerCase()
-                .trim()
-                .replace(/[^a-z0-9 -]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
-        }
 
-        $(document).ready(function () {
-            $(document).on('input', '#addRole input[name="name"], #editRole input[name="name"]', function () {
-                const $form = $(this).closest('form');
-                const name = $(this).val();
-                const slug = slugify(name);
-
-                $form.find('input[name="slug"]').val(slug);
-            });
-        });
-        </script>
-    @endpush
 @endsection

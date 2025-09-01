@@ -33,7 +33,6 @@ class RoleRequest extends ApiFormRequest
   {
     return [
       'name' => 'required|string|max:255|unique:roles,name', 
-      'slug' => 'required|string|max:255|unique:roles,slug', 
       'description' => 'nullable|string|max:255',
       'permission_ids' => 'sometimes|array', 
       'permission_ids.*' => 'integer|exists:permissions,id',
@@ -45,7 +44,6 @@ class RoleRequest extends ApiFormRequest
     return [
       'id' => 'required|exists:roles,id',
       'name' => 'required|string|max:255|unique:roles,name,' . $this->route('role_id'),
-      'slug' => 'required|string|max:255|unique:roles,slug,' . $this->route('role_id'),
       'description' => 'nullable|string|max:255',
       'permission_ids' => 'sometimes|array', 
       'permission_ids.*' => 'integer|exists:permissions,id',
@@ -63,10 +61,7 @@ class RoleRequest extends ApiFormRequest
       'name.max' => 'The name may not be greater than :max characters.',
       'name.unique' => 'The name has already been taken.',
 
-      'slug.required' => 'The slug field is required.',
-      'slug.string' => 'The slug must be a string.',
-      'slug.max' => 'The slug may not be greater than :max characters.',
-      'slug.unique' => 'The slug has already been taken.',
+
 
       'description.string' => 'The description must be a string.',
       'description.max' => 'The description may not be greater than :max characters.',
