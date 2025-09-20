@@ -1017,6 +1017,15 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('suppliers.detail', compact('id'));
     })->name('suppliers.detail');
 
+    // Project routes
+    Route::get('/projects', function () {
+        return view('projects.index');
+    })->name('projects');
+
+    Route::get('/projects/{id}', function ($id) {
+        return view('projects.show', compact('id'));
+    })->name('projects.show');
+
     // // User
     // Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     // Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');

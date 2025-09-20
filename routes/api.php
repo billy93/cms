@@ -12,6 +12,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPicController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProposalController;
 
 Route::middleware('api')->group(function() {
   Route::post('signin', [AuthController:: class, 'signinJson'])->name('api.auth.signin');
@@ -117,6 +119,30 @@ Route::prefix('products')->name('api.products.')->group(function() {
   Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy');
   Route::get('/active', [ProductController::class, 'getActiveProducts'])->name('active');
   Route::get('/categories', [ProductController::class, 'getCategories'])->name('categories');
+});
+
+// Project routes
+Route::prefix('projects')->name('api.projects.')->group(function() {
+  Route::get('/', [ProjectController::class, 'index'])->name('index');
+  Route::post('/', [ProjectController::class, 'store'])->name('store');
+  Route::get('{id}', [ProjectController::class, 'show'])->name('show');
+  Route::put('{id}', [ProjectController::class, 'update'])->name('update');
+  Route::delete('{id}', [ProjectController::class, 'destroy'])->name('destroy');
+  Route::get('active/list', [ProjectController::class, 'getActiveProjects'])->name('active');
+  Route::post('bulk-status', [ProjectController::class, 'bulkUpdateStatus'])->name('bulk-status');
+  Route::get('search/customers', [ProjectController::class, 'searchCustomers'])->name('search-customers');
+});
+
+// Proposal routes
+Route::prefix('proposals')->name('api.proposals.')->group(function() {
+  Route::get('/', [ProposalController::class, 'index'])->name('index');
+  Route::post('/', [ProposalController::class, 'store'])->name('store');
+  Route::get('{id}', [ProposalController::class, 'show'])->name('show');
+  Route::put('{id}', [ProposalController::class, 'update'])->name('update');
+  Route::delete('{id}', [ProposalController::class, 'destroy'])->name('destroy');
+  Route::get('project/{projectId}', [ProposalController::class, 'getByProject'])->name('by-project');
+  Route::get('cities', [ProposalController::class, 'getCities'])->name('cities');
+  Route::get('generate-codes', [ProposalController::class, 'generateCodes'])->name('generate-codes');
 });
 
 // Test route

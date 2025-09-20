@@ -211,6 +211,7 @@ use App\Services\MenuService;
                                     class="ti ti-truck"></i><span>Suppliers</span></a>
                         </li>
                         @endif
+
                         <!-- <li>
                             <a class="{{ Request::is('deals', 'deals-kanban', 'deals-details') ? 'active' : '' }}"
                                 href="{{ url('deals') }}"><i class="ti ti-medal"></i><span>Deals</span></a>
