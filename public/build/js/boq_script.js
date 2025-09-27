@@ -740,8 +740,8 @@ class BoqForm {
         } else {
           payload.items.push({
             subheader: "Adult",
-            qty: parseFloat(adultPrice.value),
-            amount: parseInt(adultQty.value)
+            amount: parseFloat(adultPrice.value),
+            qty: parseInt(adultQty.value)
           });
         }
       }
@@ -752,8 +752,8 @@ class BoqForm {
         } else {
           payload.items.push({
             subheader: "Child",
-            qty: parseFloat(childPrice.value),
-            amount: parseInt(childQty.value)
+            amount: parseFloat(childPrice.value),
+            qty: parseInt(childQty.value)
           });
         }
       }
@@ -764,8 +764,8 @@ class BoqForm {
         } else {
           payload.items.push({
             subheader: "Infant",
-            qty: parseFloat(infantPrice.value),
-            amount: parseInt(infantQty.value)
+            amount: parseFloat(infantPrice.value),
+            qty: parseInt(infantQty.value)
           });
         }
       }
