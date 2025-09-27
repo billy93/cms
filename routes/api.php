@@ -14,6 +14,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\BoqController;
 
 Route::middleware('api')->group(function() {
   Route::post('signin', [AuthController:: class, 'signinJson'])->name('api.auth.signin');
@@ -58,6 +59,15 @@ Route::middleware(['api', 'auth:api'])->group(function () {
 
 Route::apiResource('invoices', InvoiceController::class);
   
+// BOQ routes
+Route::prefix('boqs')->name('api.boqs.')->group(function () {
+  Route::post('/', [BoqController::class, 'create'])->name('create');
+  Route::get('/', [BoqController::class, 'readAll'])->name('readAll');
+  Route::get('{permission_id}', [BoqController::class, 'read'])->name('read');
+  Route::put('{permission_id}', [BoqController::class, 'update'])->name('update');
+  Route::delete('{permission_id}', [BoqController::class, 'delete'])->name('delete');
+});
+
 // Customer routes
 Route::prefix('customers')->name('api.customers.')->group(function() {
   Route::get('/', [CustomerController::class, 'index'])->name('index');

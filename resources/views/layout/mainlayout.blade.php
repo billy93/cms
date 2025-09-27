@@ -406,7 +406,7 @@
         <title>Reset Password | PCMI</title>
     @endif
     @if (Route::is(['roles-permissions', 'roles.index']))
-<title>Roles | PCMI</title>
+        <title>Roles | PCMI</title>
     @endif
     @if (Route::is(['security']))
         <title>Security | PCMI</title>
@@ -692,7 +692,7 @@
                 'index',
             ]))
             @include('layout.partials.header')
-            @include('layout.partials.sidebar')
+            <!-- @include('layout.partials.sidebar') -->
         @endif
         @yield('content')
     </div>

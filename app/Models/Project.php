@@ -66,6 +66,10 @@ class Project extends Model
         return $this->hasOne(Proposal::class);
     }
 
+    public function boqs(): BelongsToMany
+    {
+        return $this->belongsToMany(Boq::class, 'boq_project');
+    }
     /**
      * Check if project has a proposal
      */

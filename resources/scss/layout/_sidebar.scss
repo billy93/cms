@@ -5,7 +5,7 @@
     background-color: $white;
     margin-top: 0;
     z-index: 1001;
-    @include position(fixed,56px,null,0,0);
+    @include position(fixed, 56px, null, 0, 0);
     @include transition(all 0.5s ease);
     width: 320px;
     @include respond-below(custom991) {
@@ -23,23 +23,23 @@
             width: 100% !important;
         }
     }
-    .sidebar-menu{
+    .sidebar-menu {
         @include margin-padding(null, 15px);
-        .clinicdropdown{
+        .clinicdropdown {
             margin-bottom: 24px;
-           > a {
+            > a {
                 background: $light-300;
                 border-radius: $border-radius-lg;
                 padding: 10px;
-                img{
+                img {
                     width: 42px;
                     height: 42px;
                     border-radius: $border-radius-lg;
                 }
-                .user-names{
+                .user-names {
                     margin-left: 10px;
                     flex: 1;
-                    h5{
+                    h5 {
                         font-size: $font-size-16;
                         font-weight: $font-weight-semibold;
                         color: $title-color;
@@ -54,29 +54,29 @@
                 }
             }
         }
-        .submenu-two{
-            .subdrop.active{
+        .submenu-two {
+            .subdrop.active {
                 background: transparent !important;
-            }    
+            }
         }
-        > ul{
-            > li{
+        > ul {
+            > li {
                 margin-bottom: 24px;
-                &.active{
-                    a{
+                &.active {
+                    a {
                         color: $white;
                     }
                     svg {
-                        color: #FE9F43
+                        color: #fe9f43;
                     }
                 }
                 svg {
                     min-width: 16px;
-                    width:  16px;
-                    height:  16px;
+                    width: 16px;
+                    height: 16px;
                     margin-right: 10px;
                 }
-                > a{
+                > a {
                     display: -webkit-box;
                     display: -ms-flexbox;
                     display: flex;
@@ -86,30 +86,32 @@
                     @include margin-padding(null, 10px 15px);
                     position: relative;
                     color: $secondary;
-                    svg{
+                    svg {
                         color: #637381;
                     }
-                    img{
+                    img {
                         color: #637381;
                     }
-                    
-                    &.active{
+
+                    &.active {
                         background: rgba(254, 159, 67, 0.08);
-                        color: #FE9F43;
+                        color: #fe9f43;
                         border-radius: 5px;
-                        svg{
+                        svg {
                             color: $white;
                         }
                         img {
-                            filter: invert(72%) sepia(76%) saturate(1430%) hue-rotate(327deg) brightness(103%) contrast(101%);
+                            filter: invert(72%) sepia(76%) saturate(1430%)
+                                hue-rotate(327deg) brightness(103%)
+                                contrast(101%);
                         }
-                        span{
-                            color: #FE9F43;
+                        span {
+                            color: #fe9f43;
                         }
-                        .menu-arrow{
-                            background: #FFEDDC;
-                            &::before{
-                                border-color: #FE9F43;
+                        .menu-arrow {
+                            background: #ffeddc;
+                            &::before {
+                                border-color: #fe9f43;
                             }
                         }
                     }
@@ -123,27 +125,29 @@
                     a {
                         background: rgba(254, 159, 67, 0.08);
                         border-radius: 5px;
-                        img{
-                            filter: invert(72%) sepia(76%) saturate(1430%) hue-rotate(327deg) brightness(103%) contrast(101%);
+                        img {
+                            filter: invert(72%) sepia(76%) saturate(1430%)
+                                hue-rotate(327deg) brightness(103%)
+                                contrast(101%);
                         }
-                        span{
-                            color: #FE9F43;
+                        span {
+                            color: #fe9f43;
                         }
                     }
                 }
                 &.submenu {
                     ul {
                         display: none;
-                       li {
+                        li {
                             a {
-                               font-weight: $font-weight-medium;
-                               font-size: $font-size-base;
-                               position: relative;
-                               display: block;
-                               @include margin-padding(null, 8px 8px 8px 40px);
-                               padding-left: 30px;
-                           }
-                       }
+                                font-weight: $font-weight-medium;
+                                font-size: $font-size-base;
+                                position: relative;
+                                display: block;
+                                @include margin-padding(null, 8px 8px 8px 40px);
+                                padding-left: 30px;
+                            }
+                        }
                     }
                 }
                 ul {
@@ -196,27 +200,26 @@
                                     color: $white;
                                 }
                             }
-                            &:hover{
+                            &:hover {
                                 color: $primary;
                                 span {
                                     color: $primary;
                                 }
                             }
-                        }  
+                        }
                     }
                     > li {
-                        &.active a{
-                            &.subdrop{
-                                background: #FFEEEC;
+                        &.active a {
+                            &.subdrop {
+                                background: #ffeeec;
                                 border-radius: 5px;
-                                color: #E41F07;
-                                i{
-                                    color:$white;
-                                    background:#E41F07;
+                                color: #e41f07;
+                                i {
+                                    color: $white;
+                                    background: #e41f07;
                                 }
                                 span {
-                                    color: #E41F07;
-                                    
+                                    color: #e41f07;
                                 }
                             }
                         }
@@ -254,7 +257,7 @@
                                 font-size: $font-size-base;
                                 background: transparent;
                                 position: relative;
-                                &:after{
+                                &:after {
                                     position: absolute;
                                     content: "";
                                     background-color: #898989;
@@ -264,7 +267,7 @@
                                     left: 16px;
                                     top: 14px;
                                 }
-                                &:before{
+                                &:before {
                                     position: absolute;
                                     content: "";
                                     background-color: #898989;
@@ -283,7 +286,7 @@
                                 background: $dark;
                                 color: $white;
                             }
-                            &.submenu-two{
+                            &.submenu-two {
                                 background: transparent;
                             }
                         }
@@ -306,9 +309,7 @@
                         }
                     }
                 }
-                
             }
-
         }
         .submenu-open {
             &:last-child {
@@ -340,31 +341,37 @@
                 ul {
                     li {
                         a {
-                        margin-left: 25px;
-                        padding-bottom: 4px;
-                        font-size: $font-size-base;
-                        color: $sub-title;
-                        &::after{
-                            content: "";
-                            background: rgba(50, 71, 92, 0.38);
-                            width: 8px;
-                            height: 8px;
-                            border: 2px solid $white;
-                            @include rounded(50px);
-                            @include position(absolute,16px,null,null,0);
+                            margin-left: 25px;
+                            padding-bottom: 4px;
+                            font-size: $font-size-base;
+                            color: $sub-title;
+                            &::after {
+                                content: "";
+                                background: rgba(50, 71, 92, 0.38);
+                                width: 8px;
+                                height: 8px;
+                                border: 2px solid $white;
+                                @include rounded(50px);
+                                @include position(
+                                    absolute,
+                                    16px,
+                                    null,
+                                    null,
+                                    0
+                                );
                             }
-                            &:hover{
-                                color:$primary;
-                                &:after{
-                                background: #FE9F43;
-                                border: 2px solid #FDB;
+                            &:hover {
+                                color: $primary;
+                                &:after {
+                                    background: #fe9f43;
+                                    border: 2px solid #fdb;
                                 }
                             }
                         }
                     }
-                } 
-            } 
-        }               
+                }
+            }
+        }
         .menu-arrow {
             display: -webkit-box;
             display: -ms-flexbox;
@@ -382,7 +389,7 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            @include position(absolute,12px,10px,null,null);
+            @include position(absolute, 12px, 10px, null, null);
             @include transform(translate(0, 0));
             @include transition(all 0.2s ease);
             &::before {
@@ -405,16 +412,16 @@
                 }
             }
         }
-        &.subdrop{
+        &.subdrop {
             .menu-arrow {
-                @include transform(rotate(90deg));                            
-                background: #FFEDDC;
+                @include transform(rotate(90deg));
+                background: #ffeddc;
             }
         }
     }
     .sidebar-left {
         width: 100px;
-        @include box-shadow(null, 5px, 0px, 15px, null, rgba(0, 0, 0, .05));
+        @include box-shadow(null, 5px, 0px, 15px, null, rgba(0, 0, 0, 0.05));
     }
     .sidebar-right {
         width: 250px;
@@ -434,7 +441,7 @@
         .tab-content {
             @include margin-padding(null, 20px 20px 40px);
             @include respond-below(custom991) {
-                @include margin-padding(null,10px);
+                @include margin-padding(null, 10px);
             }
         }
         p {
@@ -449,9 +456,13 @@
             padding: 0;
             margin: 0;
             li {
-                &.active{
-                    a{
-                        background: linear-gradient(46.62deg, $primary 0%, $violet 93.64%);
+                &.active {
+                    a {
+                        background: linear-gradient(
+                            46.62deg,
+                            $primary 0%,
+                            $violet 93.64%
+                        );
                         color: $white;
                     }
                 }
@@ -468,9 +479,9 @@
         .menu-arrow {
             -webkit-transition: -webkit-transform 0.15s;
             -o-transition: -o-transform 0.15s;
-            transition: transform .15s;
+            transition: transform 0.15s;
             display: inline-block;
-            font-family: 'Font Awesome 5 Free';
+            font-family: "Font Awesome 5 Free";
             text-rendering: auto;
             line-height: 40px;
             font-size: $font-size-18;
@@ -483,7 +494,6 @@
             @include transform(translate(0, 0));
             &:before {
                 content: "\f105";
-                
             }
         }
     }
@@ -505,7 +515,7 @@
             }
         }
     }
-    .nav-items{
+    .nav-items {
         .nav-link {
             display: -webkit-box;
             display: -ms-flexbox;
@@ -516,16 +526,15 @@
             border-bottom: 1px solid $gray-400;
             @include margin-padding(null, 20px 0);
             @include transition(all 0.4s ease);
-            &:hover{
-                box-shadow: 0  0 0 150px $violet inset;
+            &:hover {
+                box-shadow: 0 0 0 150px $violet inset;
                 color: $white;
-            }  
-            span{
+            }
+            span {
                 margin-top: 15px;
-                font-weight:$font-weight-medium;
+                font-weight: $font-weight-medium;
             }
         }
-       
     }
     .sidemenu {
         a {
@@ -533,37 +542,39 @@
             font-weight: $font-weight-medium;
             display: block;
             @include rounded(5px);
-            @include margin-padding( 0 0 10px, 10px);
-            &:hover{
-                background: linear-gradient(46.62deg, $primary 0%, $violet 93.64%);
+            @include margin-padding(0 0 10px, 10px);
+            &:hover {
+                background: linear-gradient(
+                    46.62deg,
+                    $primary 0%,
+                    $violet 93.64%
+                );
                 color: $white;
-                svg{
-                    color:$white;
+                svg {
+                    color: $white;
                 }
             }
             svg {
                 stroke-width: 1px;
             }
-           
         }
     }
 }
-
 
 @include respond-above(custom991) {
     .mini-sidebar {
         .page-wrapper {
             margin-left: 80px;
         }
-        .user-names{
+        .user-names {
             display: none;
         }
         .header-left {
-            #toggle_btn{
+            #toggle_btn {
                 opacity: 1;
                 transform: rotate(180deg);
                 &:after {
-                   border:0;
+                    border: 0;
                 }
             }
         }
@@ -574,17 +585,17 @@
                 }
             }
         }
-        &.expand-menu{
+        &.expand-menu {
             .header-left {
-                #toggle_btn{
+                #toggle_btn {
                     opacity: 1;
                     transform: rotate(180deg);
                 }
-            }  
+            }
             .sidebar {
-                .sidebar-menu{
+                .sidebar-menu {
                     .clinicdropdown > a {
-                        padding: 10px ;
+                        padding: 10px;
                     }
                 }
             }
@@ -593,43 +604,43 @@
             display: none;
         }
         .sidebar {
-            .sidebar-menu{
-                  ul{
-                    li{
+            .sidebar-menu {
+                ul {
+                    li {
                         a {
-                            span{
-                                display:none;
+                            span {
+                                display: none;
                             }
                         }
                         .submenu-hdr {
-                            display:none;
-                        }                                                       
+                            display: none;
+                        }
                         svg {
-                            margin-right:0;
+                            margin-right: 0;
                         }
                     }
                 }
-            } 
+            }
         }
-        .sidebar{
+        .sidebar {
             width: 80px;
             overflow: hidden;
         }
-        &.expand-menu{
+        &.expand-menu {
             .sidebar {
-                display:block
+                display: block;
             }
         }
     }
-    .expand-menu{
-        &.mini-sidebar{
-            .sidebar{
-                .sidebar-menu{
+    .expand-menu {
+        &.mini-sidebar {
+            .sidebar {
+                .sidebar-menu {
                     .submenu-hdr {
-                        display:block;
+                        display: block;
                     }
                 }
-                .user-names{
+                .user-names {
                     display: block;
                 }
             }
@@ -640,26 +651,26 @@
         }
         .sidebar {
             width: 320px;
-            .sidebar-menu{
-               ul{
-                   > li{
+            .sidebar-menu {
+                ul {
+                    > li {
                         > a {
-                            span{
-                                display:inline-block;
+                            span {
+                                display: inline-block;
                                 line-height: 0;
                             }
-                        }                        
+                        }
                         svg {
-                            margin-right:10px;
+                            margin-right: 10px;
                         }
                     }
                 }
                 .submenu-hdr {
-                    display:block;
+                    display: block;
                 }
             }
         }
-        .header-left{
+        .header-left {
             width: 320px;
         }
     }
@@ -676,13 +687,13 @@
         float: left;
     }
 }
-body.mini-sidebar.expand-menu{
-    .sidebar .sidebar-menu > ul > li ul li a{
+body.mini-sidebar.expand-menu {
+    .sidebar .sidebar-menu > ul > li ul li a {
         justify-content: start;
     }
 }
-body.mini-sidebar{
-    .sidebar .sidebar-menu > ul > li ul li a{
+body.mini-sidebar {
+    .sidebar .sidebar-menu > ul > li ul li a {
         justify-content: center;
     }
     .sidebar {
@@ -698,26 +709,26 @@ body.mini-sidebar{
             -ms-flex-pack: center;
             font-weight: $font-weight-medium;
             font-size: $font-size-15;
-            color: #67748E;
+            color: #67748e;
             position: relative;
             width: 100%;
             padding: 10px;
         }
-        .sidebar-menu > ul > li ul > li.active a{
+        .sidebar-menu > ul > li ul > li.active a {
             padding: 10px;
             justify-content: center;
         }
     }
-     
+
     &.expand-menu {
         .sidebar {
             .sidebar-menu > ul > li.submenu-open ul li a {
                 justify-content: left;
                 -webkit-justify-content: left;
                 -ms-flex-pack: left;
-                padding-left:  18px;
+                padding-left: 18px;
             }
-            .sidebar-menu > ul > li ul > li.active a{
+            .sidebar-menu > ul > li ul > li.active a {
                 padding: 10px 15px;
                 justify-content: start;
             }
@@ -725,12 +736,12 @@ body.mini-sidebar{
     }
 }
 
-.sidebarrightmenu{
-    .sidebar-right{
+.sidebarrightmenu {
+    .sidebar-right {
         display: block;
     }
 }
-.slide-nav{
+.slide-nav {
     .sidebar {
         margin-left: 0;
     }
@@ -741,32 +752,32 @@ body.mini-sidebar{
     width: 100%;
     z-index: 99;
     background-color: rgba(0, 0, 0, 0.6);
-    @include position(fixed,60px,null,null,0);
+    @include position(fixed, 60px, null, null, 0);
     &.opened {
         display: block;
     }
 }
-.mini-sidebar{
-    .active.subdrop ~ ul{
+.mini-sidebar {
+    .active.subdrop ~ ul {
         display: none !important;
     }
 }
-.mini-sidebar.expand-menu{
-    .active.subdrop ~ ul{
+.mini-sidebar.expand-menu {
+    .active.subdrop ~ ul {
         display: block !important;
     }
 }
-.active.subdrop ~ ul{
+.active.subdrop ~ ul {
     display: block !important;
 }
 
 .sidebar {
-	.sidebar-menu {
-		>ul {
-			li {
-				.submenu {
+    .sidebar-menu {
+        > ul {
+            li {
+                .submenu {
                     &.submenu-two {
-                        >ul {
+                        > ul {
                             li {
                                 a {
                                     margin-left: 30px;
@@ -774,7 +785,7 @@ body.mini-sidebar{
                             }
                         }
                         &.submenu-three {
-                            >ul {
+                            > ul {
                                 li {
                                     a {
                                         margin-left: 60px;
@@ -784,10 +795,9 @@ body.mini-sidebar{
                         }
                     }
                 }
-                
-			}
-		}
-	}
+            }
+        }
+    }
 }
 .mini-sidebar {
     .header {
@@ -798,6 +808,7 @@ body.mini-sidebar{
         }
     }
 }
-.sidebar .modern-profile, .sidebar .sidebar-header {
+.sidebar .modern-profile,
+.sidebar .sidebar-header {
     display: none;
 }

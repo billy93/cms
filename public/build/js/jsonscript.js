@@ -294,7 +294,7 @@ $(document).ready(function () {
 			]
 		});
 	}
-	
+
 	// Roles List DataTable
 	if ($('#roles_list').length > 0) {
 		var rolesTable = $('#roles_list').DataTable({
@@ -337,11 +337,11 @@ $(document).ready(function () {
 
 
 	// Role Form Submission
-	$('#addRole').on('submit', function(e) {
+	$('#addRole').on('submit', function (e) {
 		e.preventDefault();
-		
+
 		var formData = new FormData(this);
-		
+
 		$.ajax({
 			url: $(this).attr('action'),
 			type: 'POST',
@@ -351,29 +351,29 @@ $(document).ready(function () {
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
-			success: function(response) {
+			success: function (response) {
 				if (response.success) {
 					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_add_role'));
 					offcanvas.hide();
 					$('#addRole')[0].reset();
 					$('#roles_list').DataTable().ajax.reload();
-					
+
 					// Show success message
 					toastr.success(response.message || 'Role created successfully!');
 				}
 			},
-			error: function(xhr) {
+			error: function (xhr) {
 				var errors = xhr.responseJSON.errors;
 				if (errors) {
 					// Clear previous errors
 					$('.invalid-feedback').hide().text('');
 					$('.form-control').removeClass('is-invalid');
-					
+
 					// Show new errors
-					$.each(errors, function(field, messages) {
+					$.each(errors, function (field, messages) {
 						var $field = $('[name="' + field + '"]');
 						var $feedback = $('[data-name="' + field + '"]');
-						
+
 						$field.addClass('is-invalid');
 						$feedback.text(messages[0]).show();
 					});
@@ -385,15 +385,15 @@ $(document).ready(function () {
 	});
 
 	// Edit Role Form Submission
-	$('#editRole').on('submit', function(e) {
+	$('#editRole').on('submit', function (e) {
 		e.preventDefault();
-		
+
 		var formData = new FormData(this);
 		var roleId = $(this).data('role-id');
-		
+
 		// Add method override for PUT request
 		formData.append('_method', 'PUT');
-		
+
 		$.ajax({
 			url: '/roles-permissions/' + roleId,
 			type: 'POST',
@@ -403,29 +403,29 @@ $(document).ready(function () {
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
-			success: function(response) {
+			success: function (response) {
 				if (response.success) {
 					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_edit_role'));
 					offcanvas.hide();
 					$('#editRole')[0].reset();
 					$('#roles_list').DataTable().ajax.reload();
-					
+
 					// Show success message
 					toastr.success(response.message || 'Role updated successfully!');
 				}
 			},
-			error: function(xhr) {
+			error: function (xhr) {
 				var errors = xhr.responseJSON.errors;
 				if (errors) {
 					// Clear previous errors
 					$('.invalid-feedback').hide().text('');
 					$('.form-control').removeClass('is-invalid');
-					
+
 					// Show new errors
-					$.each(errors, function(field, messages) {
+					$.each(errors, function (field, messages) {
 						var $field = $('[name="' + field + '"]');
 						var $feedback = $('[data-name="' + field + '"]');
-						
+
 						$field.addClass('is-invalid');
 						$feedback.text(messages[0]).show();
 					});
@@ -437,568 +437,568 @@ $(document).ready(function () {
 	});
 
 	// Load Role Data for Edit
-	$(document).on('click', '#c_role_edit', function(e) {
+	$(document).on('click', '#c_role_edit', function (e) {
 		e.preventDefault();
-		
+
 		var roleId = $(this).data('id');
 		var url = $(this).data('url');
-		
+
 		$.ajax({
 			url: url,
 			type: 'GET',
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
-			success: function(response) {
+			success: function (response) {
 				if (response.success) {
 					var role = response.data;
-					
+
 					// Populate form fields
 					$('#editRole [name="name"]').val(role.name);
 					$('#editRole [name="description"]').val(role.description);
-					
+
 					// Set role ID for form submission
 					$('#editRole').data('role-id', roleId);
-					
+
 					// Handle permissions if they exist
 					if (role.permissions) {
 						// Clear all checkboxes first
 						$('#edit-permissions-container input[type="checkbox"]').prop('checked', false);
-						
+
 						// Check the permissions that the role has
-						role.permissions.forEach(function(permission) {
+						role.permissions.forEach(function (permission) {
 							$('#edit-permissions-container input[value="' + permission.id + '"]').prop('checked', true);
 						});
 					}
 				}
 			},
-			error: function(xhr) {
+			error: function (xhr) {
 				toastr.error('Failed to load role data.');
 			}
 		});
 	});
 
 	// Delete Role
-	$(document).on('click', '#c_role_delete', function(e) {
+	$(document).on('click', '#c_role_delete', function (e) {
 		e.preventDefault();
-		
+
 		var roleId = $(this).data('id');
 		var url = $(this).data('url');
-		
+
 		// Store the delete URL for the confirmation button
 		$('#trigger_delete_role').data('url', url);
 	});
 
 	// Confirm Delete Role
-	$(document).on('click', '#trigger_delete_role', function(e) {
+	$(document).on('click', '#trigger_delete_role', function (e) {
 		e.preventDefault();
-		
+
 		var url = $(this).data('url');
-		
+
 		$.ajax({
 			url: url,
 			type: 'DELETE',
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
-			success: function(response) {
+			success: function (response) {
 				if (response.success) {
 					$('#delete_role_modal').modal('hide');
 					$('#roles_list').DataTable().ajax.reload();
-					
+
 					// Show success message
 					toastr.success(response.message || 'Role deleted successfully!');
 				}
 			},
-			error: function(xhr) {
+			error: function (xhr) {
 				toastr.error('Failed to delete role.');
 			}
 		});
 	});
 
-// Menu Management
-if ($('#menus_list').length) {
-	$('#menus_list').DataTable({
-		"processing": true,
-		"serverSide": true,
-		"ajax": {
-			"url": $('#menus_list').data('url'),
-			"type": "GET"
-		},
-		"bFilter": false,
-		"bInfo": false,
-		"ordering": true,
-		"autoWidth": true,
-		"language": {
-			search: ' ',
-			sLengthMenu: '_MENU_',
-			searchPlaceholder: "Search",
-			info: "_START_ - _END_ of _TOTAL_ items",
-			"lengthMenu": "Show _MENU_ entries",
-			paginate: {
-				next: 'Next <i class=" fa fa-angle-right"></i> ',
-				previous: '<i class="fa fa-angle-left"></i> Prev '
+	// Menu Management
+	if ($('#menus_list').length) {
+		$('#menus_list').DataTable({
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": $('#menus_list').data('url'),
+				"type": "GET"
 			},
-		},
-		initComplete: (settings, json) => {
-			$('.dataTables_paginate').appendTo('.datatable-paginate');
-			$('.dataTables_length').appendTo('.datatable-length');
-			$('.dataTables_info').appendTo('.datatable-info');
-		},
-		"columns": [
-			{ "data": "label" },
-			{ "data": "path" },
-			{ "data": "icon" },
-			{ "data": "parent_name" },
-			{ "data": "sort" },
-			{ "data": "is_active" },
-			{ "data": "created_at" },
-			{ "data": "actions", "orderable": false, "searchable": false }
-		]
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class=" fa fa-angle-right"></i> ',
+					previous: '<i class="fa fa-angle-left"></i> Prev '
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+				$('.dataTables_info').appendTo('.datatable-info');
+			},
+			"columns": [
+				{ "data": "label" },
+				{ "data": "path" },
+				{ "data": "icon" },
+				{ "data": "parent_name" },
+				{ "data": "sort" },
+				{ "data": "is_active" },
+				{ "data": "created_at" },
+				{ "data": "actions", "orderable": false, "searchable": false }
+			]
+		});
+	}
+
+	// Menu Form Submission
+	$('#addMenu').on('submit', function (e) {
+		e.preventDefault();
+
+		var formData = new FormData(this);
+
+		$.ajax({
+			url: $(this).attr('action'),
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_add_menu'));
+					offcanvas.hide();
+					$('#addMenu')[0].reset();
+					$('#menus_list').DataTable().ajax.reload();
+
+					// Show success message
+					toastr.success(response.message || 'Menu created successfully!');
+				}
+			},
+			error: function (xhr) {
+				var errors = xhr.responseJSON.errors;
+				if (errors) {
+					// Clear previous errors
+					$('.invalid-feedback').hide().text('');
+					$('.form-control').removeClass('is-invalid');
+
+					// Show new errors
+					$.each(errors, function (field, messages) {
+						var $field = $('[name="' + field + '"]');
+						var $feedback = $('[data-name="' + field + '"]');
+
+						$field.addClass('is-invalid');
+						$feedback.text(messages[0]).show();
+					});
+				} else {
+					toastr.error('An error occurred while creating the menu.');
+				}
+			}
+		});
 	});
-}
 
-// Menu Form Submission
-$('#addMenu').on('submit', function(e) {
-	e.preventDefault();
-	
-	var formData = new FormData(this);
-	
-	$.ajax({
-		url: $(this).attr('action'),
-		type: 'POST',
-		data: formData,
-		processData: false,
-		contentType: false,
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_add_menu'));
-				offcanvas.hide();
-				$('#addMenu')[0].reset();
-				$('#menus_list').DataTable().ajax.reload();
-				
-				// Show success message
-				toastr.success(response.message || 'Menu created successfully!');
+	// Edit Menu Form Submission
+	$('#editMenu').on('submit', function (e) {
+		e.preventDefault();
+
+		var formData = new FormData(this);
+		var menuId = $(this).data('menu-id');
+
+		// Add method override for PUT request
+		formData.append('_method', 'PUT');
+
+		$.ajax({
+			url: '/manage-menus/' + menuId,
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_edit_menu'));
+					offcanvas.hide();
+					$('#editMenu')[0].reset();
+					$('#menus_list').DataTable().ajax.reload();
+
+					// Show success message
+					toastr.success(response.message || 'Menu updated successfully!');
+				}
+			},
+			error: function (xhr) {
+				var errors = xhr.responseJSON.errors;
+				if (errors) {
+					// Clear previous errors
+					$('.invalid-feedback').hide().text('');
+					$('.form-control').removeClass('is-invalid');
+
+					// Show new errors
+					$.each(errors, function (field, messages) {
+						var $field = $('[name="' + field + '"]');
+						var $feedback = $('[data-name="' + field + '"]');
+
+						$field.addClass('is-invalid');
+						$feedback.text(messages[0]).show();
+					});
+				} else {
+					toastr.error('An error occurred while updating the menu.');
+				}
 			}
-		},
-		error: function(xhr) {
-			var errors = xhr.responseJSON.errors;
-			if (errors) {
-				// Clear previous errors
-				$('.invalid-feedback').hide().text('');
-				$('.form-control').removeClass('is-invalid');
-				
-				// Show new errors
-				$.each(errors, function(field, messages) {
-					var $field = $('[name="' + field + '"]');
-					var $feedback = $('[data-name="' + field + '"]');
-					
-					$field.addClass('is-invalid');
-					$feedback.text(messages[0]).show();
-				});
-			} else {
-				toastr.error('An error occurred while creating the menu.');
-			}
-		}
+		});
 	});
-});
 
-// Edit Menu Form Submission
-$('#editMenu').on('submit', function(e) {
-	e.preventDefault();
-	
-	var formData = new FormData(this);
-	var menuId = $(this).data('menu-id');
-	
-	// Add method override for PUT request
-	formData.append('_method', 'PUT');
-	
-	$.ajax({
-		url: '/manage-menus/' + menuId,
-		type: 'POST',
-		data: formData,
-		processData: false,
-		contentType: false,
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvas_edit_menu'));
-				offcanvas.hide();
-				$('#editMenu')[0].reset();
-				$('#menus_list').DataTable().ajax.reload();
-				
-				// Show success message
-				toastr.success(response.message || 'Menu updated successfully!');
+	// Load Menu Data for Edit
+	$(document).on('click', '#c_menu_edit', function (e) {
+		e.preventDefault();
+
+		var menuId = $(this).data('id');
+		var url = $(this).data('url');
+
+		$.ajax({
+			url: url,
+			type: 'GET',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					var menu = response.data;
+
+					// Populate form fields
+					$('#editMenu [name="label"]').val(menu.label);
+					$('#editMenu [name="path"]').val(menu.path);
+					$('#editMenu [name="icon"]').val(menu.icon);
+					$('#editMenu [name="parent_id"]').val(menu.parent_id);
+					$('#editMenu [name="sort"]').val(menu.sort);
+					$('#editMenu [name="is_active"]').prop('checked', menu.is_active == 1);
+
+					// Set menu ID for form submission
+					$('#editMenu').data('menu-id', menuId);
+				}
+			},
+			error: function (xhr) {
+				toastr.error('Failed to load menu data.');
 			}
-		},
-		error: function(xhr) {
-			var errors = xhr.responseJSON.errors;
-			if (errors) {
-				// Clear previous errors
-				$('.invalid-feedback').hide().text('');
-				$('.form-control').removeClass('is-invalid');
-				
-				// Show new errors
-				$.each(errors, function(field, messages) {
-					var $field = $('[name="' + field + '"]');
-					var $feedback = $('[data-name="' + field + '"]');
-					
-					$field.addClass('is-invalid');
-					$feedback.text(messages[0]).show();
-				});
-			} else {
-				toastr.error('An error occurred while updating the menu.');
-			}
-		}
+		});
 	});
-});
 
-// Load Menu Data for Edit
-$(document).on('click', '#c_menu_edit', function(e) {
-	e.preventDefault();
-	
-	var menuId = $(this).data('id');
-	var url = $(this).data('url');
-	
-	$.ajax({
-		url: url,
-		type: 'GET',
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				var menu = response.data;
-				
-				// Populate form fields
-				$('#editMenu [name="label"]').val(menu.label);
-				$('#editMenu [name="path"]').val(menu.path);
-				$('#editMenu [name="icon"]').val(menu.icon);
-				$('#editMenu [name="parent_id"]').val(menu.parent_id);
-				$('#editMenu [name="sort"]').val(menu.sort);
-				$('#editMenu [name="is_active"]').prop('checked', menu.is_active == 1);
-				
-				// Set menu ID for form submission
-				$('#editMenu').data('menu-id', menuId);
-			}
-		},
-		error: function(xhr) {
-			toastr.error('Failed to load menu data.');
-		}
+	// Delete Menu
+	$(document).on('click', '#c_menu_delete', function (e) {
+		e.preventDefault();
+
+		var menuId = $(this).data('id');
+		var url = $(this).data('url');
+
+		// Store the delete URL for the confirmation button
+		$('#trigger_delete_menu').data('url', url);
 	});
-});
 
-// Delete Menu
-$(document).on('click', '#c_menu_delete', function(e) {
-	e.preventDefault();
-	
-	var menuId = $(this).data('id');
-	var url = $(this).data('url');
-	
-	// Store the delete URL for the confirmation button
-	$('#trigger_delete_menu').data('url', url);
-});
+	// Confirm Delete Menu
+	$(document).on('click', '#trigger_delete_menu', function (e) {
+		e.preventDefault();
 
-// Confirm Delete Menu
-$(document).on('click', '#trigger_delete_menu', function(e) {
-	e.preventDefault();
-	
-	var url = $(this).data('url');
-	
-	$.ajax({
-		url: url,
-		type: 'DELETE',
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				$('#delete_menu_modal').modal('hide');
-				$('#menus_list').DataTable().ajax.reload();
-				
-				// Show success message
-				toastr.success(response.message || 'Menu deleted successfully!');
+		var url = $(this).data('url');
+
+		$.ajax({
+			url: url,
+			type: 'DELETE',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					$('#delete_menu_modal').modal('hide');
+					$('#menus_list').DataTable().ajax.reload();
+
+					// Show success message
+					toastr.success(response.message || 'Menu deleted successfully!');
+				}
+			},
+			error: function (xhr) {
+				toastr.error('Failed to delete menu.');
 			}
-		},
-		error: function(xhr) {
-			toastr.error('Failed to delete menu.');
-		}
+		});
 	});
-});
 
-// Toggle Menu Status
-$(document).on('click', '#c_menu_toggle', function(e) {
-	e.preventDefault();
-	
-	var url = $(this).data('url');
-	
-	$.ajax({
-		url: url,
-		type: 'POST',
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				$('#menus_list').DataTable().ajax.reload();
-				toastr.success(response.message || 'Menu status updated successfully!');
+	// Toggle Menu Status
+	$(document).on('click', '#c_menu_toggle', function (e) {
+		e.preventDefault();
+
+		var url = $(this).data('url');
+
+		$.ajax({
+			url: url,
+			type: 'POST',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					$('#menus_list').DataTable().ajax.reload();
+					toastr.success(response.message || 'Menu status updated successfully!');
+				}
+			},
+			error: function (xhr) {
+				toastr.error('Failed to update menu status.');
 			}
-		},
-		error: function(xhr) {
-			toastr.error('Failed to update menu status.');
-		}
+		});
 	});
-});
 
-// Load Parent Menus for Add/Edit Forms
-function loadParentMenus() {
-	$.ajax({
-		url: '/manage-menus/get-parent-menus',
-		type: 'GET',
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		},
-		success: function(response) {
-			if (response.success) {
-				var options = '<option value="">Select Parent Menu</option>';
-				response.data.forEach(function(menu) {
-					options += '<option value="' + menu.id + '">' + menu.label + '</option>';
-				});
-				$('#addMenu [name="parent_id"]').html(options);
-				$('#editMenu [name="parent_id"]').html(options);
+	// Load Parent Menus for Add/Edit Forms
+	function loadParentMenus() {
+		$.ajax({
+			url: '/manage-menus/get-parent-menus',
+			type: 'GET',
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function (response) {
+				if (response.success) {
+					var options = '<option value="">Select Parent Menu</option>';
+					response.data.forEach(function (menu) {
+						options += '<option value="' + menu.id + '">' + menu.label + '</option>';
+					});
+					$('#addMenu [name="parent_id"]').html(options);
+					$('#editMenu [name="parent_id"]').html(options);
+				}
 			}
-		}
+		});
+	}
+
+	// Load parent menus when modals are opened
+	$('#add_menu').on('show.bs.modal', function () {
+		loadParentMenus();
 	});
-}
 
-// Load parent menus when modals are opened
-$('#add_menu').on('show.bs.modal', function() {
-	loadParentMenus();
-});
+	$('#edit_menu').on('show.bs.modal', function () {
+		loadParentMenus();
+	});
 
-$('#edit_menu').on('show.bs.modal', function() {
-	loadParentMenus();
-});
+	// User Management Form Handlers
+	$(document).ready(function () {
+		// Handle Add User Form Submission
+		$('#addUser').on('submit', function (e) {
+			e.preventDefault();
 
-// User Management Form Handlers
-$(document).ready(function() {
-    // Handle Add User Form Submission
-    $('#addUser').on('submit', function(e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        const formData = new FormData(this);
-        const submitBtn = form.find('button[type="submit"]');
-        const originalText = submitBtn.text();
-        
-        // Clear previous errors
-        form.find('.invalid-feedback').hide().text('');
-        form.find('.form-control').removeClass('is-invalid');
-        
-        // Show loading state
-        submitBtn.prop('disabled', true).text('Creating...');
-        
-        $.ajax({
-            url: form.attr('action'),
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    // Close offcanvas
-                    $('#offcanvas_add').offcanvas('hide');
-                    
-                    // Reset form
-                    form[0].reset();
-                    
-                    // Reload DataTable
-                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
-                        $('#manage-users-list').DataTable().ajax.reload();
-                    }
-                    
-                    // Show success message
-                    toastr.success(response.message || 'User created successfully!');
-                } else {
-                    toastr.error(response.message || 'Failed to create user');
-                }
-            },
-            error: function(xhr) {
-                if (xhr.status === 422) {
-                    // Validation errors
-                    const errors = xhr.responseJSON.errors;
-                    $.each(errors, function(field, messages) {
-                        const input = form.find('[name="' + field + '"]');
-                        const feedback = form.find('[data-name="' + field + '"]');
-                        
-                        input.addClass('is-invalid');
-                        feedback.text(messages[0]).show();
-                    });
-                } else {
-                    toastr.error('An error occurred while creating user');
-                }
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).text(originalText);
-            }
-        });
-    });
-    
-    // Handle Edit User Form Submission
-    $('#editUser').on('submit', function(e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        const formData = new FormData(this);
-        const submitBtn = form.find('button[type="submit"]');
-        const originalText = submitBtn.text();
-        const userId = form.find('#edit_user_id').val();
-        
-        // Clear previous errors
-        form.find('.invalid-feedback').hide().text('');
-        form.find('.form-control').removeClass('is-invalid');
-        
-        // Show loading state
-        submitBtn.prop('disabled', true).text('Saving...');
-        
-        $.ajax({
-            url: '/manage-users/' + userId,
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                // Reset button state first
-                submitBtn.prop('disabled', false).text(originalText);
-                
-                if (response.success) {
-                    // Close offcanvas
-                    $('#offcanvas_edit').offcanvas('hide');
-                    
-                    // Reload DataTable
-                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
-                        $('#manage-users-list').DataTable().ajax.reload();
-                    }
-                    
-                    // Show success message
-                    toastr.success(response.message || 'User updated successfully!');
-                } else {
-                    toastr.error(response.message || 'Failed to update user');
-                }
-            },
-            error: function(xhr) {
-                // Reset button state first
-                submitBtn.prop('disabled', false).text(originalText);
-                
-                if (xhr.status === 422) {
-                    // Validation errors
-                    const errors = xhr.responseJSON.errors;
-                    $.each(errors, function(field, messages) {
-                        const input = form.find('[name="' + field + '"]');
-                        const feedback = form.find('[data-name="' + field + '"]');
-                        
-                        input.addClass('is-invalid');
-                        feedback.text(messages[0]).show();
-                    });
-                } else {
-                    toastr.error('An error occurred while updating user');
-                }
-            }
-        });
-    });
-    
-    // Handle Edit Button Click in DataTable
-    $(document).on('click', '.edit-user-btn', function() {
-        const userId = $(this).data('user-id');
-        
-        // Fetch user data
-        $.ajax({
-            url: '/manage-users/' + userId,
-            method: 'GET',
-            success: function(response) {
-                if (response.success && response.data) {
-                    const user = response.data;
-                    const form = $('#editUser');
-                    
-                    // Populate form fields
-                    form.find('#edit_user_id').val(user.id);
-                    form.find('[name="name"]').val(user.name);
-                    form.find('[name="email"]').val(user.email);
-                    form.find('[name="phone"]').val(user.phone || '');
-                    form.find('[name="location"]').val(user.location || '');
-                    form.find('[name="role_id"]').val(user.role_id || '').trigger('change');
-                    
-                    // Set status radio button
-                    if (user.status) {
-                        form.find('[name="status"][value="' + user.status + '"]').prop('checked', true);
-                    }
-                    
-                    // Update form action
-                    form.attr('action', '/users/' + userId);
-                    
-                    // Show edit offcanvas
-                    $('#offcanvas_edit').offcanvas('show');
-                } else {
-                    toastr.error('Failed to load user data');
-                }
-            },
-            error: function() {
-                toastr.error('An error occurred while loading user data');
-            }
-        });
-    });
-    
-    // Handle Delete User
-    let deleteUserId = null;
-    
-    $(document).on('click', '.delete-user-btn', function() {
-        deleteUserId = $(this).data('user-id');
-        $('#delete_user_modal').modal('show');
-    });
-    
-    $('#trigger_delete_user').on('click', function() {
-        if (!deleteUserId) return;
-        
-        const btn = $(this);
-        const originalText = btn.text();
-        
-        btn.prop('disabled', true).text('Deleting...');
-        
-        $.ajax({
-            url: '/manage-users/' + deleteUserId,
-            method: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#delete_user_modal').modal('hide');
-                    
-                    // Reload DataTable
-                    if ($.fn.DataTable.isDataTable('#manage-users-list')) {
-                        $('#manage-users-list').DataTable().ajax.reload();
-                    }
-                    
-                    toastr.success(response.message || 'User deleted successfully!');
-                } else {
-                    toastr.error(response.message || 'Failed to delete user');
-                }
-            },
-            error: function() {
-                toastr.error('An error occurred while deleting user');
-            },
-            complete: function() {
-                btn.prop('disabled', false).text(originalText);
-                deleteUserId = null;
-            }
-        });
-    });
-});
+			const form = $(this);
+			const formData = new FormData(this);
+			const submitBtn = form.find('button[type="submit"]');
+			const originalText = submitBtn.text();
+
+			// Clear previous errors
+			form.find('.invalid-feedback').hide().text('');
+			form.find('.form-control').removeClass('is-invalid');
+
+			// Show loading state
+			submitBtn.prop('disabled', true).text('Creating...');
+
+			$.ajax({
+				url: form.attr('action'),
+				method: 'POST',
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function (response) {
+					if (response.success) {
+						// Close offcanvas
+						$('#offcanvas_add').offcanvas('hide');
+
+						// Reset form
+						form[0].reset();
+
+						// Reload DataTable
+						if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+							$('#manage-users-list').DataTable().ajax.reload();
+						}
+
+						// Show success message
+						toastr.success(response.message || 'User created successfully!');
+					} else {
+						toastr.error(response.message || 'Failed to create user');
+					}
+				},
+				error: function (xhr) {
+					if (xhr.status === 422) {
+						// Validation errors
+						const errors = xhr.responseJSON.errors;
+						$.each(errors, function (field, messages) {
+							const input = form.find('[name="' + field + '"]');
+							const feedback = form.find('[data-name="' + field + '"]');
+
+							input.addClass('is-invalid');
+							feedback.text(messages[0]).show();
+						});
+					} else {
+						toastr.error('An error occurred while creating user');
+					}
+				},
+				complete: function () {
+					submitBtn.prop('disabled', false).text(originalText);
+				}
+			});
+		});
+
+		// Handle Edit User Form Submission
+		$('#editUser').on('submit', function (e) {
+			e.preventDefault();
+
+			const form = $(this);
+			const formData = new FormData(this);
+			const submitBtn = form.find('button[type="submit"]');
+			const originalText = submitBtn.text();
+			const userId = form.find('#edit_user_id').val();
+
+			// Clear previous errors
+			form.find('.invalid-feedback').hide().text('');
+			form.find('.form-control').removeClass('is-invalid');
+
+			// Show loading state
+			submitBtn.prop('disabled', true).text('Saving...');
+
+			$.ajax({
+				url: '/manage-users/' + userId,
+				method: 'POST',
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function (response) {
+					// Reset button state first
+					submitBtn.prop('disabled', false).text(originalText);
+
+					if (response.success) {
+						// Close offcanvas
+						$('#offcanvas_edit').offcanvas('hide');
+
+						// Reload DataTable
+						if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+							$('#manage-users-list').DataTable().ajax.reload();
+						}
+
+						// Show success message
+						toastr.success(response.message || 'User updated successfully!');
+					} else {
+						toastr.error(response.message || 'Failed to update user');
+					}
+				},
+				error: function (xhr) {
+					// Reset button state first
+					submitBtn.prop('disabled', false).text(originalText);
+
+					if (xhr.status === 422) {
+						// Validation errors
+						const errors = xhr.responseJSON.errors;
+						$.each(errors, function (field, messages) {
+							const input = form.find('[name="' + field + '"]');
+							const feedback = form.find('[data-name="' + field + '"]');
+
+							input.addClass('is-invalid');
+							feedback.text(messages[0]).show();
+						});
+					} else {
+						toastr.error('An error occurred while updating user');
+					}
+				}
+			});
+		});
+
+		// Handle Edit Button Click in DataTable
+		$(document).on('click', '.edit-user-btn', function () {
+			const userId = $(this).data('user-id');
+
+			// Fetch user data
+			$.ajax({
+				url: '/manage-users/' + userId,
+				method: 'GET',
+				success: function (response) {
+					if (response.success && response.data) {
+						const user = response.data;
+						const form = $('#editUser');
+
+						// Populate form fields
+						form.find('#edit_user_id').val(user.id);
+						form.find('[name="name"]').val(user.name);
+						form.find('[name="email"]').val(user.email);
+						form.find('[name="phone"]').val(user.phone || '');
+						form.find('[name="location"]').val(user.location || '');
+						form.find('[name="role_id"]').val(user.role_id || '').trigger('change');
+
+						// Set status radio button
+						if (user.status) {
+							form.find('[name="status"][value="' + user.status + '"]').prop('checked', true);
+						}
+
+						// Update form action
+						form.attr('action', '/users/' + userId);
+
+						// Show edit offcanvas
+						$('#offcanvas_edit').offcanvas('show');
+					} else {
+						toastr.error('Failed to load user data');
+					}
+				},
+				error: function () {
+					toastr.error('An error occurred while loading user data');
+				}
+			});
+		});
+
+		// Handle Delete User
+		let deleteUserId = null;
+
+		$(document).on('click', '.delete-user-btn', function () {
+			deleteUserId = $(this).data('user-id');
+			$('#delete_user_modal').modal('show');
+		});
+
+		$('#trigger_delete_user').on('click', function () {
+			if (!deleteUserId) return;
+
+			const btn = $(this);
+			const originalText = btn.text();
+
+			btn.prop('disabled', true).text('Deleting...');
+
+			$.ajax({
+				url: '/manage-users/' + deleteUserId,
+				method: 'DELETE',
+				data: {
+					_token: $('meta[name="csrf-token"]').attr('content')
+				},
+				success: function (response) {
+					if (response.success) {
+						$('#delete_user_modal').modal('hide');
+
+						// Reload DataTable
+						if ($.fn.DataTable.isDataTable('#manage-users-list')) {
+							$('#manage-users-list').DataTable().ajax.reload();
+						}
+
+						toastr.success(response.message || 'User deleted successfully!');
+					} else {
+						toastr.error(response.message || 'Failed to delete user');
+					}
+				},
+				error: function () {
+					toastr.error('An error occurred while deleting user');
+				},
+				complete: function () {
+					btn.prop('disabled', false).text(originalText);
+					deleteUserId = null;
+				}
+			});
+		});
+	});
 
 	// Companies List
 
@@ -5888,7 +5888,7 @@ $(document).ready(function() {
 
 	// Manage Users List
 
-	if($('#manage-users-list').length > 0) {
+	if ($('#manage-users-list').length > 0) {
 		$('#manage-users-list').DataTable({
 			"processing": true,
 			"serverSide": true,
@@ -5896,7 +5896,7 @@ $(document).ready(function() {
 				"url": $('#manage-users-list').data('url'),
 				"type": "GET"
 			},
-			"bFilter": false, 
+			"bFilter": false,
 			"bInfo": false,
 			"ordering": true,
 			"autoWidth": true,
@@ -5905,7 +5905,7 @@ $(document).ready(function() {
 				sLengthMenu: '_MENU_',
 				searchPlaceholder: "Search",
 				info: "_START_ - _END_ of _TOTAL_ items",
-				"lengthMenu":     "Show _MENU_ entries",
+				"lengthMenu": "Show _MENU_ entries",
 				paginate: {
 					next: 'Next <i class=" fa fa-angle-right"></i> ',
 					previous: '<i class="fa fa-angle-left"></i> Prev '
@@ -5917,30 +5917,34 @@ $(document).ready(function() {
 				{ "data": "phone" },
 				{ "data": "location" },
 				{ "data": "created_at" },
-				{ "data": "status", "render": function(data, type, row) {
-				if(data == 1 || data == '1' || data == 'active') {
-					return '<span class="badge bg-success">Active</span>';
-				} else {
-					return '<span class="badge bg-secondary">Inactive</span>';
-				}
-			}},
-				{ "data": "actions", "orderable": false, "searchable": false, "render": function(data, type, row) {
-				return '<div class="dropdown table-action">' +
-					'<a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">' +
-						'<i class="fa fa-ellipsis-v"></i>' +
-					'</a>' +
-					'<div class="dropdown-menu dropdown-menu-right">' +
-						'<a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
+				{
+					"data": "status", "render": function (data, type, row) {
+						if (data == 1 || data == '1' || data == 'active') {
+							return '<span class="badge bg-success">Active</span>';
+						} else {
+							return '<span class="badge bg-secondary">Inactive</span>';
+						}
+					}
+				},
+				{
+					"data": "actions", "orderable": false, "searchable": false, "render": function (data, type, row) {
+						return '<div class="dropdown table-action">' +
+							'<a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">' +
+							'<i class="fa fa-ellipsis-v"></i>' +
+							'</a>' +
+							'<div class="dropdown-menu dropdown-menu-right">' +
+							'<a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
 							'<i class="ti ti-edit text-blue"></i> Edit' +
-						'</a>' +
-						'<a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
+							'</a>' +
+							'<a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-user-id="' + row.id + '">' +
 							'<i class="ti ti-trash text-danger"></i> Delete' +
-						'</a>' +
-					'</div>' +
-				'</div>';
-			}}
+							'</a>' +
+							'</div>' +
+							'</div>';
+					}
+				}
 			],
-			initComplete: (settings, json)=>{
+			initComplete: (settings, json) => {
 				$('.dataTables_paginate').appendTo('.datatable-paginate');
 				$('.dataTables_length').appendTo('.datatable-length');
 			}
@@ -6286,6 +6290,64 @@ $(document).ready(function() {
 	// 		]
 	// 	});
 	// }
+
+	if ($('#boq_list').length > 0) {
+		$('#boq_list').DataTable({
+			"serverSide": true,
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"order": [[0, "desc"]],
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class="fa fa-angle-right"></i>',
+					previous: '<i class="fa fa-angle-left"></i> Prev'
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"ajax": {
+				"url": $('#boq_list').data('url'),
+				"type": "GET",
+				"dataSrc": function (json) {
+					console.log(json);
+
+					return json.data;
+				}
+			},
+			columns: [
+				{ data: 'id' },
+				{ data: 'form_type' },
+				{ data: 'description', className: 'desc-col' },
+				{ data: 'created_at' },
+				{ data: 'header', "orderable": false },
+				{ data: 'subheader', "orderable": false },
+				{ data: 'unit_price', "orderable": false },
+				{ data: 'item_title1', "orderable": false },
+				{ data: 'item_title2', "orderable": false },
+				{ data: 'item_title3', "orderable": false },
+				{ data: 'item_title4', "orderable": false },
+				{ data: 'multiplier_total' },
+				{ data: 'total_amount_items' },
+				{ data: 'management_fee' },
+				{ data: 'sales_amount' },
+				{ data: 'vat_rate' },
+				{ data: 'vat' },
+				{ data: 'invoice_amount' },
+				{ data: 'actions' }
+			]
+		});
+	}
+
+
 
 	if ($('#permission_list').length > 0) {
 		$('#permission_list').DataTable({

@@ -177,7 +177,7 @@ use App\Services\MenuService;
                 </li>
                 @endif
                 @php
-                    $mainMenus = ['/contacts', '/companies', '/customers', '/suppliers', '/projects', '/proposals', '/invoices', '/boq', '/payments'];
+                    $mainMenus = ['/contacts', '/companies', '/customers', '/suppliers', '/projects', '/proposals', '/invoices', '/boqs', '/payments'];
                     $hasMainAccess = collect($mainMenus)->some(fn($menu) => MenuService::canAccess($menu));
                 @endphp
                 @if($hasMainAccess)
@@ -263,10 +263,10 @@ use App\Services\MenuService;
                                 <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
                         </li>
                         @endif
-                        @if(MenuService::canAccess('/boq'))
+                        @if(MenuService::canAccess('/boqs'))
                         <li>
-                            <a class="{{ Request::is('boq') ? 'active' : '' }}"
-                                href="{{ url('boq') }}">
+                            <a class="{{ Request::is('boqs') ? 'active' : '' }}"
+                                href="{{ url('boqs') }}">
                                 <i class="ti ti-file-invoice"></i><span>BoQ</span></a>
                         </li>
                         @endif

@@ -40,6 +40,10 @@ class Proposal extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function boqs(): BelongsToMany
+    {
+        return $this->belongsToMany(Boq::class, 'boq_proposal');
+    }
     /**
      * Generate unique BOQ code
      */

@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Boq;
+use App\Models\BoqItem;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,12 +16,17 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
+            MenuSeeder::class,
             PermissionSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,
             InvoiceSeeder::class,
+            SupplierSeeder::class,       
             ProductCategorySeeder::class,
-            ProductSeeder::class
+            ProductSeeder::class,
+            ProjectSeeder::class,
+            ProposalSeeder::class,
+            BoqSeeder::class
         ]);
     }
 }

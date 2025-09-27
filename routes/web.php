@@ -43,14 +43,14 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::delete('/{user_id}', 'delete')->name('delete');  
     });
 
-     Route::prefix('boq')->name('boq.')
+    Route::prefix('boqs')->name('boqs.')
     ->controller(BOQController::class)->group(function () {
         Route::get('/', 'index')->name('index');    
-        // Route::post('/', 'create')->name('create');   
-        // Route::get('/all', 'readAll')->name('readAll');  
-        // Route::get('/{user_id}', 'read')->name('read');  
-        // Route::put('/{user_id}', 'update')->name('update');  
-        // Route::delete('/{user_id}', 'delete')->name('delete');  
+        Route::post('/', 'create')->name('create');   
+        Route::get('/all', 'readAll')->name('readAll');  
+        Route::get('/{boq_id}', 'read')->name('read');  
+        Route::put('/{boq_id}', 'update')->name('update');  
+        Route::delete('/{boq_id}', 'delete')->name('delete');  
     });
 
     Route::prefix('categories')->name('categories.')

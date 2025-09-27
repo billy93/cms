@@ -25,6 +25,7 @@ return new class extends Migration
             // Add foreign key constraints
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->unique(['menu_id', 'role_id'], 'uq_menu_roles_menu_id_role_id');
         });
     }
 

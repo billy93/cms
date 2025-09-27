@@ -9,6 +9,7 @@
  <link rel="icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
  <link rel="shortcut icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
  <meta name="csrf-token" content="{{ csrf_token() }}">
+ <link rel="stylesheet" href="{{ url('build/plugins/toastr/toastr.css') }}">
  
 @if (Route::is(['layout-rtl']))
 <!-- Bootstrap CSS -->
