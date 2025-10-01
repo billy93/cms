@@ -1,10 +1,55 @@
 class BoqForm {
   headers = [
-    'Accommodation', 'Activities , Outdoor', 'Airport Assistance', 'Air tickets', 'Documentation', 'Entrance ticket - Shows and Entertainment', 'Entrance ticket - Places of interest', 'Excursion', 'F&B Restaurants', 'Front of House', 'Goodie Bags', 'Gratitudes', 'Insurance', 'Land transportation', 'Lighting', 'Manpower', 'MC', 'Media Relation', 'Meeting and Conference Kits', 'Meeting Package', 'Merchandise', 'Multimedia', 'Paramedic and First Aids', 'Rail tickets', 'Sales and Promotion Materials', 'Security Service & Fire', 'Software', 'Sound System', 'Speaker', 'Stationery', 'Streaming', 'Survey', 'Talents', 'Team Building', 'Travel Documents', 'Traveling kits', 'Venue'
+    'Accommodation',
+    'Activities, Outdoor',
+    'Airport Assistance',
+    'Air tickets',
+    'Documentation',
+    'Entrance ticket - Shows and Entertainment',
+    'Entrance ticket - Places of interest',
+    'Excursion',
+    'F&B Restaurants',
+    'Front of House',
+    'Goodie Bags',
+    'Gratitudes',
+    'Insurance',
+    'Land transportation',
+    'Lighting',
+    'Manpower',
+    'MC',
+    'Media Relation',
+    'Meeting and Conference Kits',
+    'Meeting Package',
+    'Merchandise',
+    'Multimedia',
+    'Paramedic and First Aids',
+    'Rail tickets',
+    'Sales and Promotion Materials',
+    'Security Service & Fire',
+    'Software',
+    'Sound System',
+    'Speaker',
+    'Stationery',
+    'Streaming',
+    'Survey',
+    'Talents',
+    'Team Building',
+    'Travel Documents',
+    'Traveling kits',
+    'Venue'
   ];
 
   titles = [
-    'Quantity', 'Number of nights', 'Number of rooms', 'Number of hours', 'Number of days', 'Number of items', 'Number of participants', 'Number of unit', 'Number of package', 'Unit Price'
+    'Quantity',
+    'Number of nights',
+    'Number of rooms',
+    'Number of hours',
+    'Number of days',
+    'Number of items',
+    'Number of participants',
+    'Number of unit',
+    'Number of package',
+    'pcs'
   ];
 
   selectFormType = `
@@ -19,22 +64,44 @@ class BoqForm {
     </div>
   `;
 
-  descField = `
-    <!-- Description of products and services -->
-    <div class="mb-3">
-      <label class="col-form-label">Description of products and services <span class="text-danger">*</span></label>
-      <textarea class="form-control" id="description"></textarea>
-      <small id="description_error" class="text-danger mt-1" style="display: none;"></small>
-    </div>
-  `;
+  descField() {
+    let value = "";
+    if (this.mode === "edit") value = this.data.description;
 
-  feeFields = `
+    return `
+      <div class="mb-3">
+        <label class="col-form-label">Description of products and services <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="description">${value}</textarea>
+        <small id="description_error" class="text-danger mt-1" style="display: none;"></small>
+      </div>
+    `;
+  }
+
+  feeFields() {
+
+    let managementFeeNominal = "";
+    let managementFeePercent = "";
+    let vatRateValue = "";
+
+    if (this.mode === "edit") {
+      const type = this.data.management_fee_type;
+
+      if (type === "nominal") {
+        managementFeeNominal = this.data.management_fee;
+      } else if (type === "percent") {
+        managementFeePercent = this.data.management_fee;
+      }
+
+      vatRateValue = this.data.vat_rate.toString();
+    }
+
+    return `
     <div class="mb-3">
       <label>Management Fee</label>
       <div class="input-group mb-2">
-        <input type="text" class="form-control number-input no-default" id="management_fee_value" placeholder="Nominal">
+        <input type="text" class="form-control number-input no-default" id="management_fee_value" placeholder="Nominal" value="${managementFeeNominal}">
         <span class="input-group-text">atau</span>
-        <input type="text" class="form-control number-input no-default" id="management_fee_percent" placeholder="%">
+        <input type="text" class="form-control number-input no-default" id="management_fee_percent" placeholder="%" value="${managementFeePercent}">
         <span class="input-group-text">%</span>
       </div>
       <small class="text-muted">Manual Entry: bisa dengan menentukan prosentasi atau menentukan nominal nya</small>
@@ -46,8 +113,8 @@ class BoqForm {
     <div class="mb-3">
       <label>VAT</label>
       <select class="form-select" id="vat_percent">
-        <option value="1" selected>1%</option>
-        <option value="11">11%</option>
+        <option value="1" ${vatRateValue === "1" ? "selected" : ""}>1%</option>
+        <option value="11" ${vatRateValue === "11" ? "selected" : ""}>11%</option>
       </select>
       <small id="vat_percent_error" class="text-danger mt-1" style="display: none;"></small>
       <small class="text-muted">Manual - Pilihan 1% atau 11%</small>
@@ -61,16 +128,19 @@ class BoqForm {
       <input type="text" class="form-control" id="invoice_amount" value="0" readonly>
     </div>
   `;
+  }
 
   submitBtn = `
     <div class="d-flex align-items-center justify-content-end mt-4">
-      <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
+      <a href="javascript:void(0)" id="inner_close_boq_form" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
       <button type="submit" class="btn btn-primary">Save</button>
     </div>
   `;
 
   types = ["A", "B", "C", "D"];
   type = "A";
+  mode = "create";
+  data = {};
 
   products = [];
   isFetching = false;
@@ -84,7 +154,7 @@ class BoqForm {
 
   constructor (formId) {
     this.form = document.getElementById(formId);
-    this.closeForm = document.getElementById("close_boq_add");
+    this.closeForm = document.getElementById("close_boq_form");
 
     // container buat type (A, B, C, D)
     this.typeContainer = document.createElement("div");
@@ -182,17 +252,57 @@ class BoqForm {
   }
 
   handleDocumentClick(e) {
-    if (e.target.matches("#add_row_btn")) {
+    const target = e.target;
+
+    if (target.matches("#add_row_btn")) {
       const tbody = this.typeContainer.querySelector("#products_services_body");
-      if (tbody) tbody.appendChild(this.createRow());
+      if (tbody) {
+        const [row, errorRow] = this.createRow();
+        tbody.appendChild(row);
+        tbody.appendChild(errorRow);
+      }
     }
   }
 
   // ---------------------------------------- ADDITIONAL EVENT HANDLERS ----------------------------------------
   feeFieldsEvents() {
+    const description = this.typeContainer.querySelector("#description")
+    const basicPrice = this.typeContainer.querySelector("#basic_price");
+
     const managementFeeValueEl = this.typeContainer.querySelector("#management_fee_value");
     const managementFeePercentEl = this.typeContainer.querySelector("#management_fee_percent");
     const vatPercentEl = this.typeContainer.querySelector("#vat_percent");
+
+
+    if (this.mode === "edit") {
+      if (this.type === "A") {
+        description.value = this.data.description;
+        basicPrice.value = this.data.items[0].unit_price;
+      } else if (["C", "D"].includes(this.type)) {
+        const ids = this.data.items.map(obj => obj.id);
+        const max = Math.max(...ids);
+
+        if (this.type === "C") {
+          this.cRowCount = max;
+          this.cRowArr = ids;
+        } else {
+          this.dRowCount = max;
+          this.dRowArr = ids;
+        }
+
+        const tbody = this.typeContainer.querySelector("#products_services_body");
+
+        this.data.items.forEach((item) => {
+          if (tbody) {
+            const [row, errorRow] = this.createRow(item.id);
+            tbody.appendChild(row);
+            tbody.appendChild(errorRow);
+          }
+        });
+      }
+    }
+
+    basicPrice?.addEventListener("input", () => this.recalculate());
 
     managementFeeValueEl.addEventListener("input", () => {
       managementFeePercentEl.value = "";
@@ -203,6 +313,8 @@ class BoqForm {
       this.recalculate();
     });
     vatPercentEl.addEventListener("input", () => this.recalculate());
+
+    this.recalculate()
   }
 
   // ---------------------------------------- FETCHER ----------------------------------------
@@ -243,9 +355,10 @@ class BoqForm {
   //   return instance;
   // }
 
-  async init(mode = "create") {
+  async init(mode = "create", data = {}) {
+    this.resetForm();
+    this.data = data;
     this.mode = mode;
-    this.form.innerHTML = "";
 
     try {
       await this.fetchProducts();
@@ -274,8 +387,11 @@ class BoqForm {
           }
 
           const tbody = this.typeContainer.querySelector("#products_services_body");
-          tbody.innerHTML = "";
-          tbody.appendChild(this.createRow());
+          if (tbody) {
+            const [row, errorRow] = this.createRow();
+            tbody.appendChild(row);
+            tbody.appendChild(errorRow);
+          }
         }
       });
 
@@ -284,9 +400,12 @@ class BoqForm {
     }
 
     if (mode === "edit") {
-      console.log("Init dalam mode edit, skip render select");
+      this.type = data.form_type[data.form_type.length - 1].toUpperCase();
+
+      console.log("Init dalam mode edit, skip render select. Form Type : ", this.type);
       this.form.appendChild(this.typeContainer);
       this.renderType();
+
     }
 
 
@@ -314,75 +433,135 @@ class BoqForm {
     }
   }
 
-  createRow() {
+  createRow(_id) {
     const suffix = this.type.toLowerCase();
     let id, rowId;
 
     if (this.type === "C") {
-      id = ++this.cRowCount;
-      rowId = `row_${this.cRowCount}`;
-      this.cRowArr = [...new Set([...this.cRowArr, this.cRowCount])];
+      id = _id ?? ++this.cRowCount;
+      rowId = `row_${id}`;
+      this.cRowArr = [...new Set([...this.cRowArr, id])];
     } else if (this.type === "D") {
-      id = ++this.dRowCount;
-      rowId = `row_${this.dRowCount}`;
-      this.dRowArr = [...new Set([...this.dRowArr, this.dRowCount])];
+      id = _id ?? ++this.dRowCount;
+      rowId = `row_${id}`;
+      this.dRowArr = [...new Set([...this.dRowArr, id])];
     }
 
+
+    let header_input = "";
+    let subheader_select_value = "";
+    let subheader_input_value = "";
+    let t1key = "";
+    let t1val = "";
+    let t2key = "";
+    let t2val = "";
+    let t3key = "";
+    let t3val = "";
+    let t4key = "";
+    let t4val = "";
+    let amount_input_value = "";
+
+    if (this.mode === "edit") {
+      const data = this.data?.items?.find(obj => obj.id === id);
+
+      if (data) {
+        const isFromData = data.product_id !== null;
+
+        header_input = data.header || "";
+
+        if (isFromData) {
+          subheader_select_value = data.product_id;
+        } else {
+          subheader_input_value = data.subheader;
+        }
+
+        t1key = data.title1_key || "";
+        t1val = data.title1_value || "";
+        t2key = data.title2_key || "";
+        t2val = data.title2_value || "";
+        t3key = data.title3_key || "";
+        t3val = data.title3_value || "";
+        t4key = data.title4_key || "";
+        t4val = data.title4_value || "";
+        amount_input_value = data.unit_price || "0"
+      }
+      console.log("DATA", data)
+    }
+    console.log("XXX", header_input, subheader_input_value, subheader_select_value, t1key, t2key, t3key, t4key);
+
     const tr = document.createElement('tr');
-    let subheader = `<td><input id="subheader_${id}" type="text" class="form-control" placeholder="Sub Header"></td>`
+    let header = `<td><input id="header_${id}" type="text" class="form-control" placeholder="Header" value="${header_input}"></td>`;
+    let subheader = `<td><input id="subheader_${id}" type="text" class="form-control" placeholder="Sub Header" value="${subheader_input_value}"></td>`
 
     if (this.type === "C") {
+      header = `
+        <td>
+          <select id="header_${id}" class="form-select header-select">
+            <option value="" ${!header_input ? "selected" : ""}>-- Select Header --</option>
+            ${this.headers.map(h => `<option value="${h}" ${h === header_input ? "selected" : ""}>${h}</option>`).join('')}
+          </select>
+          <small id="item_header_${id}_error" class="text-danger mt-1" style="display: none;"></small>
+        </td>
+      `;
+
       subheader = `
         <td>	
           <select id="subheader_select_${id}" class="form-select sub-header-select">
-            <option value="">-- Select Header --</option>
-            ${this.products.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+            <option value="" ${!subheader_select_value ? "selected" : ""}>-- Select Sub Header --</option>
+            ${this.products.map(t => `<option value="${t.id}" ${t.id === subheader_select_value ? "selected" : ""}>${t.name}</option>`).join('')}
           </select>
-          <input id="subheader_${id}" type="text" class="form-control sub-header-input mt-1" placeholder="Sub Header">
+          <input id="subheader_${id}" type="text" class="form-control sub-header-input mt-1" placeholder="Sub Header" value=${subheader_input_value}>
         </td>
       `;
     }
 
     tr.id = rowId;
     tr.innerHTML = `
-      <td>
-        <select id="header_${id}" class="form-select header-select">
-          <option value="">-- Select Header --</option>
-          ${this.headers.map(h => `<option value="${h}">${h}</option>`).join('')}
-        </select>
-      </td>
+      ${header}
       ${subheader}
       <td>
         <select id="title1_key_${id}" class="form-select title-select">
-          <option value="">-- Select Title1 --</option>
-          ${this.titles.map(t => `<option value="${t}">${t}</option>`).join('')}
+          <option value="" ${!t1key ? "selected" : ""}>-- Select Title1 --</option>
+          ${this.titles.map(t => `<option value="${t}" ${t === t1key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
-        <input id="title1_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" disabled>
+        <input id="title1_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" value="${t1val}" ${!t1key ? "disabled" : ""}>
+        <small id="title1_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
         <select id="title2_key_${id}" class="form-select title-select">
-          <option value="">-- Select Title2 --</option>
-          ${this.titles.map(t => `<option value="${t}">${t}</option>`).join('')}
+          <option value="" ${!t2key ? "selected" : ""}>-- Select Title2 --</option>
+          ${this.titles.map(t => `<option value="${t}" ${t === t2key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
-        <input id="title2_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" disabled>
+        <input id="title2_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" value="${t2val}" ${!t2key ? "disabled" : ""}>
+        <small id="title2_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
         <select id="title3_key_${id}" class="form-select title-select">
-          <option value="">-- Select Title3 --</option>
-          ${this.titles.map(t => `<option value="${t}">${t}</option>`).join('')}
+          <option value="" ${!t3key ? "selected" : ""}>-- Select Title3 --</option>
+          ${this.titles.map(t => `<option value="${t}" ${t === t3key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
-        <input id="title3_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" disabled>
+        <input id="title3_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" value="${t3val}" ${!t3key ? "disabled" : ""}>
+        <small id="title3_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
         <select id="title4_key_${id}" class="form-select title-select">
-          <option value="">-- Select Title4 --</option>
-          ${this.titles.map(t => `<option value="${t}">${t}</option>`).join('')}
+          <option value="" ${!t4key ? "selected" : ""}>-- Select Title4 --</option>
+          ${this.titles.map(t => `<option value="${t}" ${t === t4key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
-        <input id="title4_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" disabled>
-      </td>
-      <td><input id="amount_${id}" type="text" class="form-control number-input no-decimal amount-input" min="0" value="0"></td>
+        <input id="title4_value_${id}" type="text" class="form-control number-input no-decimal title-value-input mt-1 no-decimal" placeholder="Value" value="${t4val}" ${!t4key ? "disabled" : ""}>
+        <small id="title4_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
+      </td> 
+      <td><input id="amount_${id}" type="text" class="form-control number-input no-decimal amount-input" value="${amount_input_value}"></td>
+      <small id="item_amount_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       <td><input id="subtotal_${id}" type="text" class="form-control" value="0" readonly></td>
       <td class="actions"><button type="button" class="btn btn-sm btn-danger remove-row-btn"><i class="ti ti-trash"></i></button></td>
+    `;
+
+    const errorTr = document.createElement('tr');
+    errorTr.innerHTML = `
+      <td colspan="8">
+        <small id="items_${id}_error" class="text-danger" style="display:none;"></small>
+      </td>
     `;
 
     tr.querySelector(".remove-row-btn").addEventListener("click", () => {
@@ -395,7 +574,7 @@ class BoqForm {
       this.recalculate();
     });
 
-    return tr;
+    return [tr, errorTr];
   }
 
   clearRowsData() {
@@ -471,7 +650,7 @@ class BoqForm {
   renderTypeA() {
     this.typeContainer.innerHTML = `
       <div>
-        ${this.descField}
+        ${this.descField()}
         <!-- Pricing Model -->
         <div class="mb-3">
           <label class="col-form-label">Pricing Model</label>
@@ -481,7 +660,7 @@ class BoqForm {
               <input type="text" class="form-control number-input" id="basic_price" value="0">
               <small id="basic_price_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
-            ${this.feeFields}
+            ${this.feeFields()}
           </div>
         </div>
         <div class="mt-3" id="note">
@@ -491,15 +670,32 @@ class BoqForm {
       </div>
     `;
 
-    const basicPrice = this.typeContainer.querySelector("#basic_price");
-    basicPrice.addEventListener("input", () => this.recalculate());
     this.feeFieldsEvents();
   }
 
   renderTypeB() {
+    let adultQty = "0";
+    let adultPrice = "0";
+    let childQty = "0";
+    let childPrice = "0";
+    let infantQty = "0";
+    let infantPrice = "0";
+
+    if (this.mode === "edit") {
+      const adult = this.data.items.find(obj => obj.subheader === "Adult");
+      const child = this.data.items.find(obj => obj.subheader === "Children");
+      const infant = this.data.items.find(obj => obj.subheader === "Infant");
+
+      adultQty = adult.title1_value;
+      childQty = child.title1_value;
+      infantQty = infant.title1_value;
+      adultPrice = adult.unit_price;
+      childPrice = child.unit_price;
+      infantPrice = infant.unit_price;
+    }
     this.typeContainer.innerHTML = `
       <div>
-        ${this.descField}
+        ${this.descField()}
         <!-- Pricing Model -->
         <div class="mb-3">
           <label class="col-form-label">Pricing Model</label>
@@ -518,28 +714,28 @@ class BoqForm {
                 <tr>
                   <td>Adult</td>
                   <td>
-                    <input type="text" class="form-control number-input no-decimal" name="qty_adult" id="qty_adult" value="0">
+                    <input type="text" class="form-control number-input no-decimal" name="qty_adult" id="qty_adult" value="${adultQty}">
                     <small id="qty_adult_error" class="text-danger mt-1" style="display: none;"></small>
                   </td>
-                  <td><input type="text" class="form-control number-input" name="price_adult" id="price_adult" value="0"></td>
+                  <td><input type="text" class="form-control number-input" name="price_adult" id="price_adult" value="${adultPrice}"></td>
                   <td><input type="text" class="form-control" id="subtotal_adult" value="0" readonly></td>
                 </tr>
                 <tr>
                   <td>Child</td>
                   <td>
-                    <input type="text" class="form-control number-input no-decimal" name="qty_child" id="qty_child" value="0">
+                    <input type="text" class="form-control number-input no-decimal" name="qty_child" id="qty_child" value="${childQty}">
                     <small id="qty_child_error" class="text-danger mt-1" style="display: none;"></small>
                   </td>
-                  <td><input type="text" class="form-control number-input" name="price_child" id="price_child" value="0"></td>
+                  <td><input type="text" class="form-control number-input" name="price_child" id="price_child" value="${childPrice}"></td>
                   <td><input type="text" class="form-control" id="subtotal_child" value="0" readonly></td>
                 </tr>
                 <tr>
                   <td>Infant</td>
                   <td>
-                    <input type="text" class="form-control number-input no-decimal" name="qty_infant" id="qty_infant" value="0">
+                    <input type="text" class="form-control number-input no-decimal" name="qty_infant" id="qty_infant" value="${infantQty}">
                     <small id="qty_infant_error" class="text-danger mt-1" style="display: none;"></small>
                   </td>
-                  <td><input type="text" class="form-control number-input" name="price_infant" id="price_infant" value="0"></td>
+                  <td><input type="text" class="form-control number-input" name="price_infant" id="price_infant" value="${infantPrice}"></td>
                   <td><input type="text" class="form-control" id="subtotal_infant" value="0" readonly></td>
                 </tr>
               </tbody>
@@ -551,7 +747,7 @@ class BoqForm {
               </tfoot>
             </table>
             <small id="items_error" class="text-danger mt-1" style="display: none;"></small>
-            ${this.feeFields}
+            ${this.feeFields()}
           </div>
         </div>
         <div class="mt-3" id="note">
@@ -567,7 +763,7 @@ class BoqForm {
   renderTypeCD() {
     this.typeContainer.innerHTML = `
       <div>
-        ${this.descField}
+        ${this.descField()}
         <!-- Products and Services Table -->
         <div class="mb-3">
             <label class="col-form-label">Products and Services</label>
@@ -587,7 +783,7 @@ class BoqForm {
                       background-color: #ededed;
                     }
                   </style>
-                    <table class="table table-bordered mb-3" id="products_services_table">
+                    <table class="table table-bordered" id="products_services_table">
                         <thead>
                             <tr>
                                 <th>Header</th>
@@ -606,16 +802,17 @@ class BoqForm {
                         <tfoot>
                             <tr>
                                 <th colspan="7" class="text-end">Total</th>
-                                <th><input type="text" class="form-control" id="total_amount" value="0" readonly></th>
+                                 <th><input type="text" class="form-control" id="total_amount" value="0" readonly></th>
                                 <th></th>
                             </tr>
                         </tfoot>
                     </table>
+                    <small id="items_error" class="text-danger mt-1 mb-3" style="display: none;"></small>
                 </div>
                 <button type="button" class="btn btn-sm btn-success" id="add_row_btn" style="margin-top: 12px;"><i class="ti ti-plus"></i> Add Row</button>
             </div>
         </div>
-        ${this.feeFields}
+        ${this.feeFields()}
         <div class="mt-3" id="note">
             <span class="text-danger"><b>Note</b><br>
             <i>1. BOQ Type C digunakan untuk harga paket yang umum digunakan untuk Incentive Trips</i></span>
@@ -659,6 +856,9 @@ class BoqForm {
   }
 
   resetForm() {
+    this.mode = "create";
+    this.type = "A";
+    this.data = {};
     this.products = [];
     this.clearRowsData();
     this.form.innerHTML = "";
@@ -771,7 +971,82 @@ class BoqForm {
       }
 
       if (!payload.items.length) {
-        this.errors["items_error"] = "Required at least one category item specified."
+        this.errors["items_error"] = "Required: at least one category item must be specified.";
+      }
+    } else if (this.type === "C" || this.type === "D") {
+      payload.items = [];
+
+      const arr = this.type === 'C' ? [...this.cRowArr] : [...this.dRowArr];
+
+      for (let i = 0; i < arr.length; i++) {
+        const idx = arr[i];
+
+        const headerEl = this.typeContainer.querySelector(`#header_${idx}`);
+        const subheaderEl = this.typeContainer.querySelector(`#subheader_${idx}`);
+        const subheaderSelectEl = this.typeContainer.querySelector(`#subheader_select_${idx}`);
+        const amountEl = this.typeContainer.querySelector(`#amount_${idx}`);
+
+        // Title key/value elements
+        const t1KeyEl = this.typeContainer.querySelector(`#title1_key_${idx}`);
+        const t1ValEl = this.typeContainer.querySelector(`#title1_value_${idx}`);
+        const t2KeyEl = this.typeContainer.querySelector(`#title2_key_${idx}`);
+        const t2ValEl = this.typeContainer.querySelector(`#title2_value_${idx}`);
+        const t3KeyEl = this.typeContainer.querySelector(`#title3_key_${idx}`);
+        const t3ValEl = this.typeContainer.querySelector(`#title3_value_${idx}`);
+        const t4KeyEl = this.typeContainer.querySelector(`#title4_key_${idx}`);
+        const t4ValEl = this.typeContainer.querySelector(`#title4_value_${idx}`);
+
+        const item = {
+          header: headerEl?.value || '',
+          subheader: subheaderEl?.value || '',
+          product_id: subheaderSelectEl?.value || null,
+          amount: parseFloat(amountEl?.value) || 0,
+          title1_key: t1KeyEl?.value || null,
+          title1_value: t1ValEl?.value ? parseInt(t1ValEl.value) : null,
+          title2_key: t2KeyEl?.value || null,
+          title2_value: t2ValEl?.value ? parseInt(t2ValEl.value) : null,
+          title3_key: t3KeyEl?.value || null,
+          title3_value: t3ValEl?.value ? parseInt(t3ValEl.value) : null,
+          title4_key: t4KeyEl?.value || null,
+          title4_value: t4ValEl?.value ? parseInt(t4ValEl.value) : null
+        };
+
+        if (!item.header.trim()) {
+          this.errors[`item_header_${idx}_error`] = "Header is required."
+        }
+
+        if (amountEl?.value === null) {
+          this.errors[`item_amount_${idx}_error`] = "Amount is required."
+        }
+
+        // 🔍 validasi key/value
+        const keyValuePairs = [
+          { key: item.title1_key, value: item.title1_value, label: 'title1' },
+          { key: item.title2_key, value: item.title2_value, label: 'title2' },
+          { key: item.title3_key, value: item.title3_value, label: 'title3' },
+          { key: item.title4_key, value: item.title4_value, label: 'title4' },
+        ];
+
+        let hasAtLeastOne = false;
+
+        for (const pair of keyValuePairs) {
+          if (pair.key && !pair.value) {
+            this.errors[`${pair.label}_value_${idx}_error`] = `${pair.label}_value is required and must not be 0 (zero)`;
+          }
+          if (pair.key && pair.value !== null) {
+            hasAtLeastOne = true;
+          }
+        }
+
+        if (!hasAtLeastOne) {
+          this.errors[`items_${idx}_error`] = `Required at least one title key-value pair one row ${idx}.`;
+        }
+
+        payload.items.push(item);
+      }
+
+      if (!payload.items.length) {
+        this.errors["items_error"] = "Required: at least one product or service item must be specified.";
       }
     }
 
@@ -809,7 +1084,6 @@ class BoqForm {
     const formType = `type-${suffix}`;
 
     const payload = this.validateFields();
-    console.log(this.errors);
     const errKeys = Object.keys(this.errors);
     if (errKeys.length) {
       errKeys.forEach(v => {
@@ -857,13 +1131,48 @@ class BoqForm {
         this.isFetching = false;
         this.hideLoading()
       }
+    } else if (this.mode === "edit") {
+      try {
+        const response = await fetch(`/boqs/${this.data.id}`, {
+          method: 'PUT',
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log(result);
+
+        if (response.ok && result.success) {
+          toastr.success(response.message || 'BOQ updated successfully!');
+          $('#boq_list').DataTable().ajax.reload();
+          if (this.closeForm) this.closeForm.click();
+          console.log('BOQ updated:', result, result.data);
+        } else {
+          console.error('Failed:', result.message || result.errors);
+        }
+      } catch (err) {
+        toastr.error('An error occurred while updating BOQ.');
+        console.error('Error:', err);
+      } finally {
+        this.isFetching = false;
+        this.hideLoading()
+      }
+    } else {
+      alert("Form mode is invalid, it shouldbe either \"create\" or \"edit\".");
+      this.isFetching = false;
+      this.hideLoading();
+
     }
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const createBoqBtn = document.querySelector("#c_boq_add");
-  const boqForm = new BoqForm("addBOQ");
+  const boqForm = new BoqForm("c_boq_form");
 
   toastr.options = {
     "closeButton": true,
@@ -879,5 +1188,78 @@ document.addEventListener("DOMContentLoaded", () => {
 
   createBoqBtn.addEventListener("click", async (e) => {
     await boqForm.init("create");
+  });
+
+  document.addEventListener("click", async e => {
+    const target = e.target;
+
+    if (target.matches(".c_boq_edit")) {
+      // const id = target.getAttribute("data-id");
+      const url = target.getAttribute("data-url");
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+        },
+      })
+
+      const resJson = await res.json();
+      console.log(resJson.data);
+
+
+      if (res.ok) {
+        await boqForm.init("edit", resJson.data);
+      } else {
+        console.log("Error on fetching boq for edit form");
+      }
+    }
+
+    // Klik delete → inject url ke tombol confirm
+    if (target.matches(".c_boq_delete")) {
+      e.preventDefault();
+      const url = target.getAttribute("data-url");
+      const confirmBtn = document.getElementById("confirm_delete_boq");
+      confirmBtn.setAttribute("data-url", url);
+    }
+
+    if (target.matches("#confirm_delete_boq")) {
+      e.preventDefault();
+
+      const url = target.getAttribute("data-url");
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+      try {
+        const response = await fetch(url, {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-TOKEN": csrfToken,
+            "Accept": "application/json"
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Tutup modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById("delete_boq_modal"));
+          modal.hide();
+
+          // DataTable → reload
+          $('#boq_list').DataTable().ajax.reload();
+
+
+          // Toastr success
+          toastr.success(data.message || "BOQ deleted successfully!");
+        } else {
+          toastr.error(data.message || "Failed to delete BOQ.");
+        }
+      } catch (err) {
+        toastr.error("Server error. Failed to delete BOQ.");
+        console.error(err);
+      }
+    }
   });
 });

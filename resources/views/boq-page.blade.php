@@ -137,19 +137,40 @@
 	<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add" style="width: 998px !important;">
 		<div class="offcanvas-header border-bottom">
 			<h5 class="fw-semibold">Create BOQ</h5>
-			<button type="button" id="close_boq_add" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
+			<button type="button" id="close_boq_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
 					<i class="ti ti-x"></i>
 			</button>
 		</div>
 		<div class="offcanvas-body">
 			<style>
-				#addBOQ td { vertical-align: baseline; } 
+				#c_boq_form td { vertical-align: baseline; } 
 			</style>
-			<form action="{{ route('boqs.create') }}" id="addBOQ" method="POST"></form>
+			<form action="{{ route('boqs.create') }}" id="c_boq_form" method="POST"></form>
 		</div>
 	</div>
 	<!-- /Add BOQ -->
 
+	
+	<!-- Delete Modal -->
+	<div class="modal fade" id="delete_boq_modal" tabindex="-1" aria-labelledby="deleteBoqModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteBoqModalLabel">Confirm Delete</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					Are you sure you want to delete this item?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-danger" id="confirm_delete_boq">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Delete Modal -->
+ 
 	@component('components.model-popup')
 	@endcomponent
 @endsection

@@ -33,7 +33,7 @@ class Boq extends Model
         return $this->belongsToMany(Proposal::class, 'boq_proposal');
     }
 
-    // 🔹 Relasi ke Items
+    // 🔹 Relasi ke BOQ Items
     public function items(): HasMany
     {
         return $this->hasMany(BoqItem::class);

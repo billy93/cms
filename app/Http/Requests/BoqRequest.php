@@ -46,9 +46,54 @@ class BoqRequest extends ApiFormRequest
         $rules['items'] = ['required_if:form_type,type-b,type-c,type-d','array','min:1'];
         
         // Type B specific
-        $rules['items.*.subheader'] = ['required_if:form_type,type-b','string', Rule::in(['Adult','Child','Infant'])];
-        $rules['items.*.qty'] = ['required_if:form_type,type-b','integer','min:0'];
-        $rules['items.*.amount'] = ['required_if:form_type,type-b','numeric','min:0'];
+        if ($this->input('form_type') === 'type-b') {
+            $rules['items.*.subheader'] = ['required','string', Rule::in(['Adult','Child','Infant'])];
+            $rules['items.*.qty'] = ['required','integer','min:0'];
+            $rules['items.*.amount'] = ['required','numeric','min:0'];
+        }
+
+        // Type C & D specific
+        if (in_array($this->input('form_type'), ['type-c','type-d'])) {
+            $rules['items.*.header'] = ['required','string'];
+            $rules['items.*.subheader'] = ['nullable','string'];
+            $rules['items.*.product_id'] = ['nullable','exists:products,id'];
+            $rules['items.*.title1_key'] = ['nullable','string'];
+            $rules['items.*.title1_value'] = ['nullable','integer'];
+            $rules['items.*.title2_key'] = ['nullable','string'];
+            $rules['items.*.title2_value'] = ['nullable','integer'];
+            $rules['items.*.title3_key'] = ['nullable','string'];
+            $rules['items.*.title3_value'] = ['nullable','integer'];
+            $rules['items.*.title4_key'] = ['nullable','string'];
+            $rules['items.*.title4_value'] = ['nullable','integer'];
+
+            $rules['items.*'][] = function($attribute, $value, $fail) {
+                $pairs = [
+                    ['title1_key','title1_value'],
+                    ['title2_key','title2_value'],
+                    ['title3_key','title3_value'],
+                    ['title4_key','title4_value'],
+                ];
+
+                $hasValidPair = false;
+                foreach ($pairs as $pair) {
+                    $keyFilled = !empty($value[$pair[0]]);
+                    $valFilled = !empty($value[$pair[1]]);
+
+                    if ($keyFilled xor $valFilled) {
+                        $fail("Both {$pair[0]} & {$pair[1]} must be provided together.");
+                        return;
+                    }
+
+                    if ($keyFilled && $valFilled) {
+                        $hasValidPair = true;
+                    }
+                }
+
+                if (!$hasValidPair) {
+                    $fail('At least one title key & value pair must be provided.');
+                }
+            };
+        }
 
         return $rules;
     }

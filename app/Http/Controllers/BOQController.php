@@ -44,19 +44,17 @@ class BoqController extends Controller
                                 <i class="fa fa-ellipsis-v"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
-                                <a 
-                                    id="c_boq_edit" 
-                                    class="dropdown-item" 
+                                <a  
+                                    class="dropdown-item c_boq_edit" 
                                     href="#" 
                                     data-id="'.$boq->id.'" 
                                     data-url="'.route('boqs.read', ['boq_id' => $boq->id]).'"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#edit_boq">
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
                                     <i class="ti ti-edit text-blue"></i> Edit
                                 </a>
-                                <a 
-                                    id="c_boq_delete" 
-                                    class="dropdown-item" 
+                                <a  
+                                    class="dropdown-item c_boq_delete" 
                                     href="javascript:void(0);" 
                                     data-id="'.$boq->id.'" 
                                     data-url="'.route('boqs.delete', ['boq_id' => $boq->id]).'"

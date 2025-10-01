@@ -1,6 +1,22 @@
 
 $(document).ready(function () {
 
+	// Helpers
+	function formatRupiah(angka) {
+		if (angka === null || angka === undefined || angka === '') return '';
+
+		const num = Number(angka);
+		if (isNaN(num)) return '';
+
+		// Cek apakah ada desimal
+		const hasDecimal = angka.toString().includes('.') || angka.toString().includes(',');
+		return num.toLocaleString('id-ID', {
+			minimumFractionDigits: hasDecimal ? 2 : 0,
+			maximumFractionDigits: hasDecimal ? 2 : 0
+		});
+	}
+
+
 	// Categories List
 
 	if ($('#categorieslist').length > 0) {
@@ -6330,18 +6346,54 @@ $(document).ready(function () {
 				{ data: 'created_at' },
 				{ data: 'header', "orderable": false },
 				{ data: 'subheader', "orderable": false },
-				{ data: 'unit_price', "orderable": false },
+				{
+					data: 'unit_price',
+					"orderable": false,
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
 				{ data: 'item_title1', "orderable": false },
 				{ data: 'item_title2', "orderable": false },
 				{ data: 'item_title3', "orderable": false },
 				{ data: 'item_title4', "orderable": false },
-				{ data: 'multiplier_total' },
-				{ data: 'total_amount_items' },
-				{ data: 'management_fee' },
-				{ data: 'sales_amount' },
+				{
+					data: 'multiplier_total',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
+				{
+					data: 'total_amount_items',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
+				{
+					data: 'management_fee',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
+				{
+					data: 'sales_amount',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
 				{ data: 'vat_rate' },
-				{ data: 'vat' },
-				{ data: 'invoice_amount' },
+				{
+					data: 'vat',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
+				{
+					data: 'invoice_amount',
+					render: function (data) {
+						return formatRupiah(data);
+					}
+				},
 				{ data: 'actions' }
 			]
 		});

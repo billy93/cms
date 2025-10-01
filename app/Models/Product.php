@@ -37,4 +37,13 @@ class Product extends Model
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
+
+    
+    /**
+     * Get the BOQ items related to this product.
+     */
+    public function boqItems(): HasMany
+    {
+        return $this->hasMany(BoqItem::class, 'product_id');
+    }
 }
