@@ -59,13 +59,18 @@
 							<div class="table-responsive custom-table">
 								<table class="table" id="boq_list" data-url="{{ route('boqs.index') }}">
 									<style>
+										#boq_list th, 
+										#boq_list td {
+												padding: 12px 30px;
+										} 
 										#boq_list tbody tr td {
 											vertical-align: baseline;
 										}
 										#boq_list thead tr th {
 											text-align: center !important;
 										}
-										.td-break {
+										#boq_list .td-break {
+											text-align: left !important;
 											word-break: auto-phrase;
 											white-space: unset !important;
 										}
@@ -77,6 +82,7 @@
 										  <tr>
 												<!-- Kolom selain Items, rowspan 2 -->
 												<th class="td-break" rowspan="2">ID</th>
+												<th class="td-break" rowspan="2">BOQ Code</th>
 												<th class="td-break" rowspan="2">BOQ Type</th>
 												<th class="td-break" rowspan="2">Description</th>
 												<th class="td-break" rowspan="2">Created</th>
@@ -115,20 +121,17 @@
 								<div class="col-md-6">
 									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
 										<div class="datatable-info"></div>
-										<div class="datatable-length"></div>
+										<div class="table-boq-length"></div>
 									</div>
 								</div>
 								<div class="col-md-6 flex-grow-1">
-									<div class="datatable-paginate"></div>
+									<div class="table-boq-paginate"></div>
 								</div>
 							</div>
-
 						</div>
 					</div>
-
 				</div>
 			</div>
-
 		</div>
 	</div>
 	<!-- /Page Wrapper -->
@@ -136,7 +139,7 @@
 	<!-- Add BOQ -->
 	<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add" style="width: 998px !important;">
 		<div class="offcanvas-header border-bottom">
-			<h5 class="fw-semibold">Create BOQ</h5>
+			<h5 id="boq_form_title" class="fw-semibold">Create BOQ</h5>
 			<button type="button" id="close_boq_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
 					<i class="ti ti-x"></i>
 			</button>
@@ -145,12 +148,11 @@
 			<style>
 				#c_boq_form td { vertical-align: baseline; } 
 			</style>
-			<form action="{{ route('boqs.create') }}" id="c_boq_form" method="POST"></form>
+			<form id="c_boq_form" method="POST"></form>
 		</div>
 	</div>
 	<!-- /Add BOQ -->
 
-	
 	<!-- Delete Modal -->
 	<div class="modal fade" id="delete_boq_modal" tabindex="-1" aria-labelledby="deleteBoqModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
@@ -170,9 +172,6 @@
 		</div>
 	</div>
 	<!-- Delete Modal -->
- 
-	@component('components.model-popup')
-	@endcomponent
 @endsection
 
 @push('scripts')

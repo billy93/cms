@@ -34,26 +34,24 @@ class BoqRequest extends ApiFormRequest
         $rules = [  
             'project_id' => 'nullable|exists:projects,id',
             'proposal_id' => 'nullable|exists:proposals,id',
-            'form_type' => ['required', Rule::in(['type-a','type-b','type-c','type-d'])],
+            'form_type' => ['required', Rule::in(['A','B','C','D'])],
             'description' => 'required|string',
-            'total_amount_items' => ['required_if:form_type,type-a','numeric','min:0'],
+            'total_amount_items' => ['required_if:form_type,A','numeric','min:0'],
             'management_fee' => 'nullable|numeric|min:0',
             'management_fee_type' => ['nullable', Rule::in(['percent','nominal'])],
             'vat_rate' => ['required', Rule::in([1, 11])],
+            'items' => ['required_if:form_type,B,C,D','array','min:1']
         ];
-
-        // Items required for type B, C, D
-        $rules['items'] = ['required_if:form_type,type-b,type-c,type-d','array','min:1'];
         
         // Type B specific
-        if ($this->input('form_type') === 'type-b') {
+        if ($this->input('form_type') === 'B') {
             $rules['items.*.subheader'] = ['required','string', Rule::in(['Adult','Child','Infant'])];
             $rules['items.*.qty'] = ['required','integer','min:0'];
             $rules['items.*.amount'] = ['required','numeric','min:0'];
         }
 
         // Type C & D specific
-        if (in_array($this->input('form_type'), ['type-c','type-d'])) {
+        if (in_array($this->input('form_type'), ['C','D'])) {
             $rules['items.*.header'] = ['required','string'];
             $rules['items.*.subheader'] = ['nullable','string'];
             $rules['items.*.product_id'] = ['nullable','exists:products,id'];

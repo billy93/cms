@@ -12,16 +12,12 @@ class BoqSeeder extends Seeder
 {
     public function run(): void
     {
-        $proposals = Proposal::all();
-
-        if ($proposals->isEmpty()) {
-            $this->command->info('No proposals found, seeder skipped.');
-            return;
-        }
-
+      
         // BOQ TYPE - A
         $boq = Boq::create([
-            'form_type' => 'type-a',
+            'code' => BOQ::generateCode(),
+            'proposal_id' => 1,
+            'form_type' => 'A',
             'description' => 'BOQ Type A',
             'management_fee_type' => 'percent',
             'management_fee' => 10, // 10%
@@ -48,7 +44,9 @@ class BoqSeeder extends Seeder
 
         // BOQ TYPE - B
         $boq2 = Boq::create([
-            'form_type' => 'type-b',
+            'code' => BOQ::generateCode(),
+            'proposal_id' => 1,
+            'form_type' => 'B',
             'description' => 'BOQ Type B',
             'management_fee_type' => 'nominal',
             'management_fee' => 100000, // persen
@@ -112,7 +110,9 @@ class BoqSeeder extends Seeder
 
         // BBOQ TYPE C 
         $boq3 = Boq::create([
-          'form_type' => 'type-c',
+          'code' => BOQ::generateCode(),
+          'proposal_id' => 1,
+          'form_type' => 'C',
           'description' => 'BOQ Type C',
           'management_fee_type' => 'percent',
           'management_fee' => 6, // persen
@@ -183,7 +183,9 @@ class BoqSeeder extends Seeder
 
         // BBOQ TYPE D 
         $boq4 = Boq::create([
-          'form_type' => 'type-d',
+          'code' => BOQ::generateCode(),
+          'proposal_id' => 1,
+          'form_type' => 'D',
           'description' => 'BOQ Type D',
           'management_fee_type' => 'percent',
           'management_fee' => 12, // persen

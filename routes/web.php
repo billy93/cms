@@ -5,6 +5,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BOQController;
 use App\Http\Controllers\CategoryController;
@@ -79,7 +82,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     ->controller(RoleController::class)->group(function() {
         Route::get('/', 'index')->name('index'); 
         Route::post('/', 'create')->name('create'); 
-        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
         Route::get('/{role_id}', 'read')->name('read'); 
         Route::put('/{role_id}', 'update')->name('update'); 
         Route::delete('/{role_id}', 'delete')->name('delete'); 
@@ -103,12 +106,44 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     ->controller(PermissionController::class)->group(function() {
         Route::get('/', 'index')->name('index'); 
         Route::post('/', 'create')->name('create'); 
-        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
         Route::get('/{permission_id}', 'read')->name('read'); 
         Route::put('/{permission_id}', 'update')->name('update'); 
         Route::delete('/{permission_id}', 'delete')->name('delete'); 
     });
 
+    Route::prefix('customers')->name('customers.')
+    ->controller(CustomerController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{customer_id}', 'read')->name('read'); 
+        Route::put('/{customer_id}', 'update')->name('update'); 
+        Route::delete('/{customer_id}', 'delete')->name('delete'); 
+        Route::get('/show/{customer_id}', 'show')->name('show'); 
+    });
+
+    Route::prefix('projects')->name('projects.')
+    ->controller(ProjectController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{project_id}', 'read')->name('read'); 
+        Route::put('/{project_id}', 'update')->name('update'); 
+        Route::delete('/{project_id}', 'delete')->name('delete'); 
+        Route::get('/show/{project_id}', 'show')->name('show'); 
+    });
+
+    Route::prefix('proposals')->name('proposals.')
+    ->controller(ProposalController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{proposal_id}', 'read')->name('read'); 
+        Route::put('/{proposal_id}', 'update')->name('update'); 
+        Route::delete('/{proposal_id}', 'delete')->name('delete'); 
+        Route::get('/show/{proposal_id}', 'show')->name('show'); 
+    });
 
     Route::prefix('invoices')->name('invoices.')
     ->controller(InvoiceController::class)->group(function() {
@@ -588,10 +623,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('project-reports');
     })->name('project-reports'); 
 
-    Route::get('/projects', function () {
-        return view('projects');
-    })->name('projects');  
-
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
 
     Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -864,10 +895,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('video-call');
     })->name('video-call');
 
-    Route::get('/proposals', function () {
-        return view('proposals');
-    })->name('proposals');
-
     Route::get('/contracts', function () {
         return view('contracts');
     })->name('contracts');
@@ -1000,14 +1027,14 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('plugin');
     })->name('plugin');
 
-    // Customer routes
-    Route::get('/customers', function () {
-        return view('customers.index');
-    })->name('customers');
+    // // Customer routes
+    // Route::get('/customers', function () {
+    //     return view('customers.index');
+    // })->name('customers');
 
-    Route::get('/customers/{id}', function ($id) {
-        return view('customers.detail', compact('id'));
-    })->name('customers.detail');
+    // Route::get('/customers/{id}', function ($id) {
+    //     return view('customers.detail', compact('id'));
+    // })->name('customers.detail');
 
     Route::get('/suppliers', function () {
         return view('suppliers.index');
@@ -1018,13 +1045,17 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     })->name('suppliers.detail');
 
     // Project routes
-    Route::get('/projects', function () {
-        return view('projects.index');
-    })->name('projects');
+    // Route::get('/projects', function () {
+    //     return view('projects');
+    // })->name('projects');  
 
-    Route::get('/projects/{id}', function ($id) {
-        return view('projects.show', compact('id'));
-    })->name('projects.show');
+    // Route::get('/projects', function () {
+    //     return view('projects.index');
+    // })->name('projects');
+
+    // Route::get('/projects/{id}', function ($id) {
+    //     return view('projects.show', compact('id'));
+    // })->name('projects.show');
 
     // // User
     // Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');

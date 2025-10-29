@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('proposals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            $table->string('boq_code')->unique();
-            $table->string('sales_code')->unique();
+            $table->string('code')->unique();
+            $table->string('sales_code')->unique()->nullable();
             $table->enum('type_of_sales_code', ['FIT', 'Non FIT']);
-            $table->year('year_of_sales');
+            $table->year('year_of_sales')->nullable();
             $table->enum('destination', ['Indonesia', 'Overseas']);
             $table->string('city');
             $table->enum('activity', [
@@ -37,14 +37,7 @@ return new class extends Migration
             $table->date('date_from');
             $table->date('date_to');
             $table->string('invoice_no')->nullable();
-            $table->enum('pricing_model', [
-                'All inclusive package',
-                'All inclusive - Price Per Person',
-                'Simple package',
-                'Free format',
-                'Itemized'
-            ]);
-            $table->enum('status', ['draft', 'submitted', 'approved', 'rejected', 'cancelled'])->default('draft');
+            $table->enum('status', ['Draft', 'Submitted', 'Approved', 'Rejected', 'Cancelled'])->default('Draft');
             $table->timestamps();
             $table->softDeletes();
         });

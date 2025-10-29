@@ -20,15 +20,13 @@ class ProjectSeeder extends Seeder
 
         // Generate 10 project per customer
         foreach ($customers as $customer) {
-            for ($i = 1; $i <= 3; $i++) {
-                Project::create([
-                    'project_code' => 'PRJ-' . $customer->id . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                    'name' => 'Project ' . $i . ' for ' . $customer->name,
-                    'description' => 'Deskripsi untuk project ' . $i,
-                    'customer_id' => $customer->id,
-                    'status' => 'active'
-                ]);
-            }
+            Project::create([
+                'code' => Project::generateCode(),
+                'name' => 'Project for ' . $customer->name,
+                'description' => 'Deskripsi untuk project ' . $customer->name,
+                'customer_id' => $customer->id,
+                'status' => 'Active'
+            ]);
         }
     }
 }

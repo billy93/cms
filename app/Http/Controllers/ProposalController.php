@@ -3,217 +3,303 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proposal;
-use App\Models\Project;
+use App\Models\Boq;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
+use App\Http\Requests\ProposalRequest;
+use App\Http\Services\ProposalService;
 
 class ProposalController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        try {
-            $proposals = Proposal::with(['project', 'project.customer'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+    protected $proposalService;
 
-            return response()->json([
-                'success' => true,
-                'data' => $proposals->items(),
-                'pagination' => [
-                    'current_page' => $proposals->currentPage(),
-                    'last_page' => $proposals->lastPage(),
-                    'per_page' => $proposals->perPage(),
-                    'total' => $proposals->total()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching proposals: ' . $e->getMessage()
-            ], 500);
-        }
+    public function __construct(ProposalService $proposalService)
+    {
+        $this->proposalService = $proposalService;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'project_id' => 'required|exists:projects,id',
-            'boq_code' => 'required|string|max:255|unique:proposals,boq_code',
-            'sales_code' => 'required|string|max:255|unique:proposals,sales_code',
-            'type_of_sales_code' => 'required|in:FIT,Non FIT',
-            'year_of_sales' => 'required|integer|min:' . (date('Y') - 5) . '|max:' . (date('Y') + 5),
-            'destination' => 'required|in:Indonesia,Overseas',
-            'city' => 'required|string|max:255',
-            'activity' => 'required|in:Awarding,Conference and Seminar,Exhibitions,Gala Dinner,Gathering,Holidays,Incentive Trip,Meeting,Product Launching,Shareholders Meeting (RUPS),Workshop,Others',
-            'date_from' => 'required|date',
-            'date_to' => 'required|date|after_or_equal:date_from',
-            'pricing_model' => 'required|in:All inclusive package,All inclusive - Price Per Person,Simple package,Free format,Itemized'
-        ]);
+        if ($request->ajax()) {
+            $proposals = Proposal::with('project');
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+            return DataTables::eloquent($proposals)
+                ->addColumn('project_code', fn($p) => $p->project->code ?? '-')
+                ->addColumn('project_name', fn($p) => $p->project->name ?? '-')
+                ->addColumn('actions', function ($p) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item" 
+                                    href="'.route('proposals.show', ['proposal_id' => $p->id]).'"
+                                >
+                                    <i class="ti ti-eye text-info"></i> View Detail
+                                </a>
+                                <a  
+                                    class="dropdown-item c_proposal_edit" 
+                                    href="#" 
+                                    data-id="'.$p->id.'" 
+                                    data-url="'.route('proposals.read', ['proposal_id' => $p->id]).'"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_proposal_delete" 
+                                    href="javascript:void(0);" 
+                                    data-id="'.$p->id.'" 
+                                    data-url="'.route('proposals.delete', ['proposal_id' => $p->id]).'"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#delete_proposal_modal">
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
         }
 
+        return view('proposals');
+    }
+
+    public function show(Request $request, $proposal_id)
+    {
+         if ($request->ajax()) {
+            $boqs = Boq::with('items')
+                ->where('proposal_id', $proposal_id);
+                 
+            return DataTables::eloquent($boqs)
+                ->addColumn('header', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->header}</li>")->toArray()).'</ul>')
+                ->addColumn('subheader', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->subheader}</li>")->toArray()).'</ul>')
+                // ->addColumn('item_product_name', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->snapshot_product_name}</li>")->toArray()).'</ul>')
+                ->addColumn('unit_price', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->unit_price) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
+                )
+                ->addColumn('item_title1', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title1_value} {$i->title1_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title2', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title2_value} {$i->title2_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title3', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title3_value} {$i->title3_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title4', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title4_value} {$i->title4_key}</li>")->toArray()).'</ul>')
+                ->addColumn('multiplier_total', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->multiplier_total) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
+                )
+                ->addColumn('management_fee', fn($boq) => 
+                    $boq->management_fee_type === 'percent' 
+                        ? ($boq->management_fee / 100) * $boq->total_amount_items 
+                        : $boq->management_fee
+                )
+                ->addColumn('actions', function ($boq) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item c_boq_edit" 
+                                    href="#" 
+                                    data-id="'.$boq->id.'" 
+                                    data-url="'.route('boqs.read', ['boq_id' => $boq->id]).'"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_boq_delete" 
+                                    href="javascript:void(0);" 
+                                    data-id="'.$boq->id.'" 
+                                    data-url="'.route('boqs.delete', ['boq_id' => $boq->id]).'"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#delete_boq_modal">
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->rawColumns([
+                    'actions',
+                    'header','subheader','item_product_name','unit_price',
+                    'item_title1','item_title2','item_title3','item_title4','multiplier_total'
+                ])
+                ->make(true);
+        }
+        
+        $proposal = $this->proposalService->getProposalById($proposal_id);
+        
+        return view('proposals.show', compact('proposal'));
+    }
+
+    public function useExistingBoq(Request $request) {
+            $boqs = Boq::with('items')
+                ->where('proposal_id', $proposal_id);
+                 
+            return DataTables::eloquent($boqs)
+                ->addColumn('header', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->header}</li>")->toArray()).'</ul>')
+                ->addColumn('subheader', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->subheader}</li>")->toArray()).'</ul>')
+                // ->addColumn('item_product_name', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->snapshot_product_name}</li>")->toArray()).'</ul>')
+                ->addColumn('unit_price', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->unit_price) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
+                )
+                ->addColumn('item_title1', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title1_value} {$i->title1_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title2', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title2_value} {$i->title2_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title3', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title3_value} {$i->title3_key}</li>")->toArray()).'</ul>')
+                ->addColumn('item_title4', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title4_value} {$i->title4_key}</li>")->toArray()).'</ul>')
+                ->addColumn('multiplier_total', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->multiplier_total) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
+                )
+                ->addColumn('management_fee', fn($boq) => 
+                    $boq->management_fee_type === 'percent' 
+                        ? ($boq->management_fee / 100) * $boq->total_amount_items 
+                        : $boq->management_fee
+                )
+                ->addColumn('actions', function ($boq) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item c_boq_edit" 
+                                    href="#" 
+                                    data-id="'.$boq->id.'" 
+                                    data-url="'.route('boqs.read', ['boq_id' => $boq->id]).'"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_boq_delete" 
+                                    href="javascript:void(0);" 
+                                    data-id="'.$boq->id.'" 
+                                    data-url="'.route('boqs.delete', ['boq_id' => $boq->id]).'"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#delete_boq_modal">
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->rawColumns([
+                    'actions',
+                    'header','subheader','item_product_name','unit_price',
+                    'item_title1','item_title2','item_title3','item_title4','multiplier_total'
+                ])
+                ->make(true);
+    }
+
+    public function boq($proposal_id)
+    {
+        $proposal = $this->proposalService->getProposalById($proposal_id);
+        
+        return view('proposals.show', compact('proposal'));
+    }
+    
+    public function create(ProposalRequest $request): JsonResponse
+    {
         try {
-            // Check if project already has a proposal
-            $existingProposal = Proposal::where('project_id', $request->project_id)->first();
-            if ($existingProposal) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This project already has a proposal'
-                ], 422);
-            }
-
-            DB::beginTransaction();
-
-            $proposal = new Proposal();
-            $proposal->project_id = $request->project_id;
-            $proposal->boq_code = $request->boq_code;
-            $proposal->sales_code = $request->sales_code;
-            $proposal->type_of_sales_code = $request->type_of_sales_code;
-            $proposal->year_of_sales = $request->year_of_sales;
-            $proposal->destination = $request->destination;
-            $proposal->city = $request->city;
-            $proposal->activity = $request->activity;
-            $proposal->date_from = $request->date_from;
-            $proposal->date_to = $request->date_to;
-            $proposal->pricing_model = $request->pricing_model;
-            
-            // Auto-generate invoice number
-            $proposal->invoice_no = $proposal->generateInvoiceNumber();
-            
-            $proposal->save();
-
-            DB::commit();
-
+            $proposal = $this->proposalService->createProposal($request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Proposal created successfully',
-                'data' => $proposal->load(['project', 'project.customer'])
-            ]);
-
+                'data' => $proposal
+            ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
+            Log::error('Error creating Proposal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating proposal: ' . $e->getMessage()
+                'message' => 'Failed to create Proposal'
             ], 500);
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
+    public function readAll(): JsonResponse
+    {
+        $proposals = $this->proposalService->getAllProposals();
+        return response()->json([
+            'status' => 'success',
+            'data' => $proposals
+        ], 200);
+    }
+
+    public function read($proposal_id): JsonResponse
     {
         try {
-            $proposal = Proposal::with(['project', 'project.customer'])->findOrFail($id);
-
+            $proposal = $this->proposalService->getProposalById($proposal_id);
             return response()->json([
                 'success' => true,
                 'data' => $proposal
-            ]);
+            ], 200);
         } catch (\Exception $e) {
+            Log::error('Error reading Proposal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal not found'
-            ], 404);
+                'message' => 'Failed to load Proposal'
+            ], 500);
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
+    public function update(ProposalRequest $request, $proposal_id): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'boq_code' => 'required|string|max:255|unique:proposals,boq_code,' . $id,
-            'sales_code' => 'required|string|max:255|unique:proposals,sales_code,' . $id,
-            'type_of_sales_code' => 'required|in:FIT,Non FIT',
-            'year_of_sales' => 'required|integer|min:' . (date('Y') - 5) . '|max:' . (date('Y') + 5),
-            'destination' => 'required|in:Indonesia,Overseas',
-            'city' => 'required|string|max:255',
-            'activity' => 'required|in:Awarding,Conference and Seminar,Exhibitions,Gala Dinner,Gathering,Holidays,Incentive Trip,Meeting,Product Launching,Shareholders Meeting (RUPS),Workshop,Others',
-            'date_from' => 'required|date',
-            'date_to' => 'required|date|after_or_equal:date_from',
-            'pricing_model' => 'required|in:All inclusive package,All inclusive - Price Per Person,Simple package,Free format,Itemized'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
-            $proposal = Proposal::findOrFail($id);
-
-            DB::beginTransaction();
-
-            $proposal->boq_code = $request->boq_code;
-            $proposal->sales_code = $request->sales_code;
-            $proposal->type_of_sales_code = $request->type_of_sales_code;
-            $proposal->year_of_sales = $request->year_of_sales;
-            $proposal->destination = $request->destination;
-            $proposal->city = $request->city;
-            $proposal->activity = $request->activity;
-            $proposal->date_from = $request->date_from;
-            $proposal->date_to = $request->date_to;
-            $proposal->pricing_model = $request->pricing_model;
-            
-            $proposal->save();
-
-            DB::commit();
-
+            $proposal = $this->proposalService->updateProposal($proposal_id, $request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Proposal updated successfully',
-                'data' => $proposal->load(['project', 'project.customer'])
-            ]);
-
+                'data' => $proposal
+            ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
+            Log::error('Error updating Proposal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating proposal: ' . $e->getMessage()
+                'message' => 'Failed to update Proposal'
             ], 500);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function delete($proposal_id): JsonResponse
     {
         try {
-            $proposal = Proposal::findOrFail($id);
-            $proposal->delete();
-
+            $this->proposalService->deleteProposal($proposal_id);
             return response()->json([
                 'success' => true,
                 'message' => 'Proposal deleted successfully'
-            ]);
+            ], 200);
         } catch (\Exception $e) {
+            Log::error('Error deleting Proposal: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting proposal: ' . $e->getMessage()
+                'message' => 'Failed to delete Proposal'
             ], 500);
         }
     }
 
+    
     /**
      * Get proposal by project ID
      */
@@ -273,13 +359,13 @@ class ProposalController extends Controller
     public function generateCodes()
     {
         try {
-            $boqCode = 'BOQ' . date('Y') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            $code = 'BOQ' . date('Y') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
             $salesCode = 'SALES' . date('Y') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'boq_code' => $boqCode,
+                    'code' => $code,
                     'sales_code' => $salesCode
                 ]
             ]);

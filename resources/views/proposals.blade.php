@@ -45,7 +45,7 @@
                                                 </ul>
                                             </div>
                                         </div>	
-                                        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals</a>
+                                        <a href="javascript:void(0);" id="c_proposal_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals</a>
                                     </div>
                                 </div>
                             </div>
@@ -53,7 +53,7 @@
                         </div>
                         <div class="card-body">
                             <!-- Filter -->
-                            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-2 mb-4">
+                            <!-- <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-2 mb-4">
                                 <div class="d-flex align-items-center flex-wrap row-gap-2">
                                     <div class="sort-dropdown drop-down task-drops me-3">
                                         <a href="javascript:void(0);" class="dropdown-toggle"  data-bs-toggle="dropdown">All Proposals </a>
@@ -567,52 +567,110 @@
                                         <a href="{{url('proposals-grid')}}"><i class="ti ti-grid-dots"></i></a>
                                     </div>
                                 </div>	
-                            </div>
+                            </div> -->
                             <!-- /Filter -->
 
                             <!-- Projects List -->
                             <div class="table-responsive custom-table">
-                                <table class="table" id="proposals-list">
+								<table class="table" id="proposal_list" data-url="{{ route('proposals.index') }}">
+                                    <style>
+                                        #proposal_list th.fit, 
+                                        #proposal_list td.fit {
+                                            width: 1%; 
+                                            white-space: nowrap; 
+                                        }
+                                        #proposal_list th, 
+                                        #proposal_list td {
+                                            padding: 12px 20px;
+                                        } 
+                                        #proposal_list .td-break {
+											text-align: left !important;
+											word-break: auto-phrase;
+											white-space: unset !important;
+										}
+                                    </style>
                                     <thead class="thead-light">
                                         <tr>
-                                            <th class="no-sort">
-                                                <label class="checkboxs"><input type="checkbox" id="select-all"><span class="checkmarks"></span></label>
-                                            </th>
-                                            <th>Proposals ID</th>
-                                            <th>Subject</th>
-                                            <th>Send To</th>
-                                            <th>Total Value</th>
-                                            <th>Date</th>
-                                            <th>Open till</th>
-                                            <th>Project</th>
-                                            <th>Created Date</th>
-                                            <th>Status</th>
-                                            <th class="text-end">Action</th>
+                                            <th rowspan="2">ID</th>
+                                            <th rowspan="2">Proposal Code</th>
+                                            <th rowspan="2">Created At</th>
+                                            <th rowspan="2">Project Code</th>
+                                            <th rowspan="2">Destination</th>
+                                            <th rowspan="2">City</th>
+                                            <th rowspan="2">Activity</th>
+                                            <th class="text-center" colspan="2">Period</th>
+                                            <th rowspan="2">Status</th>
+                                            <th class="td-break" rowspan="2">Sales Code Type</th>
+                                            <th class="td-break" rowspan="2">Sales Code</th>
+                                            <th class="td-break" rowspan="2">Year of Sales</th>
+                                            <th rowspan="2">Invoice No</th>
+                                            <th class="no-sort fit" rowspan="2">Action</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">Start</th>
+                                            <th class="text-center">End</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                     </tbody>
                                 </table>								
                             </div>
-                            <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <div class="datatable-length"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="datatable-paginate"></div>
-                                </div>
-                            </div>
-                            <!-- /Projects List -->
-
+                            <div class="row align-items-center" style="row-gap: 1em;">
+								<div class="col-md-6">
+									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
+										<div class="datatable-info"></div>
+										<div class="datatable-length"></div>
+									</div>
+								</div>
+								<div class="col-md-6 flex-grow-1">
+									<div class="datatable-paginate"></div>
+								</div>
+							</div>
                         </div>
 					</div>
-
                 </div>
             </div>
-
         </div>
     </div>
 
-    @component('components.model-popup')
-    @endcomponent
+    <!-- Add New Proposal -->
+    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
+        <div class="offcanvas-header border-bottom">
+            <h4 id="proposal_form_title">Create Proposal</h4>
+            <button type="button" id="close_proposal_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="offcanvas-body">
+            <style>
+				#c_proposal_form td { vertical-align: baseline; } 
+			</style>
+			<form id="c_proposal_form" method="POST"></form>
+        </div>
+    </div>
+    <!-- /Add New Proposal -->
+    
+	<!-- Delete Modal -->
+	<div class="modal fade" id="delete_proposal_modal" tabindex="-1" aria-labelledby="deleteProposalModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteProposalModalLabel">Confirm Delete</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					Are you sure you want to delete this item?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-danger" id="confirm_delete_proposal">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Delete Modal -->
 @endsection
+
+@push('scripts')
+  <script src="/build/js/proposal_script.js"></script>
+@endpush

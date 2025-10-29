@@ -11,8 +11,8 @@ class Customer extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'customer_code',
-        'customer_name',
+        'code',
+        'name',
         'address',
         'contact_person',
         'phone',
@@ -31,29 +31,11 @@ class Customer extends Model
     /**
      * Generate unique customer code
      */
-    public static function generateCustomerCode()
+    public static function generateCode(): string
     {
-        $prefix = 'CUST';
-        
-        // Get the highest customer code number
-        $lastCustomer = self::orderBy('customer_code', 'desc')->first();
-        
-        if ($lastCustomer) {
-            $lastNumber = (int) substr($lastCustomer->customer_code, 4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-        
-        $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-        
-        // Check if code already exists (in case of gaps or concurrent inserts)
-        while (self::where('customer_code', $newCode)->exists()) {
-            $newNumber++;
-            $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-        }
-        
-        return $newCode;
+        $prefix = 'CUST' . date('Y');
+        $random = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        return "{$prefix}{$random}";
     }
 
     /**
@@ -78,8 +60,8 @@ class Customer extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('customer_name', 'like', "%{$search}%")
-              ->orWhere('customer_code', 'like', "%{$search}%")
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('code', 'like', "%{$search}%")
               ->orWhere('contact_person', 'like', "%{$search}%")
               ->orWhere('email', 'like', "%{$search}%");
         });
@@ -93,7 +75,7 @@ class Customer extends Model
         parent::boot();
         
         static::created(function ($customer) {
-            \Log::info('Customer created: ' . $customer->customer_code);
+            \Log::info('Customer created: ' . $customer->code);
         });
     }
 
@@ -138,6 +120,11 @@ class Customer extends Model
             return $this->bank_name . ' - ' . $this->bank_account_number . ' (' . $this->bank_account_name . ')';
         }
         return null;
+    }
+    
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
     }
 
     /**

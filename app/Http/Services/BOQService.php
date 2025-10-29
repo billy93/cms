@@ -4,6 +4,7 @@ namespace App\Http\Services;
 
 use App\Models\Boq;
 use App\Models\Product;
+use App\Models\Proposal;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -16,20 +17,27 @@ class BoqService
         return DB::transaction(function () use ($data) {
             $items = $data['items'] ?? [];
             unset($data['items']); // hapus items dari main data
-
+            $data['code'] = BOQ::generateCode();
+            $data['proposal_id'] = $data['proposal_id'] ?? null;
             // 🔹 Buat BOQ dulu (tanpa summary fields)
             $boq = Boq::create($data);
 
+            if (!empty($data['proposal_id'])) {
+                $proposal = Proposal::find($data['proposal_id']);
+                $boq->proposal()->associate($proposal);
+                $boq->save();
+            }
+
             $totalAmountItems = 0;
 
-            if ($data['form_type'] === 'type-a') {
+            if ($data['form_type'] === 'A') {
                 // Type A → total_amount_items langsung dari request
                 $totalAmountItems = $data['total_amount_items'];
             } else {
                 // Type B/C/D → hitung dari items
                 foreach ($items as $itemData) {
                     switch ($data['form_type']) {
-                        case 'type-b':
+                        case 'B':
                             $itemData['unit_price'] = $itemData['amount'];
                             $itemData['title1_key'] = 'Person';
                             $itemData['title1_value'] = $itemData['qty'];
@@ -37,19 +45,21 @@ class BoqService
                             break;
 
                         
-                        case 'type-c':
-                        case 'type-d':
+                        case 'C':
+                        case 'D':
                             // Ambil amount sementara
                             $amount = $itemData['amount'] ;
 
-                            // Assign unit_price
-                            $itemData['unit_price'] = $amount;
-
+                            
                             // Jika product_id ada, ambil product name jadi subheader
                             if (!empty($itemData['product_id'])) {
                                 $product = Product::find($itemData['product_id']);
                                 $itemData['subheader'] = $product?->name ?? $itemData['subheader'];
+                                $amount = $product->base_cost; 
                             }
+
+                            // Assign unit_price
+                            $itemData['unit_price'] = $amount;
 
                             // Hitung multiplier = amount * semua titleX_value yang ada
                             $multiplier = $amount;
@@ -111,7 +121,6 @@ class BoqService
         });
     }
 
-
     public function getAllBoqs()
     {
         return Boq::with('items')->get();
@@ -119,24 +128,34 @@ class BoqService
 
     public function getBoqById($id)
     {
-        $boq = Boq::with('items')->find($id);
+        $boq = Boq::with(['items'])->find($id);
         if (!$boq) {
             throw new Exception("BOQ with ID {$id} not found");
         }
+
         return $boq;
     }
 
     public function updateBoq($id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
-            $boq = Boq::with('items')->find($id);
+            $boq = Boq::find($id);
             if (!$boq) {
                 throw new Exception("BOQ with ID {$id} not found");
             }
 
             $items = $data['items'] ?? [];
             unset($data['items']);
+       
+            if (!empty($data['proposal_id'])) {
+                $proposal = Proposal::find($data['proposal_id']);
+                $boq->proposal()->associate($proposal);
+            } else {
+                $boq->proposal()->dissociate();
+            }
 
+            $boq->save();
+            
             // Update main fields dulu
             $boq->update($data);
 
@@ -145,20 +164,20 @@ class BoqService
 
             $totalAmountItems = 0;
 
-            if ($data['form_type'] === 'type-a') {
+            if ($data['form_type'] === 'A') {
                 $totalAmountItems = $data['total_amount_items'];
             } else {
                 foreach ($items as $itemData) {
                     switch ($data['form_type']) {
-                        case 'type-b':
+                        case 'B':
                             $itemData['unit_price'] = $itemData['amount'];
                             $itemData['title1_key'] = 'Person';
                             $itemData['title1_value'] = $itemData['qty'];
                             $multiplier = $itemData['qty'] * $itemData['amount'];
                             break;
 
-                        case 'type-c':
-                        case 'type-d':
+                        case 'C':
+                        case 'D':
                             $amount = $itemData['amount'];
                             $itemData['unit_price'] = $amount;
 

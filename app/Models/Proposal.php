@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Database\Eloquent\Relations\HasMany; 
+ 
 class Proposal extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'project_id',
-        'boq_code',
+        'code',
         'sales_code',
         'type_of_sales_code',
         'year_of_sales',
@@ -22,7 +23,6 @@ class Proposal extends Model
         'date_from',
         'date_to',
         'invoice_no',
-        'pricing_model',
         'status'
     ];
 
@@ -30,6 +30,7 @@ class Proposal extends Model
         'date_from' => 'date',
         'date_to' => 'date',
         'status' => 'string',
+        'year_of_sales' => 'string' 
     ];
 
     /**
@@ -40,35 +41,36 @@ class Proposal extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function boqs(): BelongsToMany
+    public function boqs(): HasMany
     {
-        return $this->belongsToMany(Boq::class, 'boq_proposal');
+        return $this->hasMany(Boq::class);
     }
     /**
-     * Generate unique BOQ code
+     * Generate unique Proposal code
      */
-    public static function generateBoqCode()
+    public static function generateCode(): string
     {
-        $prefix = 'BOQ';
-        
-        // Get the highest BOQ code number
-        $lastProposal = self::orderBy('boq_code', 'desc')->first();
-        
-        if ($lastProposal) {
-            $lastNumber = (int) substr($lastProposal->boq_code, 3);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-        
-        $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-        
-        // Check if code already exists
-        while (self::where('boq_code', $newCode)->exists()) {
+        $prefix = 'PRP';
+        $length = 6; // panjang angka
+
+        // Ambil nomor terakhir secara terkini
+        $lastCode = self::query()
+            ->where('code', 'like', $prefix . '%')
+            ->orderBy('code', 'desc')
+            ->lockForUpdate() // kunci record untuk mencegah duplikasi di transaksi
+            ->value('code');
+
+        $lastNumber = $lastCode ? (int) substr($lastCode, strlen($prefix)) : 0;
+        $newNumber = $lastNumber + 1;
+
+        $newCode = $prefix . str_pad($newNumber, $length, '0', STR_PAD_LEFT);
+
+        // Safety check (jarang terjadi, tapi untuk berjaga-jaga)
+        while (self::where('code', $newCode)->exists()) {
             $newNumber++;
-            $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+            $newCode = $prefix . str_pad($newNumber, $length, '0', STR_PAD_LEFT);
         }
-        
+
         return $newCode;
     }
 

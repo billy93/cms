@@ -10,11 +10,17 @@ return new class extends Migration
     {
         Schema::create('boqs', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
 
+            // Foreign key ke Proposal
+            $table->foreignId('proposal_id')
+                  ->nullable()       
+                  ->constrained('proposals')
+                  ->cascadeOnDelete();
 
             // Jenis form
-            $table->enum('form_type', ['type-a', 'type-b', 'type-c', 'type-d'])
-                  ->default('type-a');
+            $table->enum('form_type', ['A', 'B', 'C', 'D'])
+                  ->default('A');
 
             // Deskripsi umum BOQ
             $table->text('description')->nullable();

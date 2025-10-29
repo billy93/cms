@@ -3,312 +3,177 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
+use App\Http\Requests\ProjectRequest;
+use App\Http\Services\ProjectService;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of projects
-     */
-    public function index(Request $request): JsonResponse
+    protected $projectService;
+
+    public function __construct(ProjectService $projectService)
     {
-        try {
-            \Log::info('ProjectController@index called', $request->all());
-            
-            $query = Project::with('customer');
-
-            // Search functionality
-            if ($request->has('search') && $request->search) {
-                $query->search($request->search);
-            }
-
-            // Filter by status
-            if ($request->has('status') && $request->status) {
-                $query->where('status', $request->status);
-            }
-
-            // Filter by customer
-            if ($request->has('customer_id') && $request->customer_id) {
-                $query->where('customer_id', $request->customer_id);
-            }
-
-            // Pagination
-            $perPage = $request->get('per_page', 15);
-            $projects = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-            \Log::info('Projects found: ' . $projects->total());
-
-            return response()->json([
-                'success' => true,
-                'data' => $projects->items(),
-                'pagination' => [
-                    'current_page' => $projects->currentPage(),
-                    'last_page' => $projects->lastPage(),
-                    'per_page' => $projects->perPage(),
-                    'total' => $projects->total(),
-                ]
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error in ProjectController@index: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving projects: ' . $e->getMessage()
-            ], 500);
-        }
+        $this->projectService = $projectService;
     }
 
-    /**
-     * Store a newly created project
-     */
-    public function store(Request $request): JsonResponse
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $projects = Project::with(['proposals', 'customer']);
+
+            return DataTables::eloquent($projects)
+                ->addColumn('customer_name', fn($p) => $p->customer->name ?? '-')
+                ->addColumn('proposal_action', function ($project) {
+                    $createBtn = '<button class="btn btn-sm btn-outline-primary" data-project-id="' . $project->id . '">Create Proposal</button>';
+
+                    $viewBtn = '';
+                    if ($project->proposals && $project->proposals->count() > 0) {
+                        $viewBtn = '<button class="btn btn-sm btn-outline-success ms-1" data-project-id="' . $project->id . '">View Proposal</button>';
+                    }
+
+                    return '
+                        <div class="d-flex gap-2">
+                            ' . $createBtn . '
+                            ' . $viewBtn . '
+                        </div>
+                    ';
+                })
+                ->addColumn('status_badge', fn($p) =>
+                    match ($p->status) {
+                        'Active' => '<span class="badge badge-status bg-success">Active</span>',
+                        'Inactive' => '<span class="badge badge-status bg-secondary">Inactive</span>',
+                        'Completed' => '<span class="badge badge-status bg-primary">Completed</span>',
+                        'Cancelled' => '<span class="badge badge-status bg-danger">Cancelled</span>',
+                        default => '<span class="badge badge-status bg-dark">Unknown</span>'
+                    }
+                )
+                ->addColumn('actions', function ($p) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item" 
+                                    href="'.route('projects.show', ['project_id' => $p->id]).'"
+                                >
+                                    <i class="ti ti-eye text-info"></i> View Detail
+                                </a>
+                                <a  
+                                    class="dropdown-item c_project_edit" 
+                                    href="#" 
+                                    data-id="'.$p->id.'" 
+                                    data-url="'.route('projects.read', ['project_id' => $p->id]).'"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_project_delete" 
+                                    href="javascript:void(0);" 
+                                    data-id="'.$p->id.'" 
+                                    data-url="'.route('projects.delete', ['project_id' => $p->id]).'"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#delete_project_modal">
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->rawColumns(['proposal_action', 'status_badge', 'actions'])
+                ->make(true);
+        }
+
+        return view('projects');
+    }
+
+    public function show($project_id)
+    {
+        $project = $this->projectService->getProjectById($project_id);
+        
+        return view('projects.show', compact('project'));
+    }
+    
+    public function create(ProjectRequest $request): JsonResponse
     {
         try {
-            \Log::info('Project store request received', $request->all());
-            
-            $validator = Validator::make($request->all(), [
-                'project_code' => 'required|string|max:20|unique:projects,project_code',
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'customer_id' => 'required|exists:customers,id',
-                'status' => 'nullable|in:active,inactive,completed,cancelled'
-            ]);
-
-            if ($validator->fails()) {
-                \Log::error('Validation failed', $validator->errors()->toArray());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            \Log::info('Validation passed, starting transaction');
-
-            DB::beginTransaction();
-
-            $project = Project::create([
-                'project_code' => $request->project_code,
-                'name' => $request->name,
-                'description' => $request->description,
-                'customer_id' => $request->customer_id,
-                'status' => $request->status ?? 'active'
-            ]);
-
-            \Log::info('Project created successfully', $project->toArray());
-
-            DB::commit();
-
-            // Load customer relationship
-            $project->load('customer');
-
+            $project = $this->projectService->createProject($request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Project created successfully',
                 'data' => $project
             ], 201);
-
         } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error creating project: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Error creating Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating project: ' . $e->getMessage()
+                'message' => 'Failed to create Project'
             ], 500);
         }
     }
 
-    /**
-     * Display the specified project
-     */
-    public function show($id): JsonResponse
+    public function readAll(): JsonResponse
+    {
+        $projects = $this->projectService->getAllProjects();
+        return response()->json([
+            'status' => 'success',
+            'data' => $projects
+        ], 200);
+    }
+
+    public function read($project_id): JsonResponse
     {
         try {
-            $project = Project::with(['customer', 'proposal'])->findOrFail($id);
-
+            $project = $this->projectService->getProjectById($project_id);
             return response()->json([
                 'success' => true,
                 'data' => $project
-            ]);
+            ], 200);
         } catch (\Exception $e) {
+            Log::error('Error reading Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Project not found'
-            ], 404);
+                'message' => 'Failed to load Project'
+            ], 500);
         }
     }
 
-    /**
-     * Update the specified project
-     */
-    public function update(Request $request, $id): JsonResponse
+    public function update(ProjectRequest $request, $project_id): JsonResponse
     {
         try {
-            $project = Project::findOrFail($id);
-
-            $validator = Validator::make($request->all(), [
-                'name' => 'sometimes|required|string|max:255',
-                'description' => 'nullable|string',
-                'customer_id' => 'sometimes|required|exists:customers,id',
-                'status' => 'nullable|in:active,inactive,completed,cancelled'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            DB::beginTransaction();
-
-            $project->update($request->only([
-                'name',
-                'description',
-                'customer_id',
-                'status'
-            ]));
-
-            DB::commit();
-
-            // Load customer relationship
-            $project->load('customer');
-
+            $project = $this->projectService->updateProject($project_id, $request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Project updated successfully',
-                'data' => $project->fresh(['customer'])
-            ]);
-
+                'data' => $project
+            ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
+            Log::error('Error updating Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating project: ' . $e->getMessage()
+                'message' => 'Failed to update Project'
             ], 500);
         }
     }
 
-    /**
-     * Remove the specified project
-     */
-    public function destroy($id): JsonResponse
+    public function delete($project_id): JsonResponse
     {
         try {
-            $project = Project::findOrFail($id);
-            $project->delete();
-
+            $this->projectService->deleteProject($project_id);
             return response()->json([
                 'success' => true,
                 'message' => 'Project deleted successfully'
-            ]);
+            ], 200);
         } catch (\Exception $e) {
+            Log::error('Error deleting Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting project: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get active projects for dropdown/select
-     */
-    public function getActiveProjects(): JsonResponse
-    {
-        try {
-            $projects = Project::active()
-                ->with('customer')
-                ->select('id', 'project_code', 'name', 'customer_id')
-                ->orderBy('name')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $projects
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving active projects: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Bulk update project status
-     */
-    public function bulkUpdateStatus(Request $request): JsonResponse
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'project_ids' => 'required|array',
-                'project_ids.*' => 'exists:projects,id',
-                'status' => 'required|in:active,inactive,completed,cancelled'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            DB::beginTransaction();
-
-            Project::whereIn('id', $request->project_ids)
-                ->update(['status' => $request->status]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Project status updated successfully'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating project status: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Search customers for autocomplete
-     */
-    public function searchCustomers(Request $request): JsonResponse
-    {
-        try {
-            $query = $request->get('q', '');
-            
-            $customers = Customer::active()
-                ->where(function($q) use ($query) {
-                    $q->where('customer_name', 'LIKE', "%{$query}%")
-                      ->orWhere('customer_code', 'LIKE', "%{$query}%");
-                })
-                ->select('id', 'customer_code', 'customer_name')
-                ->orderBy('customer_name')
-                ->limit(10)
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $customers
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error searching customers: ' . $e->getMessage()
+                'message' => 'Failed to delete Project'
             ], 500);
         }
     }

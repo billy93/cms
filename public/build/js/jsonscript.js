@@ -3488,12 +3488,14 @@ $(document).ready(function () {
 
 	// Projects List
 
-	if ($('#project-list').length > 0) {
-		$('#project-list').DataTable({
+	if ($('#project_list').length > 0) {
+		$('#project_list').DataTable({
+			"serverSide": true,
 			"bFilter": false,
 			"bInfo": false,
 			"ordering": true,
 			"autoWidth": true,
+			"order": [[0, "desc"]],
 			"language": {
 				search: ' ',
 				sLengthMenu: '_MENU_',
@@ -3501,344 +3503,47 @@ $(document).ready(function () {
 				info: "_START_ - _END_ of _TOTAL_ items",
 				"lengthMenu": "Show _MENU_ entries",
 				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
+					next: 'Next <i class="fa fa-angle-right"></i>',
+					previous: '<i class="fa fa-angle-left"></i> Prev'
 				},
 			},
 			initComplete: (settings, json) => {
 				$('.dataTables_paginate').appendTo('.datatable-paginate');
 				$('.dataTables_length').appendTo('.datatable-length');
 			},
-			"data": [
+			"ajax": {
+				"url": $('#project_list').data('url'),
+				"type": "GET",
+				"dataSrc": "data"
+			},
+			columns: [
+				{ data: 'id', visible: false },
+				{ data: 'code' },
+				{ data: 'name' },
+				{ data: 'customer_name' },
 				{
-					"id": "#12145",
-					"si_no": "",
-					"star": "",
-					"name": "Truelysell",
-					"client": "NovaWave LLC",
-					"pro_img": "build/img/priority/truellysel.svg",
-					"client_img": "build/img/icons/company-icon-01.svg",
-					"piority": "0",
-					"start_date": "25 Sep 2023",
-					"end_date": "15 Oct 2023",
-					"stage": "3",
-					"type": "Web App",
-					"status": "0",
-					"value": "$03,50,000",
-					"hrs": "100",
-					"mem_image1": "build/img/profiles/avatar-14.jpg",
-					"mem_image2": "build/img/profiles/avatar-15.jpg",
-					"mem_image3": "build/img/profiles/avatar-16.jpg",
-					"budget": "$200000",
-					"currently_spend": "$40000",
-					"Action": ""
+					data: 'status_badge',
+					orderable: false,
+					render: function (data) {
+						return data;
+					}
 				},
+				// {
+				// 	data: 'proposal_action',
+				// 	orderable: false,
+				// 	render: function (data) {
+				// 		return data;
+				// 	}
+				// },
 				{
-					"id": "#12146",
-					"si_no": "",
-					"star": "",
-					"name": "Dreamschat",
-					"client": "BlueSky Industries",
-					"pro_img": "build/img/priority/dreamchat.svg",
-					"client_img": "build/img/icons/company-icon-02.svg",
-					"piority": "0",
-					"start_date": "29 Sep 2023",
-					"end_date": "19 Oct 2023",
-					"stage": "1",
-					"type": "Web App",
-					"status": "1",
-					"value": "$02,15,000",
-					"hrs": "80",
-					"mem_image1": "build/img/profiles/avatar-03.jpg",
-					"mem_image2": "build/img/profiles/avatar-05.jpg",
-					"mem_image3": "build/img/profiles/avatar-06.jpg",
-					"budget": "$300000",
-					"currently_spend": "$120000",
-					"Action": ""
-				},
-				{
-					"id": "#12147",
-					"si_no": "",
-					"star": "",
-					"name": "Truelysell",
-					"client": "SilverHawk",
-					"pro_img": "build/img/priority/truellysell.svg",
-					"client_img": "build/img/icons/company-icon-03.svg",
-					"piority": "0",
-					"start_date": "05 Oct 2023",
-					"end_date": "12 Oct 2023",
-					"stage": "0",
-					"type": "Web App",
-					"status": "0",
-					"value": "$01,45,000",
-					"hrs": "75",
-					"mem_image1": "build/img/profiles/avatar-04.jpg",
-					"mem_image2": "build/img/profiles/avatar-01.jpg",
-					"mem_image3": "build/img/profiles/avatar-16.jpg",
-					"budget": "$200000",
-					"currently_spend": "$200000",
-					"Action": ""
-				},
-				{
-					"id": "#12148",
-					"si_no": "",
-					"star": "",
-					"name": "Servbook",
-					"client": "SummitPeak",
-					"pro_img": "build/img/priority/servbook.svg",
-					"client_img": "build/img/icons/company-icon-04.svg",
-					"piority": "0",
-					"start_date": "14 Oct 2023",
-					"end_date": "24 Oct 2023",
-					"stage": "2",
-					"type": "Web App",
-					"status": "1",
-					"value": "$02,15,000",
-					"hrs": "60",
-					"mem_image1": "build/img/profiles/avatar-12.jpg",
-					"mem_image2": "build/img/profiles/avatar-15.jpg",
-					"mem_image3": "build/img/profiles/avatar-13.jpg",
-					"budget": "$300000",
-					"currently_spend": "$60000",
-					"Action": ""
-				},
-				{
-					"id": "#12149",
-					"si_no": "",
-					"star": "",
-					"name": "DreamPOS",
-					"client": "RiverStone Ventur",
-					"pro_img": "build/img/priority/dream-pos.svg",
-					"client_img": "build/img/icons/company-icon-05.svg",
-					"piority": "0",
-					"start_date": "15 Nov 2023",
-					"end_date": "22 Nov 2023",
-					"stage": "2",
-					"type": "Web App",
-					"status": "2",
-					"value": "$03,64,000",
-					"hrs": "72",
-					"mem_image1": "build/img/profiles/avatar-10.jpg",
-					"mem_image2": "build/img/profiles/avatar-11.jpg",
-					"mem_image3": "build/img/profiles/avatar-16.jpg",
-					"budget": "$120000",
-					"currently_spend": "$40000",
-					"Action": ""
-				},
-				{
-					"id": "#12150",
-					"si_no": "",
-					"star": "",
-					"name": "Kofejob",
-					"client": "CoastalStar Co.",
-					"pro_img": "build/img/priority/project-01.svg",
-					"client_img": "build/img/icons/company-icon-06.svg",
-					"piority": "0",
-					"start_date": "25 Nov 2023",
-					"end_date": "09 Dec 2023",
-					"stage": "1",
-					"type": "Meeting",
-					"status": "0",
-					"value": "$02,12,000",
-					"hrs": "96",
-					"mem_image1": "build/img/profiles/avatar-14.jpg",
-					"mem_image2": "build/img/profiles/avatar-09.jpg",
-					"mem_image3": "build/img/profiles/avatar-08.jpg",
-					"budget": "$200000",
-					"currently_spend": "$90000",
-					"Action": ""
-				},
-				{
-					"id": "#12151",
-					"si_no": "",
-					"star": "",
-					"name": "Doccure",
-					"client": "HarborView",
-					"pro_img": "build/img/priority/project-02.svg",
-					"client_img": "build/img/icons/company-icon-07.svg",
-					"piority": "0",
-					"start_date": "08 Dec 2023",
-					"end_date": "16 Dec 2023",
-					"stage": "0",
-					"type": "Web App",
-					"status": "1",
-					"value": "$04,18,000",
-					"hrs": "85",
-					"mem_image1": "build/img/profiles/avatar-06.jpg",
-					"mem_image2": "build/img/profiles/avatar-07.jpg",
-					"mem_image3": "build/img/profiles/avatar-16.jpg",
-					"budget": "$200000",
-					"currently_spend": "$195000",
-					"Action": ""
-				},
-				{
-					"id": "#12152",
-					"si_no": "",
-					"star": "",
-					"name": "Best@laundry",
-					"client": "Golden Gate Ltd",
-					"pro_img": "build/img/priority/best.svg",
-					"client_img": "build/img/icons/company-icon-08.svg",
-					"piority": "0",
-					"start_date": "21 Dec 2023",
-					"end_date": "13 Jan 2024",
-					"stage": "0",
-					"type": "Meeting",
-					"status": "2",
-					"value": "$01,23,000",
-					"hrs": "65",
-					"mem_image1": "build/img/profiles/avatar-04.jpg",
-					"mem_image2": "build/img/profiles/avatar-15.jpg",
-					"mem_image3": "build/img/profiles/avatar-05.jpg",
-					"budget": "$230000",
-					"currently_spend": "$220000",
-					"Action": ""
-				},
-				{
-					"id": "#12153",
-					"si_no": "",
-					"star": "",
-					"name": "POS",
-					"client": "CoastalStar Inc",
-					"pro_img": "build/img/priority/dream-pos.svg",
-					"client_img": "build/img/icons/company-icon-06.svg",
-					"piority": "0",
-					"start_date": "01 Jan 2024",
-					"end_date": "11 Jan 2024",
-					"stage": "1",
-					"type": "Web App",
-					"status": "1",
-					"value": "$03,64,000",
-					"hrs": "60",
-					"mem_image1": "build/img/profiles/avatar-08.jpg",
-					"mem_image2": "build/img/profiles/avatar-12.jpg",
-					"mem_image3": "build/img/profiles/avatar-04.jpg",
-					"budget": "$200000",
-					"currently_spend": "$177777 ",
-					"Action": ""
-				},
-				{
-					"id": "#12153",
-					"si_no": "",
-					"star": "",
-					"name": "Bookserv",
-					"client": "Redwood Inc",
-					"pro_img": "build/img/priority/servbook.svg",
-					"client_img": "build/img/icons/company-icon-09.svg",
-					"piority": "0",
-					"start_date": "12 Jan 2024",
-					"end_date": "29 Jan 2024",
-					"stage": "1",
-					"type": "Meeting",
-					"status": "1",
-					"value": " $04,10,000",
-					"hrs": "56",
-					"mem_image1": "build/img/profiles/avatar-12.jpg",
-					"mem_image2": "build/img/profiles/avatar-14.jpg",
-					"mem_image3": "build/img/profiles/avatar-01.jpg",
-					"budget": "$300000",
-					"currently_spend": "$100000 ",
-					"Action": ""
-				},
-				{
-					"id": "#12153",
-					"si_no": "",
-					"star": "",
-					"name": "Dreamchat",
-					"client": "Redwood Inc",
-					"pro_img": "build/img/priority/sports.svg",
-					"client_img": "build/img/icons/company-icon-09.svg",
-					"piority": "0",
-					"start_date": "16 Jan 2024",
-					"end_date": "25 Jan 2024",
-					"stage": "1",
-					"type": "Meeting",
-					"status": "1",
-					"value": "$02,19,000",
-					"hrs": "55",
-					"mem_image1": "build/img/profiles/avatar-08.jpg",
-					"mem_image2": "build/img/profiles/avatar-15.jpg",
-					"mem_image3": "build/img/profiles/avatar-12.jpg",
-					"budget": "$400000",
-					"currently_spend": "$200000 ",
-					"Action": ""
-				},
-				{
-					"id": "#12153",
-					"si_no": "",
-					"star": "",
-					"name": "Sports",
-					"client": "Ventur",
-					"pro_img": "build/img/priority/best.svg",
-					"client_img": "build/img/icons/company-icon-08.svg",
-					"piority": "0",
-					"start_date": "12 Jan 2024",
-					"end_date": "29 Jan 2024",
-					"stage": "1",
-					"type": "Web App",
-					"status": "1",
-					"value": "$01,23,000",
-					"hrs": "63",
-					"mem_image1": "build/img/profiles/avatar-01.jpg",
-					"mem_image2": "build/img/profiles/avatar-11.jpg",
-					"mem_image3": "build/img/profiles/avatar-14.jpg",
-					"budget": "$300000",
-					"currently_spend": "$100000 ",
-					"Action": ""
+					data: 'actions',
+					orderable: false,
+					searchable: false
 				}
-			],
-			"columns": [
-				{
-					"render": function (data, type, row) {
-						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="project-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['pro_img'] + '" alt="User Image"></a><a href="project-details">' + row['name'] + '</a></h2>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="company-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['client_img'] + '" alt="User Image"></a><a href="company-details">' + row['client'] + '</a></h2>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						if (row['status'] == "0") { var class_name = "danger"; var status_name = "High" } else if (row['status'] == "1") { var class_name = "warning"; var status_name = "Medium" } else { var class_name = "success"; var status_name = "Low" }
-						return '<span class="priority badge badge-tag badge-' + class_name + '-light" ><i class="ti ti-square-rounded-filled"></i>' + status_name + '</span>';
-					}
-				},
-				{ "data": "start_date" },
-				{ "data": "end_date" },
-				{ "data": "type" },
-				{
-					"render": function (data, type, row) {
-						if (row['stage'] == "0") { var class_name = "success"; var status_name = "Completed" } else if (row['stage'] == "1") { var class_name = "info"; var status_name = "Develop" } else if (row['stage'] == "2") { var class_name = "warning"; var status_name = "Design" } else { var class_name = "violet"; var status_name = "Plan" }
-						return '<div class="pipeline-progress d-flex align-items-center"><div class="progress"><div class="progress-bar progress-bar-' + class_name + '" role="progressbar"></div></div><span>' + status_name + '</span></div>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						if (row['status'] == "0") { var class_name = "bg-success"; var status_name = "Active" } else { var class_name = "bg-danger"; var status_name = "Inactive" }
-						return '<span class="badge badge-pill badge-status ' + class_name + '" >' + status_name + '</span>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item " data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" href="#"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_project"><i class="ti ti-trash text-danger"></i> Delete</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> Clone this Project</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-subtask"></i> Add New Task</a></div></div>';
-					}
-				},
-
 			]
-
 		});
 	}
+
 	// Estimations List
 
 	if ($('#estimations-list').length > 0) {
@@ -4099,13 +3804,14 @@ $(document).ready(function () {
 	}
 
 	// Proposals List
-
-	if ($('#proposals-list').length > 0) {
-		$('#proposals-list').DataTable({
+	if ($('#customer_list').length > 0) {
+		$('#customer_list').DataTable({
+			"serverSide": true,
 			"bFilter": false,
 			"bInfo": false,
 			"ordering": true,
 			"autoWidth": true,
+			"order": [["0", "desc"]],
 			"language": {
 				search: ' ',
 				sLengthMenu: '_MENU_',
@@ -4113,222 +3819,149 @@ $(document).ready(function () {
 				info: "_START_ - _END_ of _TOTAL_ items",
 				"lengthMenu": "Show _MENU_ entries",
 				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
+					next: 'Next <i class="fa fa-angle-right"></i>',
+					previous: '<i class="fa fa-angle-left"></i> Prev'
 				},
 			},
 			initComplete: (settings, json) => {
 				$('.dataTables_paginate').appendTo('.datatable-paginate');
 				$('.dataTables_length').appendTo('.datatable-length');
 			},
-			"data": [
+			"ajax": {
+				"url": $('#customer_list').data('url'),
+				"type": "GET",
+				"dataSrc": "data"
+			},
+			columns: [
+				{ data: 'id', visible: false },
+				{ data: 'code' },
+				{ data: 'name' },
+				{ data: 'contact_person' },
+				{ data: 'phone' },
+				{ data: 'email' },
 				{
-					"id": "#1493024",
-					"si_no": "",
-					"star": "",
-					"subject": "SEO Proposal",
-					"sent_to": "NovaWave LLC",
-					"pro_img": "build/img/priority/truellysel.svg",
-					"client_img": "build/img/icons/company-icon-01.svg",
-					"total_value": "$2,05,426",
-					"project": "Truelysell",
-					"piority": "0",
-					"created_date": "21 May 2024",
-					"date": "15 May 2024",
-					"open_till": "15 Aug 2023",
-					"status": "0",
-					"status_name": "Accepted",
-					"Action": ""
+					data: 'status',
+					render: function (data, type, row) {
+						if (type === 'display') {
+							switch (data) {
+								case 'Active': return '<span class="badge bg-success">Active</span>';
+								case 'Inactive': return '<span class="badge bg-dark">Inactive</span>';
+								default: return '<span class="badge bg-secondary">Unknown</span>';
+							}
+						}
+						return data;
+					}
 				},
 				{
-					"id": "#1493023",
-					"si_no": "",
-					"star": "",
-					"subject": "Web Design",
-					"sent_to": "Redwood Inc",
-					"pro_img": "build/img/priority/project-01.svg",
-					"client_img": "build/img/icons/company-icon-10.svg",
-					"total_value": "$2,105",
-					"project": "Dreamsports",
-					"piority": "0",
-					"created_date": "15 Apr 2024",
-					"date": "16 Jan 2024",
-					"open_till": "15 Sep 2024",
-					"status": "1",
-					"status_name": "Declined",
-					"Action": ""
-				},
-				{
-					"id": "#1493022",
-					"si_no": "",
-					"star": "",
-					"subject": "Logo & Branding",
-					"sent_to": "HarborView",
-					"pro_img": "build/img/priority/best.svg",
-					"client_img": "build/img/icons/company-icon-08.svg",
-					"total_value": "$4,05,656",
-					"project": "Best@laundry",
-					"piority": "0",
-					"created_date": "12  Mar 2024",
-					"date": "17 Sep 2024",
-					"open_till": "15 Nov 2024",
-					"status": "2",
-					"status_name": "Deleted",
-					"Action": ""
-				},
-				{
-					"id": "#1493021",
-					"si_no": "",
-					"star": "",
-					"subject": "Development",
-					"sent_to": "CoastalStar Co.",
-					"pro_img": "build/img/priority/project-02.svg",
-					"client_img": "build/img/icons/company-icon-07.svg",
-					"total_value": "$2,05,426",
-					"project": "Doccure",
-					"piority": "0",
-					"created_date": "15 Feb 2024",
-					"date": "18 May 2024",
-					"open_till": "15 Jun 2024",
-					"status": "4",
-					"status_name": "Draft",
-					"Action": ""
-				},
-				{
-					"id": "#1493020",
-					"si_no": "",
-					"star": "",
-					"subject": "SEO Proposal",
-					"sent_to": "RiverStone Ventur",
-					"pro_img": "build/img/priority/project-01.svg",
-					"client_img": "build/img/icons/company-icon-05.svg",
-					"total_value": "$3,15,145",
-					"project": "Kofejob",
-					"piority": "0",
-					"created_date": "15 Jan 2024",
-					"date": "19 Aug 2024",
-					"open_till": "15 Oct 2024",
-					"status": "3",
-					"status_name": "Sent",
-					"Action": ""
-				},
-				{
-					"id": "#1493019",
-					"si_no": "",
-					"star": "",
-					"subject": "Web Design",
-					"sent_to": "Summit  Peak",
-					"pro_img": "build/img/priority/dream-pos.svg",
-					"client_img": "build/img/icons/company-icon-04.svg",
-					"total_value": "$6,154",
-					"project": "DreamPOS",
-					"piority": "0",
-					"created_date": "15 Dec 2023",
-					"date": "20 May 2024",
-					"open_till": "08 Aug 2024",
-					"status": "4",
-					"status_name": "Draft",
-					"Action": ""
-				},
-				{
-					"id": "#1493018",
-					"si_no": "",
-					"star": "",
-					"subject": "Logo",
-					"sent_to": "Silver Hawk",
-					"pro_img": "build/img/priority/servbook.svg",
-					"client_img": "build/img/icons/company-icon-03.svg",
-					"total_value": "$1,457",
-					"project": "Servbook",
-					"piority": "0",
-					"created_date": "15 Nov 2023",
-					"date": "22 Aug 2024",
-					"open_till": "25 Jan 2025",
-					"status": "5",
-					"status_name": "Open",
-					"Action": ""
-				},
-				{
-					"id": "#1493017",
-					"si_no": "",
-					"star": "",
-					"subject": "Branding",
-					"sent_to": "BlueSky Industries",
-					"pro_img": "build/img/priority/truellysell.svg",
-					"client_img": "build/img/icons/company-icon-02.svg",
-					"total_value": "$2,01,464",
-					"project": "Truelysell",
-					"piority": "0",
-					"created_date": "15 Sep 2023",
-					"date": "15 May 2024",
-					"open_till": "12 Aug 2024",
-					"status": "0",
-					"status_name": "Accepted",
-					"Action": ""
-				},
-				{
-					"id": "#1493018",
-					"si_no": "",
-					"star": "",
-					"subject": "Development",
-					"sent_to": "Golden Gate Ltd",
-					"pro_img": "build/img/priority/dreamchat.svg",
-					"client_img": "build/img/icons/company-icon-09.svg",
-					"total_value": "$1,10,145",
-					"project": "Dreamschat",
-					"piority": "0",
-					"created_date": "15 Aug 2023",
-					"date": "14 Aug 2024",
-					"open_till": "07 Dec 2024 ",
-					"status": "1",
-					"status_name": "Declined",
-					"Action": ""
-				},
+					data: 'actions',
+					orderable: false,
+					searchable: false
+				}
 			],
-			"columns": [
-				{
-					"render": function (data, type, row) {
-						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<a href="#" class="title-name" >' + row['id'] + '</a>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<a href="#" class="title-name">' + row['subject'] + '</a>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="company-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['client_img'] + '" alt="User Image"></a><a href="company-details">' + row['sent_to'] + '</a></h2>';
-					}
-				},
-				{ "data": "total_value" },
-				{ "data": "date" },
-				{ "data": "open_till" },
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['pro_img'] + '" alt="User Image"></a><a href="#">' + row['project'] + '</a></h2>';
-					}
-				},
-				{ "data": "created_date" },
-				{
-					"render": function (data, type, row) {
-						if (row['status'] == "0") { var class_name = "success"; var status_name = "Accepted" } else if (row['status'] == "1") { var class_name = "warning"; var status_name = "Declined" } else if (row['status'] == "2") { var class_name = "danger"; var status_name = "Deleted" } else if (row['status'] == "3") { var class_name = "green"; var status_name = "Sent" } else if (row['status'] == "4") { var class_name = "pending"; var status_name = "Draft" } else { var class_name = "purple"; var status_name = "Paused" }
-						return '<span class="badge badge-pill badge-status bg-' + class_name + '" >' + status_name + '</span>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" href="#"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_proposals"><i class="ti ti-trash text-danger"></i> Delete</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Proposal</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Accpeted</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Draft</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Declined</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-subtask text-pink"></i> Convert to estimate</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file-invoice text-tertiary"></i> Convert to Invoice</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a></div></div>';
-					}
-				},
+		});
+	}
 
+
+	if ($('#proposal_list').length > 0) {
+		$('#proposal_list').DataTable({
+			"serverSide": true,
+			"bFilter": false,
+			"bInfo": false,
+			"ordering": true,
+			"autoWidth": true,
+			"order": [["0", "desc"]],
+			"language": {
+				search: ' ',
+				sLengthMenu: '_MENU_',
+				searchPlaceholder: "Search",
+				info: "_START_ - _END_ of _TOTAL_ items",
+				"lengthMenu": "Show _MENU_ entries",
+				paginate: {
+					next: 'Next <i class="fa fa-angle-right"></i>',
+					previous: '<i class="fa fa-angle-left"></i> Prev'
+				},
+			},
+			initComplete: (settings, json) => {
+				$('.dataTables_paginate').appendTo('.datatable-paginate');
+				$('.dataTables_length').appendTo('.datatable-length');
+			},
+			"ajax": {
+				"url": $('#proposal_list').data('url'),
+				"type": "GET",
+				"dataSrc": "data"
+			},
+			columns: [
+				{ data: 'id', visible: false },
+				{ data: 'code' },
+				{
+					data: 'created_at',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
+				},
+				{
+					data: 'project_code',
+					orderable: false,
+				},
+				{ data: 'destination' },
+				{ data: 'city' },
+				{ data: 'activity' },
+				{
+					data: 'date_from',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
+				},
+				{
+					data: 'date_to',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
+				},
+				{
+					data: 'status',
+					render: function (data, type, row) {
+						if (type === 'display') {
+							switch (data) {
+								case 'Draft': return '<span class="badge badge-status bg-secondary">Draft</span>';
+								case 'Submitted': return '<span class="badge badge-status bg-info">Submitted</span>';
+								case 'Approved': return '<span class="badge badge-status bg-success">Approved</span>';
+								case 'Rejected': return '<span class="badge badge-status bg-danger">Rejected</span>';
+								case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
+								default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+							}
+						}
+						return data;
+					}
+				},
+				{ data: 'type_of_sales_code' },
+				{
+					data: 'sales_code',
+					render: function (data, type, row) {
+						return data && data.trim() !== '' ? data : '-';
+					}
+				},
+				{
+					data: 'year_of_sales',
+					render: function (data, type, row) {
+						return data && data.trim() !== '' ? data : '-';
+					}
+				},
+				{
+					data: 'invoice_no',
+					render: function (data, type, row) {
+						return data && data.trim() !== '' ? data : '-';
+					}
+				},
+				{
+					data: 'actions',
+					orderable: false,
+					searchable: false
+				}
+			],
+			columnDefs: [
+				{ targets: [3, 4, 7], width: '1%', className: 'text-nowrap' } // fit-content
 			]
-
 		});
 	}
 
@@ -6326,51 +5959,58 @@ $(document).ready(function () {
 					previous: '<i class="fa fa-angle-left"></i> Prev'
 				},
 			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
+			initComplete: function (settings, json) {
+				const $table = $(settings.nTable).closest('.dataTables_wrapper');
+				$table.find('.dataTables_paginate').appendTo('.table-boq-paginate');
+				$table.find('.dataTables_length').appendTo('.table-boq-length');
 			},
 			"ajax": {
 				"url": $('#boq_list').data('url'),
 				"type": "GET",
 				"dataSrc": function (json) {
-					console.log(json);
-
 					return json.data;
 				}
 			},
 			columns: [
-				{ data: 'id' },
+				{ data: 'id', visible: false },
+				{ data: 'code' },
 				{ data: 'form_type' },
 				{ data: 'description', className: 'desc-col' },
-				{ data: 'created_at' },
-				{ data: 'header', "orderable": false },
-				{ data: 'subheader', "orderable": false },
 				{
-					data: 'unit_price',
-					"orderable": false,
-					render: function (data) {
-						return formatRupiah(data);
+					data: 'created_at',
+					render: function (data, type) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
 					}
 				},
-				{ data: 'item_title1', "orderable": false },
-				{ data: 'item_title2', "orderable": false },
-				{ data: 'item_title3', "orderable": false },
-				{ data: 'item_title4', "orderable": false },
+				{ data: 'header', orderable: false },
+				{ data: 'subheader', orderable: false },
+				{
+					data: 'unit_price',
+					orderable: false,
+					render: function (data) {
+						return data;
+					}
+				},
+				{ data: 'item_title1', orderable: false },
+				{ data: 'item_title2', orderable: false },
+				{ data: 'item_title3', orderable: false },
+				{ data: 'item_title4', orderable: false },
 				{
 					data: 'multiplier_total',
+					orderable: false,
 					render: function (data) {
-						return formatRupiah(data);
+						return data;
 					}
 				},
 				{
 					data: 'total_amount_items',
 					render: function (data) {
-						return formatRupiah(data);
+						return data;
 					}
 				},
 				{
 					data: 'management_fee',
+					orderable: false,
 					render: function (data) {
 						return formatRupiah(data);
 					}
@@ -6381,7 +6021,12 @@ $(document).ready(function () {
 						return formatRupiah(data);
 					}
 				},
-				{ data: 'vat_rate' },
+				{
+					data: 'vat_rate',
+					render: function (data, type) {
+						return type === 'display' ? data + "%" : data;
+					}
+				},
 				{
 					data: 'vat',
 					render: function (data) {
@@ -6394,12 +6039,13 @@ $(document).ready(function () {
 						return formatRupiah(data);
 					}
 				},
-				{ data: 'actions' }
+				{
+					data: 'actions',
+					orderable: false
+				}
 			]
 		});
 	}
-
-
 
 	if ($('#permission_list').length > 0) {
 		$('#permission_list').DataTable({

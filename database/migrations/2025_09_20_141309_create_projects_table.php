@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->string('project_code')->unique();
+            $table->string('code')->unique();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
-            $table->enum('status', ['active', 'inactive', 'completed', 'cancelled'])->default('active');
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade')->nullable();
+            $table->enum('status', ['Active', 'Inactive', 'Completed', 'Cancelled'])->default('Active');
             $table->timestamps();
             $table->softDeletes();
         });

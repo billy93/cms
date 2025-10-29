@@ -698,6 +698,9 @@
     </div>
     <!-- /Main Wrapper -->
 
+    <script>
+        const BASE_URL = "{{ url('/') }}";
+    </script>
     @include('layout.partials.footer-scripts')
     @stack('scripts')
 </body>

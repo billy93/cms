@@ -53,9 +53,9 @@ class BoqForm {
   ];
 
   selectFormType = `
-    <div class="mb-3">
+    <div id="boq_type_wrapper" class="mb-3">
       <label class="col-form-label">BOQ Type <span class="text-danger">*</span></label>
-      <select class="form-select" id="boq_type" required>
+      <select class="select form-select" id="boq_type" required>
         <option value="A" selected>Type A - Satu paket event</option>
         <option value="B">Type B - Harga paket per orang</option>
         <option value="C">Type C - Paket Incentive Trips</option>
@@ -63,6 +63,47 @@ class BoqForm {
       </select>
     </div>
   `;
+
+  boqCodeField() {
+    return this.mode === "edit" ? `
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="col-form-label">BOQ Code</label>
+          <input type="text" class="form-control" id="boq_code" value="${this.data?.code || "-"}" readonly>
+        </div>
+      </div>
+    ` : "";
+
+  }
+
+  proposalIdField() {
+    let currentProposalId = this.data?.proposal_id;
+    let isDisable = false;
+
+    try {
+      if (PROPOSAL_ID) {
+        currentProposalId = PROPOSAL_ID;
+        isDisable = true;
+      }
+    } catch (error) {
+    }
+
+    let options = this.proposals.map(proposal => {
+      return `<option value="${proposal.id}" ${currentProposalId === proposal.id ? "selected" : ""}>${proposal.code}</option>`
+    });
+
+    return `
+      <div id="select_proposal_wrapper" class="col-md-${this.mode === "create" ? "12" : "6"}">
+        <div class="mb-3">
+          <label class="col-form-label">Proposal</label>
+          <select class="select form-select" id="proposal_id" ${isDisable ? "disabled" : ""}>
+            <option value="" ${!currentProposalId ? "selected" : ""}>-- Select Proposal --</option>
+            ${options}
+          </select>
+        </div>
+      </div>
+    `;
+  }
 
   descField() {
     let value = "";
@@ -78,7 +119,6 @@ class BoqForm {
   }
 
   feeFields() {
-
     let managementFeeNominal = "";
     let managementFeePercent = "";
     let vatRateValue = "";
@@ -96,43 +136,43 @@ class BoqForm {
     }
 
     return `
-    <div class="mb-3">
-      <label>Management Fee</label>
-      <div class="input-group mb-2">
-        <input type="text" class="form-control number-input no-default" id="management_fee_value" placeholder="Nominal" value="${managementFeeNominal}">
-        <span class="input-group-text">atau</span>
-        <input type="text" class="form-control number-input no-default" id="management_fee_percent" placeholder="%" value="${managementFeePercent}">
-        <span class="input-group-text">%</span>
+      <div class="mb-3">
+        <label>Management Fee</label>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control number-input no-default" id="management_fee_value" placeholder="Nominal" value="${managementFeeNominal}">
+          <span class="input-group-text">atau</span>
+          <input type="text" class="form-control number-input no-default" id="management_fee_percent" placeholder="%" value="${managementFeePercent}">
+          <span class="input-group-text">%</span>
+        </div>
+        <small class="text-muted">Manual Entry: bisa dengan menentukan prosentasi atau menentukan nominal nya</small>
       </div>
-      <small class="text-muted">Manual Entry: bisa dengan menentukan prosentasi atau menentukan nominal nya</small>
-    </div>
-    <div class="mb-3">
-      <label>Sales Amount</label>
-      <input type="text" class="form-control" id="sales_amount" value="0" readonly>
-    </div>
-    <div class="mb-3">
-      <label>VAT</label>
-      <select class="form-select" id="vat_percent">
-        <option value="1" ${vatRateValue === "1" ? "selected" : ""}>1%</option>
-        <option value="11" ${vatRateValue === "11" ? "selected" : ""}>11%</option>
-      </select>
-      <small id="vat_percent_error" class="text-danger mt-1" style="display: none;"></small>
-      <small class="text-muted">Manual - Pilihan 1% atau 11%</small>
-    </div>
-    <div class="mb-3">
-      <label>VAT Amount</label>
-      <input type="text" class="form-control" id="vat_amount" value="0" readonly>
-    </div>
-    <div class="mb-3">
-      <label>Invoice Amount</label>
-      <input type="text" class="form-control" id="invoice_amount" value="0" readonly>
-    </div>
-  `;
+      <div class="mb-3">
+        <label>Sales Amount</label>
+        <input type="text" class="form-control" id="sales_amount" value="0" readonly>
+      </div>
+      <div class="mb-3">
+        <label>VAT</label>
+        <select class="select form-select" id="vat_percent">
+          <option value="1" ${vatRateValue === "1" ? "selected" : ""}>1%</option>
+          <option value="11" ${vatRateValue === "11" ? "selected" : ""}>11%</option>
+        </select>
+        <small id="vat_percent_error" class="text-danger mt-1" style="display: none;"></small>
+        <small class="text-muted">Manual - Pilihan 1% atau 11%</small>
+      </div>
+      <div class="mb-3">
+        <label>VAT Amount</label>
+        <input type="text" class="form-control" id="vat_amount" value="0" readonly>
+      </div>
+      <div class="mb-3">
+        <label>Invoice Amount</label>
+        <input type="text" class="form-control" id="invoice_amount" value="0" readonly>
+      </div>
+    `;
   }
 
   submitBtn = `
     <div class="d-flex align-items-center justify-content-end mt-4">
-      <a href="javascript:void(0)" id="inner_close_boq_form" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
+      <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
       <button type="submit" class="btn btn-primary">Save</button>
     </div>
   `;
@@ -143,6 +183,7 @@ class BoqForm {
   data = {};
 
   products = [];
+  proposals = [];
   isFetching = false;
 
   cRowCount = 0;
@@ -160,9 +201,6 @@ class BoqForm {
     this.typeContainer = document.createElement("div");
     this.typeContainer.id = "form_type_container";
 
-    // template select
-    this.selectFormTypeTemplate = document.createElement("template");
-    this.selectFormTypeTemplate.innerHTML = this.selectFormType;
     this.submitBtnTemplate = document.createElement("template");
     this.submitBtnTemplate.innerHTML = this.submitBtn;
 
@@ -185,8 +223,42 @@ class BoqForm {
   }
 
   // ---------------------------------------- HANDLER GLOBAL ----------------------------------------
-  handleDocumentChange(e) {
+  async handleDocumentChange(e) {
     const target = e.target;
+
+    // BOQ Type
+    if (target.matches("#boq_type")) {
+      if (this.isFetching) return;
+
+      await this.fetchProposals();
+
+      const container = document.querySelector("#top-nav-container");
+      const currentProposal = document.getElementById("select_proposal_wrapper");
+
+      if (currentProposal) {
+        currentProposal.remove();
+        const newProposalTemplate = document.createElement("template");
+        newProposalTemplate.innerHTML = this.proposalIdField(); // generate ulang
+        const newProposalNode = newProposalTemplate.content.firstElementChild;
+        container.append(newProposalNode);
+      }
+
+      this.type = e.target.value;
+      this.clearRowsData();
+      this.renderType();
+
+      if (this.type === "C" || this.type === "D") {
+        await this.fetchProducts();
+
+        const tbody = this.typeContainer.querySelector("#products_services_body");
+        if (tbody) {
+          const [row, errorRow] = this.createRow();
+          tbody.appendChild(row);
+          tbody.appendChild(errorRow);
+        }
+      }
+      this.initPlugins();
+    }
 
     // Title select logic
     if (target.matches(".title-select")) {
@@ -204,8 +276,21 @@ class BoqForm {
 
     // Sub-header select logic
     if (target.matches(".sub-header-select")) {
-      const nextInput = target.nextElementSibling;
+      const no = target.id[target.id.length - 1];
+      const nextInput = this.typeContainer.querySelector(`#subheader_${no}`);
+      const amountInput = this.typeContainer.querySelector(`#amount_${no}`);
+
       if (nextInput) nextInput.value = "";
+      if (amountInput) {
+        const productId = parseInt(target.value);
+        const product = this.products.find(p => p.id === productId);
+        if (product && this.products.length) {
+          amountInput.value = product.base_cost.toString();
+          amountInput.disabled = true;
+        }
+      }
+
+      this.recalculate();
     }
   }
 
@@ -236,8 +321,17 @@ class BoqForm {
 
     // Type C Subheader Input to clear select
     if (target.matches(".sub-header-input")) {
-      const prevSelect = target.previousElementSibling;
-      if (prevSelect) prevSelect.value = "";
+      const no = target.id[target.id.length - 1];
+      const selectInput = this.typeContainer.querySelector(`#subheader_select_${no}`);
+      const amountInput = this.typeContainer.querySelector(`#subheader_select_${no}`);
+
+      if (selectInput) selectInput.value = "";
+      if (amountInput) {
+        amountInput.disabled = false;
+      }
+
+      this.initPlugins()
+      this.recalculate();
     }
   }
 
@@ -260,6 +354,8 @@ class BoqForm {
         const [row, errorRow] = this.createRow();
         tbody.appendChild(row);
         tbody.appendChild(errorRow);
+
+        this.initPlugins();
       }
     }
   }
@@ -277,7 +373,7 @@ class BoqForm {
     if (this.mode === "edit") {
       if (this.type === "A") {
         description.value = this.data.description;
-        basicPrice.value = this.data.items[0].unit_price;
+        basicPrice.value = this.data.total_amount_items;
       } else if (["C", "D"].includes(this.type)) {
         const ids = this.data.items.map(obj => obj.id);
         const max = Math.max(...ids);
@@ -318,6 +414,33 @@ class BoqForm {
   }
 
   // ---------------------------------------- FETCHER ----------------------------------------
+  async fetchProposals() {
+    this.isFetching = true;
+    this.showLoading();
+    return fetch("/proposals/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        this.proposals = res.data;
+      })
+      .catch(err => {
+        console.error("Fetch proposals error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        this.hideLoading();
+      });
+  }
+
   async fetchProducts() {
     this.isFetching = true;
     this.showLoading();
@@ -338,7 +461,6 @@ class BoqForm {
       })
       .catch(err => {
         console.error("Fetch products error:", err);
-        throw err;
       })
       .finally(() => {
         this.isFetching = false
@@ -360,52 +482,26 @@ class BoqForm {
     this.data = data;
     this.mode = mode;
 
-    try {
-      await this.fetchProducts();
-    } catch (error) {
-      console.error("Fetch products failed:", error);
-    }
+    await this.fetchProducts();
+    await this.fetchProposals()
+
+    const container = document.createElement("div");
+    container.id = "top-nav-container";
+    container.classList.add("row");
+    container.innerHTML = (this.mode === "create" ? this.selectFormType : "") + this.boqCodeField() + this.proposalIdField();
 
     if (mode === "create") {
-      const selectNode = this.selectFormTypeTemplate.content.cloneNode(true);
-      this.form.appendChild(selectNode);
+      this.form.appendChild(container);
       this.form.appendChild(this.typeContainer);
-
-      this.selectFormTypeEl = this.form.querySelector("#boq_type");
-      this.selectFormTypeEl.addEventListener("change", async (e) => {
-        if (this.isFetching) return;
-
-        this.type = e.target.value;
-        this.clearRowsData();
-        this.renderType();
-
-        if (this.type === "C" || this.type === "D") {
-          try {
-            await this.fetchProducts();
-          } catch (error) {
-            console.error("Fetch products failed:", error);
-          }
-
-          const tbody = this.typeContainer.querySelector("#products_services_body");
-          if (tbody) {
-            const [row, errorRow] = this.createRow();
-            tbody.appendChild(row);
-            tbody.appendChild(errorRow);
-          }
-        }
-      });
-
 
       this.renderType();
     }
 
     if (mode === "edit") {
       this.type = data.form_type[data.form_type.length - 1].toUpperCase();
-
-      console.log("Init dalam mode edit, skip render select. Form Type : ", this.type);
+      this.form.appendChild(container);
       this.form.appendChild(this.typeContainer);
       this.renderType();
-
     }
 
 
@@ -413,6 +509,8 @@ class BoqForm {
       const submitBtnNode = this.submitBtnTemplate.content.cloneNode(true);
       this.form.appendChild(submitBtnNode);
     }
+
+    this.initPlugins();
   }
 
   // ---------------------------------------- DOM ----------------------------------------
@@ -459,7 +557,7 @@ class BoqForm {
     let t3val = "";
     let t4key = "";
     let t4val = "";
-    let amount_input_value = "";
+    let amount_input_value = "0";
 
     if (this.mode === "edit") {
       const data = this.data?.items?.find(obj => obj.id === id);
@@ -485,9 +583,7 @@ class BoqForm {
         t4val = data.title4_value || "";
         amount_input_value = data.unit_price || "0"
       }
-      console.log("DATA", data)
     }
-    console.log("XXX", header_input, subheader_input_value, subheader_select_value, t1key, t2key, t3key, t4key);
 
     const tr = document.createElement('tr');
     let header = `<td><input id="header_${id}" type="text" class="form-control" placeholder="Header" value="${header_input}"></td>`;
@@ -496,7 +592,7 @@ class BoqForm {
     if (this.type === "C") {
       header = `
         <td>
-          <select id="header_${id}" class="form-select header-select">
+          <select id="header_${id}" class="select form-select header-select">
             <option value="" ${!header_input ? "selected" : ""}>-- Select Header --</option>
             ${this.headers.map(h => `<option value="${h}" ${h === header_input ? "selected" : ""}>${h}</option>`).join('')}
           </select>
@@ -506,7 +602,7 @@ class BoqForm {
 
       subheader = `
         <td>	
-          <select id="subheader_select_${id}" class="form-select sub-header-select">
+          <select id="subheader_select_${id}" class="select form-select sub-header-select">
             <option value="" ${!subheader_select_value ? "selected" : ""}>-- Select Sub Header --</option>
             ${this.products.map(t => `<option value="${t.id}" ${t.id === subheader_select_value ? "selected" : ""}>${t.name}</option>`).join('')}
           </select>
@@ -520,7 +616,7 @@ class BoqForm {
       ${header}
       ${subheader}
       <td>
-        <select id="title1_key_${id}" class="form-select title-select">
+        <select id="title1_key_${id}" class="select form-select title-select">
           <option value="" ${!t1key ? "selected" : ""}>-- Select Title1 --</option>
           ${this.titles.map(t => `<option value="${t}" ${t === t1key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
@@ -528,7 +624,7 @@ class BoqForm {
         <small id="title1_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
-        <select id="title2_key_${id}" class="form-select title-select">
+        <select id="title2_key_${id}" class="select form-select title-select">
           <option value="" ${!t2key ? "selected" : ""}>-- Select Title2 --</option>
           ${this.titles.map(t => `<option value="${t}" ${t === t2key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
@@ -536,7 +632,7 @@ class BoqForm {
         <small id="title2_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
-        <select id="title3_key_${id}" class="form-select title-select">
+        <select id="title3_key_${id}" class="select form-select title-select">
           <option value="" ${!t3key ? "selected" : ""}>-- Select Title3 --</option>
           ${this.titles.map(t => `<option value="${t}" ${t === t3key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
@@ -544,7 +640,7 @@ class BoqForm {
         <small id="title3_value_${id}_error" class="text-danger mt-1" style="display: none;"></small>
       </td>
       <td>
-        <select id="title4_key_${id}" class="form-select title-select">
+        <select id="title4_key_${id}" class="select form-select title-select">
           <option value="" ${!t4key ? "selected" : ""}>-- Select Title4 --</option>
           ${this.titles.map(t => `<option value="${t}" ${t === t4key ? "selected" : ""}>${t}</option>`).join('')}
         </select>
@@ -600,7 +696,7 @@ class BoqForm {
     } else if (this.type === 'C' || this.type === 'D') {
       const subtotalArr = [];
       const arr = this.type === 'C' ? [...this.cRowArr] : [...this.dRowArr];
-      console.log(this.type, this.cRowCount, this.cRowArr, this.dRowCount, this.dRowArr)
+      // console.log(this.type, this.cRowCount, this.cRowArr, this.dRowCount, this.dRowArr)
       for (let i = 0; i <= arr.length - 1; i++) {
         const idx = arr[i];
         const t1El = this.typeContainer.querySelector(`#title1_value_${idx}`);
@@ -613,7 +709,6 @@ class BoqForm {
         const titles = [t1El, t2El, t3El, t4El].map(el => parseInt(el?.value) || 0);
         const amount = parseFloat(amountEl?.value) || 0;
 
-        // cek kalau semua title = 0
         const isNoMultiplier = titles.every(v => v === 0);
 
         // kalau kosong dianggap 1 biar multipliernya jalan
@@ -686,12 +781,12 @@ class BoqForm {
       const child = this.data.items.find(obj => obj.subheader === "Children");
       const infant = this.data.items.find(obj => obj.subheader === "Infant");
 
-      adultQty = adult.title1_value;
-      childQty = child.title1_value;
-      infantQty = infant.title1_value;
-      adultPrice = adult.unit_price;
-      childPrice = child.unit_price;
-      infantPrice = infant.unit_price;
+      adultQty = adult?.title1_value || "0";
+      childQty = child?.title1_value || "0";
+      infantQty = infant?.title1_value || "0";
+      adultPrice = adult?.unit_price || "0";
+      childPrice = child?.unit_price || "0";
+      infantPrice = infant?.unit_price || "0";
     }
     this.typeContainer.innerHTML = `
       <div>
@@ -825,12 +920,26 @@ class BoqForm {
     this.feeFieldsEvents();
   }
 
+  initPlugins() {
+    if (window.$ && $.fn.select2) {
+      $('.select').select2({
+        width: '100%',
+        dropdownParent: $('#c_boq_form')
+      });
+
+      // bridge event agar change bisa dideteksi
+      $('.select').on('select2:select', function () {
+        this.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+  }
+
   showLoading() {
     if (!this.loadingEl) {
       this.loadingEl = document.createElement("div");
-      this.loadingEl.className = "boq-loading-overlay";
+      this.loadingEl.className = "c-form-loading-overlay";
       this.loadingEl.innerHTML = `
-      <div class="boq-spinner"></div>
+      <div class="c-form-spinner"></div>
     `;
       Object.assign(this.loadingEl.style, {
         position: "absolute",
@@ -860,8 +969,10 @@ class BoqForm {
     this.type = "A";
     this.data = {};
     this.products = [];
+    this.proposals = [];
     this.clearRowsData();
     this.form.innerHTML = "";
+    this.errors = {};
 
     //   // Remove global listener
     //   document.removeEventListener("change", this.handleDocumentChange);
@@ -1080,9 +1191,6 @@ class BoqForm {
     this.isFetching = true;
     this.showLoading();
 
-    const suffix = this.type.toLowerCase();
-    const formType = `type-${suffix}`;
-
     const payload = this.validateFields();
     const errKeys = Object.keys(this.errors);
     if (errKeys.length) {
@@ -1098,8 +1206,16 @@ class BoqForm {
       return;
     }
 
-    payload.form_type = formType;
-    console.log("Payload", payload);
+    payload.form_type = this.type;
+
+    const proposalId = document.querySelector('#proposal_id');
+    if (proposalId && parseInt(proposalId.value)) {
+      payload.proposal_id = parseInt(proposalId.value)
+    } else {
+      payload.proposal_id = null;
+    }
+
+    // console.log("Payload", payload);
 
     if (this.mode === "create") {
       try {
@@ -1114,13 +1230,13 @@ class BoqForm {
         });
 
         const result = await response.json();
-        console.log(result);
+        // console.log(result);
 
         if (response.ok && result.success) {
           toastr.success(response.message || 'BOQ created successfully!');
           $('#boq_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('BOQ created:', result, result.data);
+          // console.log('BOQ created:', result, result.data);
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -1144,13 +1260,12 @@ class BoqForm {
         });
 
         const result = await response.json();
-        console.log(result);
 
         if (response.ok && result.success) {
           toastr.success(response.message || 'BOQ updated successfully!');
           $('#boq_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('BOQ updated:', result, result.data);
+          // console.log('BOQ updated:', result, result.data);
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -1170,6 +1285,8 @@ class BoqForm {
   }
 }
 
+// ----------------------------------------------- TRIGER -----------------------------------------------
+
 document.addEventListener("DOMContentLoaded", () => {
   const createBoqBtn = document.querySelector("#c_boq_add");
   const boqForm = new BoqForm("c_boq_form");
@@ -1187,6 +1304,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   createBoqBtn.addEventListener("click", async (e) => {
+    const title = document.querySelector("#boq_form_title");
+    title.textContent = "Create BOQ";
     await boqForm.init("create");
   });
 
@@ -1207,17 +1326,16 @@ document.addEventListener("DOMContentLoaded", () => {
       })
 
       const resJson = await res.json();
-      console.log(resJson.data);
-
 
       if (res.ok) {
+        const title = document.querySelector("#boq_form_title");
+        title.textContent = "Edit BOQ";
         await boqForm.init("edit", resJson.data);
       } else {
         console.log("Error on fetching boq for edit form");
       }
     }
 
-    // Klik delete → inject url ke tombol confirm
     if (target.matches(".c_boq_delete")) {
       e.preventDefault();
       const url = target.getAttribute("data-url");
@@ -1249,7 +1367,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // DataTable → reload
           $('#boq_list').DataTable().ajax.reload();
-
 
           // Toastr success
           toastr.success(data.message || "BOQ deleted successfully!");

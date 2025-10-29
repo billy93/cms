@@ -171,7 +171,7 @@
 
                         <!-- Customer List -->
                         <div class="table-responsive custom-table">
-                            <table class="table" id="customers_table">
+                            <table class="table" id="customer_list" data-url="{{ route('customers.index') }}"> 
                                 <thead class="thead-light">
                                     <tr>
                                         <th class="no-sort">
@@ -192,22 +192,22 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="row align-items-center">
+                        <div class="row align-items-center" style="row-gap: 1em;">
                             <div class="col-md-6">
-                                <div class="datatable-length"></div>
+                                <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                                    <div class="datatable-info"></div>
+                                    <div class="datatable-length"></div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 flex-grow-1">
                                 <div class="datatable-paginate"></div>
                             </div>
                         </div>
                         <!-- /Customer List -->
-
                     </div>
                 </div>
-
             </div>
         </div>
-
     </div>
 </div>
 <!-- /Page Wrapper -->

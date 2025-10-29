@@ -22,10 +22,10 @@ class ProposalSeeder extends Seeder
         foreach ($projects as $project) {
             Proposal::create([
                 'project_id' => $project->id,
-                'boq_code' => 'BOQ-' . strtoupper(substr($project->name,0,3)) . '-' . Str::random(4),
-                'sales_code' => 'SLS-' . strtoupper(substr($project->name,0,3)) . '-' . Str::random(4),
+                'code' => Proposal::generateCode(),
+                'sales_code' => null,
                 'type_of_sales_code' => collect(['FIT', 'Non FIT'])->random(),
-                'year_of_sales' => now()->year,
+                'year_of_sales' => null,
                 'destination' => collect(['Indonesia', 'Overseas'])->random(),
                 'city' => 'City ' . rand(1,10),
                 'activity' => collect([
@@ -36,14 +36,7 @@ class ProposalSeeder extends Seeder
                 'date_from' => Carbon::now()->addDays(rand(0,10)),
                 'date_to' => Carbon::now()->addDays(rand(11,20)),
                 'invoice_no' => null,
-                'pricing_model' => collect([
-                    'All inclusive package',
-                    'All inclusive - Price Per Person',
-                    'Simple package',
-                    'Free format',
-                    'Itemized'
-                ])->random(),
-                'status' => 'draft',
+                'status' => 'Draft',
             ]);
         }
     }

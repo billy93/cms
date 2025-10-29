@@ -11,7 +11,7 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'project_code',
+        'code',
         'name',
         'description',
         'customer_id',
@@ -25,15 +25,15 @@ class Project extends Model
     /**
      * Generate unique project code
      */
-    public static function generateProjectCode()
+    public static function generateCode()
     {
         $prefix = 'PROJ';
         
         // Get the highest project code number
-        $lastProject = self::orderBy('project_code', 'desc')->first();
+        $lastProject = self::orderBy('code', 'desc')->first();
         
         if ($lastProject) {
-            $lastNumber = (int) substr($lastProject->project_code, 4);
+            $lastNumber = (int) substr($lastProject->code, 4);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
@@ -42,7 +42,7 @@ class Project extends Model
         $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
         
         // Check if code already exists (in case of gaps or concurrent inserts)
-        while (self::where('project_code', $newCode)->exists()) {
+        while (self::where('code', $newCode)->exists()) {
             $newNumber++;
             $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
         }
@@ -61,34 +61,14 @@ class Project extends Model
     /**
      * Relationship with Proposal (one-to-one)
      */
-    public function proposal()
+    public function proposals()
     {
-        return $this->hasOne(Proposal::class);
+        return $this->hasMany(Proposal::class);
     }
 
-    public function boqs(): BelongsToMany
-    {
-        return $this->belongsToMany(Boq::class, 'boq_project');
-    }
-    /**
-     * Check if project has a proposal
-     */
     public function hasProposal()
     {
         return $this->proposal()->exists();
-    }
-
-    /**
-     * Get project status options
-     */
-    public static function getStatusOptions()
-    {
-        return [
-            'active' => 'Active',
-            'inactive' => 'Inactive',
-            'completed' => 'Completed',
-            'cancelled' => 'Cancelled'
-        ];
     }
 
     /**
@@ -96,7 +76,7 @@ class Project extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', 'Active');
     }
 
     /**
@@ -112,6 +92,6 @@ class Project extends Model
      */
     public function scopeWithProposal($query)
     {
-        return $query->with('proposal');
+        return $query->with('proposals');
     }
 }

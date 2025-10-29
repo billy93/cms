@@ -1,15 +1,16 @@
 <!-- CSRF Token -->
- <meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
- <!-- Apple Touch Icon -->
- <link rel="apple-touch-icon" sizes="180x180" href="{{ url('//img/apple-touch-icon.png') }}">
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url('//img/apple-touch-icon.png') }}">
+<link rel="stylesheet" href="{{ url('build/plugins/select2/css/select2.min.css') }}">
 
- 
- <!-- Favicon -->
- <link rel="icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
- <link rel="shortcut icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
- <meta name="csrf-token" content="{{ csrf_token() }}">
- <link rel="stylesheet" href="{{ url('build/plugins/toastr/toastr.css') }}">
+
+<!-- Favicon -->
+<link rel="icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
+<link rel="shortcut icon" href="{{ url('build/img/favicon.png')}}" type="image/x-icon">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url('build/plugins/toastr/toastr.css') }}">
  
 @if (Route::is(['layout-rtl']))
 <!-- Bootstrap CSS -->
@@ -186,6 +187,7 @@
          'roles-permissions',
          'roles.index',
          'projects',
+         'projects.show',
          'project-reports',
          'project-grid',
          'project-details',
@@ -210,6 +212,9 @@
          'language',
          'proposals-grid',
          'proposals',
+         'proposals.index',
+         'boqs',
+         'boqs.index',
          'contracts-grid',
          'contracts',
          'estimations-kanban',
@@ -278,6 +283,8 @@
          'roles-permissions',
          'roles.index',
          'projects',
+         'projects.index',
+         'projects.show',
          'project-reports',
          'project-grid',
          'project-details',
@@ -312,6 +319,11 @@
          'form-horizontal',
          'proposals-grid',
          'proposals',
+         'proposals.index',
+         'proposals.show',
+         'boqs',
+         'boqs.index',
+         'customers.index',
          'contracts-grid',
          'contracts',
          'estimations-kanban',
@@ -381,6 +393,9 @@
          'file-manager',
          'proposals-grid',
          'proposals',
+         'proposals.index',
+         'boqs',
+         'boqs.index',
          'contracts-grid',
          'contracts',
          'estimations-kanban',
@@ -454,6 +469,9 @@
          'leads-dashboard',
          'proposals-grid',
          'proposals',
+         'proposals.index',
+         'boqs',
+         'boqs.index',
          'contracts-grid',
          'contracts',
          'estimations-kanban',

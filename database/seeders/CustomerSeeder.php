@@ -14,8 +14,8 @@ class CustomerSeeder extends Seeder
     {
         $customers = [
             [
-                'customer_code' => 'CUST000001',
-                'customer_name' => 'PT Maju Bersama',
+                'code' => 'CUST000001',
+                'name' => 'PT Maju Bersama',
                 'address' => 'Jl. Sudirman No. 123, Jakarta Pusat, DKI Jakarta 12190',
                 'contact_person' => 'Budi Santoso',
                 'phone' => '021-5550123',
@@ -24,8 +24,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Customer utama untuk proyek IT infrastructure'
             ],
             [
-                'customer_code' => 'CUST000002',
-                'customer_name' => 'CV Sukses Mandiri',
+                'code' => 'CUST000002',
+                'name' => 'CV Sukses Mandiri',
                 'address' => 'Jl. Thamrin No. 45, Jakarta Pusat, DKI Jakarta 10350',
                 'contact_person' => 'Siti Aminah',
                 'phone' => '021-5550456',
@@ -34,8 +34,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Konsultan manajemen dan training'
             ],
             [
-                'customer_code' => 'CUST000003',
-                'customer_name' => 'PT Global Teknologi',
+                'code' => 'CUST000003',
+                'name' => 'PT Global Teknologi',
                 'address' => 'Jl. Gatot Subroto No. 67, Jakarta Selatan, DKI Jakarta 12930',
                 'contact_person' => 'Ahmad Rizki',
                 'phone' => '021-5550789',
@@ -44,8 +44,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Perusahaan teknologi informasi'
             ],
             [
-                'customer_code' => 'CUST000004',
-                'customer_name' => 'UD Makmur Jaya',
+                'code' => 'CUST000004',
+                'name' => 'UD Makmur Jaya',
                 'address' => 'Jl. Hayam Wuruk No. 89, Jakarta Barat, DKI Jakarta 11160',
                 'contact_person' => 'Dewi Sartika',
                 'phone' => '021-5550112',
@@ -54,8 +54,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Distributor produk elektronik'
             ],
             [
-                'customer_code' => 'CUST000005',
-                'customer_name' => 'PT Sejahtera Abadi',
+                'code' => 'CUST000005',
+                'name' => 'PT Sejahtera Abadi',
                 'address' => 'Jl. Asia Afrika No. 234, Bandung, Jawa Barat 40262',
                 'contact_person' => 'Rudi Hermawan',
                 'phone' => '022-5550234',
@@ -64,8 +64,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Manufaktur tekstil dan garmen'
             ],
             [
-                'customer_code' => 'CUST000006',
-                'customer_name' => 'CV Berkah Sentosa',
+                'code' => 'CUST000006',
+                'name' => 'CV Berkah Sentosa',
                 'address' => 'Jl. Ahmad Yani No. 156, Surabaya, Jawa Timur 60231',
                 'contact_person' => 'Nina Kartika',
                 'phone' => '031-5550156',
@@ -74,8 +74,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Customer non-aktif - pindah lokasi'
             ],
             [
-                'customer_code' => 'CUST000007',
-                'customer_name' => 'PT Dinamis Kreatif',
+                'code' => 'CUST000007',
+                'name' => 'PT Dinamis Kreatif',
                 'address' => 'Jl. Pemuda No. 78, Semarang, Jawa Tengah 50132',
                 'contact_person' => 'Eko Prasetyo',
                 'phone' => '024-5550178',
@@ -84,8 +84,8 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Agency kreatif dan digital marketing'
             ],
             [
-                'customer_code' => 'CUST000008',
-                'customer_name' => 'UD Mitra Usaha',
+                'code' => 'CUST000008',
+                'name' => 'UD Mitra Usaha',
                 'address' => 'Jl. Veteran No. 345, Medan, Sumatera Utara 20112',
                 'contact_person' => 'Sri Wahyuni',
                 'phone' => '061-5550345',
