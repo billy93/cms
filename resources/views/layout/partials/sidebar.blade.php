@@ -185,17 +185,17 @@ use App\Services\MenuService;
                     <h6 class="submenu-hdr">MAIN</h6>
                     <ul>
                         @if(MenuService::canAccess('/contacts'))
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('contacts', 'contact-grid', 'contact-details') ? 'active' : '' }}"
                                 href="{{ url('contacts') }}"><i class="ti ti-user-up"></i><span>Bank Accounts</span></a>
-                        </li>
+                        </li> -->
                         @endif
                         @if(MenuService::canAccess('/companies'))
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('companies', 'companies-grid', 'company-details') ? 'active' : '' }}"
                                 href="{{ url('companies') }}"><i
                                     class="ti ti-building-community"></i><span>Clients</span></a>
-                        </li>
+                        </li> -->
                         @endif
                         @if(MenuService::canAccess('/customers'))
                         <li>
@@ -257,11 +257,11 @@ use App\Services\MenuService;
                                 <i class="ti ti-file-report"></i><span>Products</span></a>
                         </li> -->
                         @if(MenuService::canAccess('/invoices'))
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('invoices', 'invoice-grid') ? 'active' : '' }}"
                                 href="{{ url('invoices') }}">
                                 <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
-                        </li>
+                        </li> -->
                         @endif
                         @if(MenuService::canAccess('/boqs'))
                         <li>
@@ -271,10 +271,10 @@ use App\Services\MenuService;
                         </li>
                         @endif
                         @if(MenuService::canAccess('/payments'))
-                        <li>
+                        <!-- <li>
                             <a class="{{ Request::is('payments') ? 'active' : '' }}" href="{{ url('payments') }}">
                                 <i class="ti ti-report-money"></i><span>Payments</span></a>
-                        </li>
+                        </li> -->
                         @endif
                         <!-- <li>
                             <a class="{{ Request::is('analytics') ? 'active' : '' }}" href="{{ url('analytics') }}"><i
@@ -354,14 +354,14 @@ use App\Services\MenuService;
                                     Management</span></a></li>
                         @endif
                         @if(MenuService::canAccess('/permissions'))
-                        <li><a class="{{ Request::is('permissions') ? 'active' : '' }}"
+                        <!-- <li><a class="{{ Request::is('permissions') ? 'active' : '' }}"
                                 href="{{ url('permissions') }}"><i class="ti ti-lock-cog"></i></i><span>Permissions
-                                    </span></a></li>
+                                    </span></a></li> -->
                         @endif
                         @if(MenuService::canAccess('/delete-request'))
-                        <li><a class="{{ Request::is('delete-request') ? 'active' : '' }}"
+                        <!-- <li><a class="{{ Request::is('delete-request') ? 'active' : '' }}"
                                 href="{{ url('delete-request') }}"><i class="ti ti-flag-question"></i><span>Delete
-                                    Request</span></a></li>
+                                    Request</span></a></li> -->
                         @endif
                     </ul>
                 </li>

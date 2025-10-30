@@ -405,7 +405,7 @@
 														<img src="{{URL::asset('/build/img/priority/dreamchat.svg')}}" class="w-auto h-auto" alt="DreamsChat"> 
 													</a>
 													<div>
-														<h6><a href="javascript:void(0);">Dreamschat</a></h6>
+														<h6><a href="javascript:void(0);">Dreamschatsss</a></h6>
 													</div>
 												</div>                                                    
 												<div>
