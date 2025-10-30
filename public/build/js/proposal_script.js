@@ -91,6 +91,15 @@ class ProposalForm {
       value.status = this.data.status || "";
     }
 
+    let isDisable = false;
+
+    try {
+      if (PROJECT_ID) {
+        value.project_id = PROJECT_ID;
+        isDisable = true;
+      }
+    } catch (error) { }
+
     const selectProposalOptions = this.projects.map(p => {
       return `<option value="${p.id}" ${value.project_id === p.id ? "selected" : ""}>${p.code}</option>`;
     });
@@ -121,34 +130,25 @@ class ProposalForm {
         return `<option value="${s}" ${value.status === s ? "selected" : ""}>${s}</option>`;
       });
 
-    const dynamic = this.mode === "create" ?
-      `
+    const projectIdField = `
         <div class="col-md-12">
           <div class="mb-3">
             <div class="d-flex align-items-center justify-content-between">
               <label class="col-form-label">Project<span class="text-danger">*</span></label>
             </div>
-            <select id="input_project_id" class="select form-control">
+            <select id="input_project_id" class="select form-control" ${isDisable ? "disabled" : ""}>
               <option value="" ${!value.project_id ? "selected" : ""}>-- Select Project --</option>
               ${selectProposalOptions}
             </select>
             <small id="input_project_id_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
-      ` :
-      `
-        <div class="col-md-6">
-          <div class="mb-3">
-            <div class="d-flex align-items-center justify-content-between">
-              <label class="col-form-label">Project<span class="text-danger">*</span></label>
-            </div>
-            <select id="input_project_id" class="select form-control">
-              <option value="" ${!value.project_id ? "selected" : ""}>-- Select Project --</option>
-              ${selectProposalOptions}
-            </select>
-            <small id="input_project_id_error" class="text-danger mt-1" style="display: none;"></small>
-          </div>
-        </div>
+      `;
+
+    const dynamic = this.mode === "create" ?
+      projectIdField :
+      ` 
+        ${projectIdField}
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Proposal Code</label>
@@ -449,10 +449,14 @@ class ProposalForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
+          // This function defined on projects.show.blade (for project detail page)
+          try {
+            loadProjectData(PROJECT_ID)
+          } catch (error) { }
+
           toastr.success(response.message || 'Proposal created successfully!');
           $('#proposal_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('Proposal created:', result, result.data);
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -478,16 +482,13 @@ class ProposalForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          toastr.success(response.message || 'Proposal updated successfully!');
-          $('#proposal_list').DataTable().ajax.reload();
-
           // This function defined on projects.show.blade (for project detail page)
           try {
-            loadProjectData(projectId)
+            loadProjectData(PROJECT_ID)
           } catch (error) { }
-
+          toastr.success(response.message || 'Proposal updated successfully!');
+          $('#proposal_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('Proposal updated:', result, result.data);
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -595,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // This function defined on projects.show.blade (for project detail page)
           try {
-            loadProjectData(projectId)
+            loadProjectData(PROJECT_ID)
           } catch (error) { }
 
           // Toastr success

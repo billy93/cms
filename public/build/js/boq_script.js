@@ -85,8 +85,7 @@ class BoqForm {
         currentProposalId = PROPOSAL_ID;
         isDisable = true;
       }
-    } catch (error) {
-    }
+    } catch (error) { }
 
     let options = this.proposals.map(proposal => {
       return `<option value="${proposal.id}" ${currentProposalId === proposal.id ? "selected" : ""}>${proposal.code}</option>`

@@ -38,7 +38,25 @@
                     </div>
 
                     <!-- Proposal Section -->
-                    <div id="proposals_section" class="card"></div>
+                    <div id="proposals_section">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Proposal</h5>
+                                <div class="d-flex gap-2">
+                                    <a 
+                                        href="javascript:void(0);" 
+                                        id="c_proposal_add" 
+                                        class="btn btn-primary" 
+                                        data-bs-toggle="offcanvas" 
+                                        data-bs-target="#offcanvas_add"
+                                    >
+                                    <i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals
+                                </a>
+                                </div>
+                            </div>
+                            <div class="card-body"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -86,7 +104,7 @@
 
 @push('scripts')
 <script>
-    const projectId = window.location.pathname.split('/').pop();
+    const PROJECT_ID = parseInt('{{ $project->id }}');
 
     function loadProjectData(id) {
         $.ajax({
@@ -250,19 +268,8 @@
                 </div>
             `;
         });
-
-        const result = `
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Proposal</h5>
-                </div>
-                <div class="card-body">
-                    ${proposalList.length ? proposalList : "No Proposals Found!"}
-                </div>
-            </div>
-        `;
         
-        $('#proposals_section').html(result);
+        $('#proposals_section .card-body').html(proposalList.length ? proposalList : "No Proposals Found!");
     }
 
     function getStatusClass(status) {
@@ -297,7 +304,7 @@
 
     $(document).ready(function() {
         // Load project data and proposal
-        loadProjectData(projectId);
+        loadProjectData(PROJECT_ID);
     });
 </script>
 <script src="/build/js/proposal_script.js"></script>
