@@ -92,7 +92,7 @@
 										</div>
 										
 									</div>
-									<div class="d-flex align-items-center flex-wrap row-gap-2">
+									<!-- <div class="d-flex align-items-center flex-wrap row-gap-2">
 										<div class="dropdown me-2">
 											<a href="javascript:void(0);" class="btn bg-soft-purple text-purple"
 												data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
@@ -550,7 +550,7 @@
 											<a href="{{url('projects')}}" class="active"><i class="ti ti-list-tree"></i></a>
 											<a href="{{url('project-grid')}}"><i class="ti ti-grid-dots"></i></a>
 										</div>
-									</div>
+									</div> -->
 								</div>
 								<!-- /Filter -->
 
@@ -596,7 +596,7 @@
 		<!-- Add New Project -->
 		<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
 			<div class="offcanvas-header border-bottom">
-				<h4 id="project_form_title">Create Project</h4>
+				<h4 id="project_form_title">Create Project (Ref to RFP)</h4>
 				<button type="button" id="close_project_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
 					<i class="ti ti-x"></i>
 				</button>

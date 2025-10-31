@@ -155,7 +155,7 @@ class ProjectForm {
           ${dynamic}
           <div class="col-md-12">
             <div class="mb-3">
-              <label class="col-form-label">Name<span class="text-danger">*</span></label>
+              <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
               <input type="text" id="input_name" class="form-control" value="${value.name}">
             </div>
             <small id="input_name_error" class="text-danger mt-1" style="display: none;"></small>

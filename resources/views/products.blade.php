@@ -99,7 +99,7 @@
                                             <th>Name</th>
                                             <th>Description</th>
                                             <th>Unit</th>
-                                            <th>Base Cost</th>
+                                            <th>Unit Price (IDR)</th>
                                             <th>Category</th>
                                             <th>Supplier</th>
                                             <th>Created Date</th>
@@ -456,10 +456,13 @@ $(document).ready(function() {
                     </td>
                     <td>${product.description || '-'}</td>
                     <td>${product.unit}</td>
-                    <td>$${parseFloat(product.base_cost).toFixed(2)}</td>
+                <!--    <td>$${parseFloat(product.base_cost).toFixed(2)}</td> -->
+                <td>${parseFloat(product.base_cost).toLocaleString('en-US', { minimumFractionDigits: 0 })}</td>
+
                     <td><span class="badge bg-light text-dark">${product.category ? product.category.name : '-'}</span></td>
                     <td>${product.supplier ? product.supplier.supplier_name : '-'}</td>
-                    <td>${new Date(product.created_at).toLocaleDateString()}</td>
+                 <!--   <td>${new Date(product.created_at).toLocaleDateString()}</td> --> 
+                 <td>${formatDate(product.created_at)}</td>
                     <td class="text-end">
                         <div class="dropdown table-action">
                             <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -529,6 +532,16 @@ $(document).ready(function() {
     loadCategories();
     loadSuppliers();
     loadProducts();
+
+    // Format date function
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
 });
 </script>
 @endpush
