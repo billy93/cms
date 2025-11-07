@@ -707,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       if (!PROPOSAL_MODAL_BS || IS_FETCHING) return;
       const url = target.dataset.url;
-      const confirmBtn = PROPOSAL_MODAL.getElementById("c_proposal_modal_confirm_btn");
+      const confirmBtn = PROPOSAL_MODAL.querySelector("#c_proposal_modal_confirm_btn");
       confirmBtn.dataset.url = url;
       PROPOSAL_MODAL_BS.show();
     }

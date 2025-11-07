@@ -149,17 +149,13 @@
             const conditionalActions = p.status !== "Win" ? 
             `
                 <button 
-                    class="btn btn-secondary me-2 c_proposal_edit"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvas_add"
+                    class="btn btn-secondary me-2 c_proposal_edit_btn"
                     data-url="/proposals/${p.id}"
                 >
                     <i class="ti ti-edit me-1"></i>Edit Proposal
                 </button>
                 <button 
-                    class="btn btn-danger c_proposal_delete"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#delete_proposal_modal"
+                    class="btn btn-danger c_proposal_delete_btn"
                     data-url="/proposals/${p.id}"
                 >
                     <i class="ti ti-trash me-1"></i>Delete Proposal
