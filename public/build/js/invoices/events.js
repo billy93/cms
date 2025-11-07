@@ -637,7 +637,7 @@ class InvoiceForm {
             loadProposalData(PROPOSAL_ID);
           } catch (error) { }
 
-          $('#invoice_list').DataTable().ajax.reload();
+          $('#invoice_list').DataTable().ajax.reload(null, false);
           showToast("success", result.message || 'Invoice created successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
@@ -761,7 +761,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const resJson = await resopnse.json();
 
           if (resopnse.ok && resJson.success) {
-            $('#invoice_list').DataTable().ajax.reload();
+            $('#invoice_list').DataTable().ajax.reload(null, false);
             showToast("success", resJson.message || "Invoice deleted successfully.");
             INVOICE_MODAL_BS.hide();
           } else {

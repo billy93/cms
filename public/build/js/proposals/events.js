@@ -12,12 +12,14 @@ class ProposalForm {
     this.handleSubmit = this.handleSubmit.bind(this)
 
     this.handleDocumentChange = this.handleDocumentChange.bind(this);
+    this.handleDocumentSubmit = this.handleDocumentSubmit.bind(this);
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.handleSubmit()
     });
 
     document.addEventListener("change", this.handleDocumentChange);
+    document.addEventListener("submit", this.handleDocumentSubmit, true);
   }
 
   // ---------------------------------------- GLOBAL HANDLER ----------------------------------------
@@ -61,6 +63,16 @@ class ProposalForm {
       const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
       this.selectedBoqs = Array.from(unique.values());
       this.updateSelectedEl();
+    }
+  }
+
+  handleDocumentSubmit(e) {
+    const target = e.target;
+
+    if (target.matches("#c_proposal_canvas_boq_list_search_form")) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.initDataTable(true);
     }
   }
 
@@ -183,11 +195,17 @@ class ProposalForm {
       }
 
       boqList = `
-        <div class="col-md-12 mt-3 mb-3" id="proposal_canvas_boq_section">
+        <div class="col-md-12" id="proposal_canvas_boq_section">
           <div>
             <label class="col-form-label">BoQ(s)</label>
-            <ul id="selected_proposal_canvas_boq">${selectedBoqEl}</ul>
+            <ul id="selected_proposal_canvas_boq" class="mt-2">${selectedBoqEl}</ul>
           </div>
+          <div class="col-md-12 mb-2 mt-2 pt-2" style="border-top: 1px solid var(--bs-border-color);">
+            <form class="icon-form mb-3 mb-sm-0" id="c_proposal_canvas_boq_list_search_form">
+              <span class="form-icon" style="z-index: 0;"><i class="ti ti-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search BoQ" id="c_proposal_canvas_boq_list_search_input">
+            </form>							
+          </div>	
           <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
             <div class="table-responsive custom-table">
               <table class="table" id="proposal_canvas_boq_list" data-url="${this.dataTableUrl}">
@@ -278,12 +296,12 @@ class ProposalForm {
     }
   }
 
-  initDataTable() {
+  initDataTable(resetPage = false) {
     const self = this;
     const $table = $('#proposal_canvas_boq_list');
 
     if ($.fn.DataTable.isDataTable($table)) {
-      $table.DataTable().ajax.reload(null, false); // false = jangan reset pagination
+      $table.DataTable().ajax.reload(null, resetPage); // false = jangan reset pagination
       return;
     }
 
@@ -295,7 +313,7 @@ class ProposalForm {
       "autoWidth": true,
       "order": [[0, "desc"]],
       "language": {
-        search: ' ',
+        search: '',
         sLengthMenu: '_MENU_',
         searchPlaceholder: "Search",
         info: "_START_ - _END_ of _TOTAL_ items",
@@ -310,10 +328,13 @@ class ProposalForm {
         $wrapper.find('.dataTables_paginate').appendTo('.proposal-canvas-table-boq-paginate');
         $wrapper.find('.dataTables_length').appendTo('.proposal-canvas-table-boq-length');
       },
-      "ajax": {
-        "url": $table.data('url'),
-        "type": "GET",
-        "dataSrc": function (json) {
+      ajax: {
+        url: $table.data('url'),
+        type: "GET",
+        data: function (d) {
+          d.search = self.form.querySelector("#c_proposal_canvas_boq_list_search_input")?.value || "";
+        },
+        dataSrc: function (json) {
           return json.data;
         }
       },

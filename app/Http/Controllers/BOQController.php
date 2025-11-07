@@ -22,9 +22,29 @@ class BoqController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+             $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $boqs = Boq::with(['proposal', 'items']);
 
+            \Log::info($search);
+
             return DataTables::eloquent($boqs)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(form_type) LIKE ?', ["%{$search}%"])
+                            ->orWhereHas('proposal', fn($p) =>
+                                $p->whereRaw('LOWER(sales_code) LIKE ?', ["%{$search}%"])
+                            )
+                            ->orWhereHas('items', fn($i) =>
+                                $i->whereRaw('LOWER(header) LIKE ?', ["%{$search}%"])
+                                    ->orWhereRaw('LOWER(subheader) LIKE ?', ["%{$search}%"])
+                            );
+                        });
+                    }
+                })
                 ->addColumn('checkbox', fn($boq) =>
                     '<label class="checkboxs"><input type="checkbox" class="row-check" value="' . $boq->id . '"><span class="checkmarks"></span></label>'
                 )

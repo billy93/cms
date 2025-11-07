@@ -240,6 +240,10 @@
         }
 
         function renderProposalInfo(proposal) {
+            const invoices = proposal.invoices.length 
+                ? "<ul>" + proposal.invoices.map(invoice => `<li>${invoice.code}</li>`).join("") + "</ul>" 
+                : "-";
+
             const html = `
                 <div class="col-md-6 col-xxl-4">
                     <div class="form-group mb-2">
@@ -267,8 +271,8 @@
                 </div>
                 <div class="col-md-6 col-xxl-4">
                     <div class="form-group mb-2">
-                        <label class="fw-semibold">Invoice No</label>
-                        <p class="mb-0">${proposal.invoice_no || "-"}</p>
+                        <label class="fw-semibold">Invoice(s)</label>
+                        <p class="mb-0">${invoices}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-xxl-4">

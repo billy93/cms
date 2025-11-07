@@ -1,4 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const BOQ_LIST_SEARCH_FORM = document.querySelector("#c_boq_list_search_form");
+  const BOQ_LIST_SEARCH_INPUT = document.querySelector("#c_boq_list_search_input");
+
+  if (BOQ_LIST_SEARCH_FORM && BOQ_LIST_SEARCH_INPUT) {
+    BOQ_LIST_SEARCH_FORM.addEventListener("submit", (e) => {
+      e.preventDefault();
+      $('#boq_list').DataTable().ajax.reload();
+    });
+  }
+
   let showCheckbox = true;
 
   try {
@@ -16,13 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($('#boq_list').length > 0) {
     $('#boq_list').DataTable({
       "serverSide": true,
+      // stateSave: true, 
       "bFilter": false,
       "bInfo": false,
       "ordering": true,
       "autoWidth": true,
       "order": [[0, "desc"]],
       "language": {
-        search: ' ',
+        search: '',
         sLengthMenu: '_MENU_',
         searchPlaceholder: "Search",
         info: "_START_ - _END_ of _TOTAL_ items",
@@ -37,10 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
         $table.find('.dataTables_paginate').appendTo('.table-boq-paginate');
         $table.find('.dataTables_length').appendTo('.table-boq-length');
       },
-      "ajax": {
-        "url": $('#boq_list').data('url'),
-        "type": "GET",
-        "dataSrc": function (json) {
+      ajax: {
+        url: $('#boq_list').data('url'),
+        type: "GET",
+        data: function (d) {
+          d.search = BOQ_LIST_SEARCH_INPUT?.value || "";
+        },
+        dataSrc: function (json) {
           return json.data;
         }
       },
@@ -48,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           data: 'id',
           visible: showCheckbox ? true : false,
+          orderable: showCheckbox ? false : true,
           render: function (data, type, row) {
             const checked = SELECTED_BOQ_ROWS.some(obj => +obj.id === data);
             return `
@@ -138,4 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
     });
   }
+
+
 });

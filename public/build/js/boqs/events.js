@@ -1205,7 +1205,7 @@ class BoqForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          $('#boq_list').DataTable().ajax.reload();
+          $('#boq_list').DataTable().ajax.reload(null, false);
           showToast("success", response.message || 'BOQ created successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
@@ -1233,7 +1233,7 @@ class BoqForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          $('#boq_list').DataTable().ajax.reload();
+          $('#boq_list').DataTable().ajax.reload(null, false);
           showToast("success", response.message || 'BOQ updated successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
@@ -1487,7 +1487,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           updateBulkBtn();
           // resetSelectAll();
-          $('#boq_list').DataTable().ajax.reload();
+          $('#boq_list').DataTable().ajax.reload(null, false);
           BOQ_MODAL_BS.hide();
           showToast("success", data.message || MODAL_MESSAGES[action].success);
         } else {
@@ -1505,23 +1505,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = e.target;
 
     if (target.matches("#boq_list #select_all_boq_list")) {
+      e.stopPropagation();
+      e.preventDefault();
       const checked = target.checked;
+      console.log("checked", checked);
 
       document.querySelectorAll('#boq_list input.row-check').forEach(el => {
         el.checked = checked;
+        console.log("child", el.checked);
 
         if (checked) {
           SELECTED_BOQ_ROWS.push({
             id: el.value,
             code: el.dataset.code
           });
+        } else {
+          SELECTED_BOQ_ROWS = SELECTED_BOQ_ROWS.filter(obj => obj.id !== el.value);
         }
       });
 
       const unique = new Map(SELECTED_BOQ_ROWS.map(item => [item.id, item]));
       SELECTED_BOQ_ROWS = Array.from(unique.values());
+      console.log(">>>", SELECTED_BOQ_ROWS);
+
       updateBulkBtn();
     } else if (target.matches("#boq_list input.row-check")) {
+      e.stopPropagation();
+      e.preventDefault();
       const checked = target.checked;
 
       if (!checked) {
@@ -1538,5 +1548,5 @@ document.addEventListener("DOMContentLoaded", () => {
       SELECTED_BOQ_ROWS = Array.from(unique.values());
       updateBulkBtn();
     }
-  })
+  });
 });

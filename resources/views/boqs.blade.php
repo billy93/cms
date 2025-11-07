@@ -29,10 +29,10 @@
 							<!-- Search -->
 							<div class="row align-items-center">
 								<div class="col-sm-4">
-									<div class="icon-form mb-3 mb-sm-0">
+									<form class="icon-form mb-3 mb-sm-0" id="c_boq_list_search_form">
 										<span class="form-icon"><i class="ti ti-search"></i></span>
-										<input type="text" class="form-control" placeholder="Search BoQ">
-									</div>							
+										<input type="text" class="form-control" placeholder="Search BoQ" id="c_boq_list_search_input">
+									</form>							
 								</div>		
 								<div class="col-sm-8">					
 									<div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
@@ -87,38 +87,38 @@
 										}
 									</style>
 									<thead class="thead-light">
-										  <tr>
-												<th class="td-break no-sort" rowspan="2">
-													<label class="checkboxs">
-														<input type="checkbox" id="select_all_boq_list">
-														<span class="checkmarks"></span>
-													</label>
-												</th>
-												<th class="td-break" rowspan="2">BOQ Code</th>
-												<th class="td-break" rowspan="2">Sales Code</th>
-												<th class="td-break" rowspan="2">BOQ Type</th>
-												<th class="td-break" rowspan="2">Description</th>
-												<th class="td-break" rowspan="2">Created</th>
-												<th class="td-break" rowspan="2">Updated</th>
-												<th colspan="8">Items</th>
-												<th class="td-break" rowspan="2">Basic Price</th>
-												<th class="td-break" rowspan="2">Management Fee</th>
-												<th class="td-break" rowspan="2">Sales Amount</th>
-												<th class="td-break" rowspan="2">VAT Rate</th>
-												<th class="td-break" rowspan="2">VAT</th>
-												<th class="td-break" rowspan="2">Invoice Amount</th>
-												<th class="td-break" rowspan="2" class="no-sort">Action</th>
-											</tr>
-											<tr>
-												<th>Header</th>
-												<th>Subheader</th>
-												<th>Unit Price</th>
-												<th>Title1</th>
-												<th>Title2</th>
-												<th>Title3</th>
-												<th>Title4</th>
-												<th>Total Amount</th>
-											</tr>
+										<tr>
+											<th class="td-break no-sort" rowspan="2">
+												<label class="checkboxs">
+													<input type="checkbox" id="select_all_boq_list">
+													<span class="checkmarks"></span>
+												</label>
+											</th>
+											<th class="td-break" rowspan="2">BOQ Code</th>
+											<th class="td-break" rowspan="2">Sales Code</th>
+											<th class="td-break" rowspan="2">BOQ Type</th>
+											<th class="td-break" rowspan="2">Description</th>
+											<th class="td-break" rowspan="2">Created</th>
+											<th class="td-break" rowspan="2">Updated</th>
+											<th colspan="8">Items</th>
+											<th class="td-break" rowspan="2">Basic Price</th>
+											<th class="td-break" rowspan="2">Management Fee</th>
+											<th class="td-break" rowspan="2">Sales Amount</th>
+											<th class="td-break" rowspan="2">VAT Rate</th>
+											<th class="td-break" rowspan="2">VAT</th>
+											<th class="td-break" rowspan="2">Invoice Amount</th>
+											<th class="td-break" rowspan="2" class="no-sort">Action</th>
+										</tr>
+										<tr>
+											<th>Header</th>
+											<th>Subheader</th>
+											<th>Unit Price</th>
+											<th>Title1</th>
+											<th>Title2</th>
+											<th>Title3</th>
+											<th>Title4</th>
+											<th>Total Amount</th>
+										</tr>
 									</thead>
 									<tbody></tbody>
 								</table>
