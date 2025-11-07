@@ -52,14 +52,14 @@ class ProposalService
                 throw new Exception("Proposal with ID {$id} not found");
             }
 
-            // 🔒 Guard: Prevent proposal with status 'Approved' from being updated
-            if (strtolower($proposal->status) === 'approved') {
-                throw new Exception("Proposal with status 'Approved' cannot be modified.");
+            // 🔒 Guard: Prevent proposal with status 'Win' from being updated
+            if (strtolower($proposal->status) === 'win') {
+                throw new Exception("Proposal with status 'Win' cannot be modified.");
             }
             
             $proposal->update($data);
 
-            if (($data['status'] ?? null) === 'Approved') {
+            if (($data['status'] ?? null) === 'Win') {
                 $proposal->update([
                     'sales_code' => Proposal::generateSalesCode(
                         $proposal->project_id,
@@ -79,9 +79,9 @@ class ProposalService
             throw new Exception("Proposal with ID {$id} not found");
         }
 
-        // 🔒 Guard: Prevent proposal with status 'Approved' from being deleted
-        if (strtolower($proposal->status) === 'approved') {
-            throw new Exception("Proposal with status 'Approved' cannot be modified.");
+        // 🔒 Guard: Prevent proposal with status 'Win' from being deleted
+        if (strtolower($proposal->status) === 'win') {
+            throw new Exception("Proposal with status 'Win' cannot be modified.");
         }
 
         $proposal->delete();

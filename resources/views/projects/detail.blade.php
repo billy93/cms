@@ -146,7 +146,7 @@
 
     function renderProposalInfo(data) {
         const proposalList = data.proposals.map((p, i, a) => {
-            const conditionalActions = p.status !== "Approved" ? 
+            const conditionalActions = p.status !== "Win" ? 
             `
                 <button 
                     class="btn btn-secondary me-2 c_proposal_edit"
@@ -277,8 +277,8 @@
         switch (status) {
             case 'Draft': return '<span class="badge badge-status bg-secondary">Draft</span>';
             case 'Submitted': return '<span class="badge badge-status bg-info">Submitted</span>';
-            case 'Approved': return '<span class="badge badge-status bg-success">Approved</span>';
-            case 'Rejected': return '<span class="badge badge-status bg-danger">Rejected</span>';
+            case 'Win': return '<span class="badge badge-status bg-success">Win</span>';
+            case 'Lose': return '<span class="badge badge-status bg-danger">Lose</span>';
             case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
             default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
         }

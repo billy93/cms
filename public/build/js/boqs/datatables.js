@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch (err) { }
 
   try {
-    if (PROPOSAL_STATUS === "Approved") { // Variable on the proposal.detail page 
+    if (PROPOSAL_STATUS === "Win") { // Variable on the proposal.detail page 
       showCheckbox = false;
     }
   } catch (err) { }

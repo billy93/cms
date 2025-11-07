@@ -53,10 +53,10 @@
                                                 <span class="badge badge-status bg-secondary">Draft</span>
                                             @elseif ($boq->proposal->status === 'Submitted')
                                                 <span class="badge badge-status bg-info">Submitted</span>
-                                            @elseif ($boq->proposal->status === 'Approved')
-                                                <span class="badge badge-status bg-success">Approved</span>
-                                            @elseif ($boq->proposal->status === 'Rejected')
-                                                <span class="badge badge-status bg-danger">Rejected</span>
+                                            @elseif ($boq->proposal->status === 'Win')
+                                                <span class="badge badge-status bg-success">Win</span>
+                                            @elseif ($boq->proposal->status === 'Lose')
+                                                <span class="badge badge-status bg-danger">Lose</span>
                                             @elseif ($boq->proposal->status === 'Cancelled')
                                                 <span class="badge badge-status bg-dark">Cancelled</span>
                                             @else

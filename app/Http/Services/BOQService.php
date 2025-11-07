@@ -26,9 +26,9 @@ class BoqService
             if (!empty($data['proposal_id'])) {
                 $proposal = Proposal::find($data['proposal_id']);
 
-                // 🔒 Guard: Prevent proposal with status 'Approved' from being associated with new BOQ 
-                if ($proposal && strtolower($proposal->status) === 'approved') {
-                   throw new Exception("Cannot associate a BOQ with a proposal that has been marked as 'Approved'.");
+                // 🔒 Guard: Prevent proposal with status 'Win' from being associated with new BOQ 
+                if ($proposal && strtolower($proposal->status) === 'win') {
+                   throw new Exception("Cannot associate a BOQ with a proposal that has been marked as 'Win'.");
                 }
 
                 $boq->proposal()->associate($proposal);
@@ -128,7 +128,7 @@ class BoqService
         return DB::transaction(function () use ($id, $data) {
             /**
              * 1. Check if it exists.
-             * 2. Get the related proposal and ensure its status is not equal to 'Approved'.
+             * 2. Get the related proposal and ensure its status is not equal to 'Win'.
              * 3. Separate BOQ items.
              * 4. Associate the proposal if it exists, associate an empty BOQ if proposal_id does not exist.
              */
@@ -138,9 +138,9 @@ class BoqService
                 throw new Exception("BOQ with ID {$id} not found");
             }
 
-            // 🔒 Guard: Prevent BOQ with proposal status 'Approved' from being updated
-            if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
-                throw new Exception("BOQ cannot be modified because the associated proposal has already been marked as 'Approved'.");
+            // 🔒 Guard: Prevent BOQ with proposal status 'Win' from being updated
+            if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
+                throw new Exception("BOQ cannot be modified because the associated proposal has already been marked as 'Win'.");
             }
 
             $items = $data['items'] ?? [];
@@ -252,8 +252,8 @@ class BoqService
                     throw new Exception("Proposal with ID {$proposal_id} not found.");
                 }
 
-                if (strtolower($proposal->status) === 'approved') {
-                    throw new Exception("Cannot bind BOQs to an 'Approved' proposal.");
+                if (strtolower($proposal->status) === 'win') {
+                    throw new Exception("Cannot bind BOQs to an 'Win' proposal.");
                 }
             }
 
@@ -296,14 +296,14 @@ class BoqService
                 }
             }
 
-            // Dissociate proposal dengan guard 'approved'
+            // Dissociate proposal dengan guard 'Win'
             $boqs->each(function ($boq) {
                 if (!$boq->proposal) {
                     throw new \Exception("BOQ with ID {$boq->id} is not associated with any proposal.");
                 }
 
-                if (strtolower($boq->proposal->status) === 'approved') {
-                    throw new \Exception("Cannot unbind BOQ ID {$boq->id} because its proposal is 'Approved'.");
+                if (strtolower($boq->proposal->status) === 'win') {
+                    throw new \Exception("Cannot unbind BOQ ID {$boq->id} because its proposal is 'Win'.");
                 }
 
                 $boq->proposal()->dissociate();
@@ -323,9 +323,9 @@ class BoqService
             throw new Exception("BOQ with ID {$id} not found");
         }
 
-        // 🔒 Guard: Prevent BOQ with proposal status 'Approved' from being deleted
-        if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
-            throw new Exception("BOQ cannot be deleted because the associated proposal has already been marked as 'Approved'.");
+        // 🔒 Guard: Prevent BOQ with proposal status 'Win' from being deleted
+        if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
+            throw new Exception("BOQ cannot be deleted because the associated proposal has already been marked as 'Win'.");
         }
 
         $boq->delete();
@@ -344,8 +344,8 @@ class BoqService
             }
 
             $boqs->each(function ($boq) {
-                if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
-                    throw new \Exception("BOQ with ID {$boq->id} cannot be deleted because its proposal is 'Approved'.");
+                if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
+                    throw new \Exception("BOQ with ID {$boq->id} cannot be deleted because its proposal is 'Win'.");
                 }
 
                 $boq->delete();

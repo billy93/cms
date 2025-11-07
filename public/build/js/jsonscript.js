@@ -3908,7 +3908,7 @@ $(document).ready(function () {
 							switch (data) {
 								case 'Draft': return '<span class="badge badge-status bg-secondary">Draft</span>';
 								case 'Submitted': return '<span class="badge badge-status bg-info">Submitted</span>';
-								case 'Approved': return '<span class="badge badge-status bg-success">Approved</span>';
+								case 'Win': return '<span class="badge badge-status bg-success">Win</span>';
 								case 'Rejected': return '<span class="badge badge-status bg-danger">Rejected</span>';
 								case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
 								default: return '<span class="badge badge-status bg-secondary">Unknown</span>';

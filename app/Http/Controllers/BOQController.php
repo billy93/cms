@@ -57,7 +57,7 @@ class BoqController extends Controller
                         : $boq->management_fee
                 )
                 ->addColumn('actions', function ($boq) {
-                    if ($boq->proposal && $boq->proposal->status === 'Approved') {
+                    if ($boq->proposal && $boq->proposal->status === 'Win') {
                         return '
                             <div class="dropdown table-action">
                                 <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">

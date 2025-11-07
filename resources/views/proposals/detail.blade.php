@@ -43,7 +43,7 @@
                     <div id="boqs_section" class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">BOQ Information</h5>
-                            @if($proposal->status !== "Approved")
+                            @if($proposal->status !== "Win")
                                 <div class="d-flex gap-2">
                                     <a  
                                         class="btn btn-outline-primary" 
@@ -184,7 +184,7 @@
                     <div id="invoices_section" class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Invoice Information</h5>
-                            @if($proposal->status === "Approved" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
+                            @if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
                                 <div class="d-flex gap-2">
                                     <a 
                                         href="javascript:void(0);" 
@@ -206,12 +206,12 @@
     </div>
     <!-- /Page Wrapper -->
 
-    @if($proposal->status !== "Approved")
+    @if($proposal->status !== "Win")
         @include('components.boqs.create-modal')
         @include('components.boqs.modal')
     @endif
 
-    @if($proposal->status === "Approved" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
+    @if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
         @include('components.invoices.create-modal')
         @include('components.invoices.modal')
     @endif 
@@ -400,8 +400,8 @@
             switch (status) {
                 case 'Draft': return '<span class="badge badge-status bg-secondary">Draft</span>';
                 case 'Submitted': return '<span class="badge badge-status bg-info">Submitted</span>';
-                case 'Approved': return '<span class="badge badge-status bg-success">Approved</span>';
-                case 'Rejected': return '<span class="badge badge-status bg-danger">Rejected</span>';
+                case 'Win': return '<span class="badge badge-status bg-success">Win</span>';
+                case 'Lose': return '<span class="badge badge-status bg-danger">Lose</span>';
                 case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
                 default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
             }
@@ -511,12 +511,12 @@
     <script src="/build/js/boqs/shared_var.js"></script>
     <script src="/build/js/boqs/datatables.js"></script>
 
-@if($proposal->status !== "Approved")
+@if($proposal->status !== "Win")
     <script src="/build/js/proposals/proposal_2_script.js"></script>
     <script src="/build/js/boqs/events.js"></script>
 @endif
 
-@if($proposal->status === "Approved" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
+@if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
     <script src="/build/js/invoices/events.js"></script>
 @endif
 @endpush

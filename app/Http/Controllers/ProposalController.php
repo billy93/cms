@@ -41,7 +41,7 @@ class ProposalController extends Controller
                     return $items ? "<ul>{$items}</ul>" : '-';
                 })
                 ->addColumn('generate_invoice', function($p) {
-                    if ($p->status !== 'Approved') {
+                    if ($p->status !== 'Win') {
                         return '-';
                     }
 
@@ -65,7 +65,7 @@ class ProposalController extends Controller
                     ';
                 })
                 ->addColumn('actions', function ($p) {
-                    if ($p->status === 'Approved') {
+                    if ($p->status === 'Win') {
                         return '
                             <div class="dropdown table-action">
                                 <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
@@ -159,7 +159,7 @@ class ProposalController extends Controller
                         : $boq->management_fee
                 )
                 ->addColumn('actions', function ($boq) {
-                    if ($boq->proposal && $boq->proposal->status === 'Approved') {
+                    if ($boq->proposal && $boq->proposal->status === 'Win') {
                         return '
                             <div class="dropdown table-action">
                                 <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">

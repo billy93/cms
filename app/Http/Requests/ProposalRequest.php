@@ -35,7 +35,7 @@ class ProposalRequest extends ApiFormRequest
             'project_id' => ['required', 'exists:projects,id'],
             'status' => [
                 'nullable',
-                Rule::in(['Draft', 'Submitted', 'Approved', 'Rejected', 'Cancelled']),
+                Rule::in(['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled']),
             ],
             'boq_ids' => ['nullable', 'array'],
             'boq_ids.*' => ['integer', 'exists:boqs,id'],

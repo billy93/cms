@@ -23,8 +23,8 @@ class InvoiceService
                 throw new Exception("Proposal with ID {$data['proposal_id']} not found.");
             }
             
-            if ($proposal->status !== 'Approved') {
-                throw new Exception("Invoice can only be generated for approved proposals.");
+            if ($proposal->status !== 'Win') {
+                throw new Exception("Invoice can only be generated for win proposals.");
             }
             
             // Ambil hanya BOQ dari proposal yang belum diinvoice
@@ -103,8 +103,8 @@ class InvoiceService
                 throw new Exception("Proposal with ID {$data['proposal_id']} not found.");
             }
             
-            if ($proposal->status !== 'Approved') {
-                throw new Exception("Invoice can only be edited for approved proposals.");
+            if ($proposal->status !== 'Win') {
+                throw new Exception("Invoice can only be edited for win proposals.");
             }
             
             // Ambil hanya BOQ dari proposal yang belum diinvoice

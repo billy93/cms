@@ -140,7 +140,7 @@ class ProposalForm {
     });
 
     const selectStatusOptions = [
-      'Draft', 'Submitted', 'Approved', 'Rejected', 'Cancelled'].map(s => {
+      'Draft', 'Submitted', 'Win', 'Lose', 'Cancelled'].map(s => {
         return `<option value="${s}" ${value.status === s ? "selected" : ""}>${s}</option>`;
       });
 
