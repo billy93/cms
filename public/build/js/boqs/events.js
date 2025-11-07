@@ -49,7 +49,8 @@ class BoqForm {
     'Number of participants',
     'Number of unit',
     'Number of package',
-    'pcs'
+    'Pcs',
+    'Person'
   ];
 
   selectFormType = `
@@ -320,10 +321,11 @@ class BoqForm {
     if (target.matches(".sub-header-input")) {
       const no = target.id[target.id.length - 1];
       const selectInput = this.typeContainer.querySelector(`#subheader_select_${no}`);
-      const amountInput = this.typeContainer.querySelector(`#subheader_select_${no}`);
+      const amountInput = this.typeContainer.querySelector(`#amount_${no}`);
 
       if (selectInput) selectInput.value = "";
       if (amountInput) {
+        amountInput.value = "0";
         amountInput.disabled = false;
       }
 
@@ -644,14 +646,17 @@ class BoqForm {
     `;
 
     const errorTr = document.createElement('tr');
+    errorTr.style.display = "none";
+    errorTr.classList.add("tr-error");
     errorTr.innerHTML = `
-      <td colspan="8">
+      <td colspan="9">
         <small id="items_${id}_error" class="text-danger" style="display:none;"></small>
       </td>
     `;
 
     tr.querySelector(".remove-row-btn").addEventListener("click", () => {
       tr.remove();
+      errorTr.remove();
       if (suffix == "c") {
         this.cRowArr = this.cRowArr.filter(v => v !== id);
       } else if (suffix == "d") {
@@ -852,8 +857,8 @@ class BoqForm {
         <!-- Products and Services Table -->
         <div class="mb-3">
             <label class="col-form-label">Products and Services</label>
-            <div class="card p-3">
-                <div class="table-responsive" style="overflow-x:auto;">
+            <div class="card p-3" style="overflow: hidden;">
+                <div class="table-responsive">
                   <style>
                     #products_services_table td {
                       min-width: 200px;
@@ -987,6 +992,10 @@ class BoqForm {
         if (el) {
           el.innerText = "";
           el.style.display = "none";
+          const trError = el.closest(".tr-error");
+          if (trError) {
+            trError.style.display = "none";
+          }
         }
       });
     }
@@ -1132,7 +1141,7 @@ class BoqForm {
         }
 
         if (!hasAtLeastOne) {
-          this.errors[`items_${idx}_error`] = `Required at least one title key-value pair one row ${idx}.`;
+          this.errors[`items_${idx}_error`] = `Required at least one title key-value pair on row ${idx}.`;
         }
 
         payload.items.push(item);
@@ -1181,6 +1190,10 @@ class BoqForm {
         if (el) {
           el.innerText = this.errors[v];
           el.style.display = "block";
+          const trError = el.closest(".tr-error");
+          if (trError) {
+            trError.style.display = "";
+          }
         }
       });
       this.isFetching = false;

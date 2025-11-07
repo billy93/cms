@@ -78,7 +78,7 @@ class BoqSeeder extends Seeder
               'header' => "BOQ Type B Header",
               'subheader' => $sub,
               'unit_price' => $unitPrice,
-              'title1_key' => 'person',
+              'title1_key' => 'Person',
               'title1_value' => $qty,
               'title2_key' => null,
               'title2_value' => null,
