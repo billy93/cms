@@ -374,9 +374,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = e.target;
 
     if (target.matches("#c_append_boq_btn")) {
+      console.log("AA");
       if (PROPOSAL_APPEND_BOQ_CANVAS_BS && PROPOSAL_APPEND_BOQ_FORM && !IS_FETCHING) {
         PROPOSAL_APPEND_BOQ_CANVAS_BS.show();
         PROPOSAL_APPEND_BOQ_FORM.resetForm();
+
         await PROPOSAL_APPEND_BOQ_FORM.init();
       }
     }

@@ -47,21 +47,17 @@
                                 <div class="d-flex gap-2">
                                     <a  
                                         class="btn btn-outline-primary" 
-                                        id="c_boq_bulk_unbind" 
+                                        id="c_boq_bulk_unbind_btn" 
                                         href="javascript:void(0);" 
                                         data-url="{{ route('boqs.unbindProposal') }}"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#bulk_unbind_boq_modal"
                                         style="display: none;"
                                     >
                                         <i class="ti ti-unlink me-2"></i> Unbind
                                     </a><a  
                                         class="btn btn-outline-primary" 
-                                        id="c_boq_bulk_delete" 
+                                        id="c_boq_bulk_delete_btn" 
                                         href="javascript:void(0);" 
                                         data-url="{{ route('boqs.bulkDelete') }}"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#bulk_delete_boq_modal"
                                         style="display: none;"
                                     >
                                         <i class="ti ti-trash me-2"></i> Delete
@@ -70,8 +66,6 @@
                                         href="javascript:void(0);" 
                                         id="c_append_boq_btn" 
                                         class="btn btn-outline-primary" 
-                                        data-bs-toggle="offcanvas" 
-                                        data-bs-target="#c_proposal_append_boq_canvas"
                                     >
                                         <i class="ti ti-square-rounded-plus me-2"></i>Add Existing BOQ
                                     </a>
@@ -209,6 +203,7 @@
     @if($proposal->status !== "Win")
         @include('components.boqs.create-modal')
         @include('components.boqs.modal')
+        @include('components.proposals.append-boq-modal')
     @endif
 
     @if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
