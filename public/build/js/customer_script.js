@@ -307,6 +307,7 @@ class CustomerForm {
           $('#customer_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
           console.log('Customer created:', result, result.data);
+          this.resetForm()
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -336,6 +337,7 @@ class CustomerForm {
           $('#customer_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
           console.log('Customer updated:', result, result.data);
+          this.resetForm()
         } else {
           console.error('Failed:', result.message || result.errors);
         }
@@ -351,8 +353,6 @@ class CustomerForm {
       this.isFetching = false;
       this.hideLoading();
     }
-
-    this.resetForm()
   }
 }
 

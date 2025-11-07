@@ -33,42 +33,25 @@ class ProposalRequest extends ApiFormRequest
     {
         return [
             'project_id' => ['required', 'exists:projects,id'],
-            'type_of_sales_code' => ['required', Rule::in(['FIT', 'Non FIT'])],
-            'year_of_sales' => ['nullable', 'integer', 'digits:4'],
-            'destination' => ['required', Rule::in(['Indonesia', 'Overseas'])],
-            'city' => ['required', 'string'],
-            'activity' => [
-                'required',
-                Rule::in([
-                    'Awarding',
-                    'Conference and Seminar',
-                    'Exhibitions',
-                    'Gala Dinner',
-                    'Gathering',
-                    'Holidays',
-                    'Incentive Trip',
-                    'Meeting',
-                    'Product Launching',
-                    'Shareholders Meeting (RUPS)',
-                    'Workshop',
-                    'Others',
-                ]),
-            ],
-            'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
-
             'status' => [
                 'nullable',
                 Rule::in(['Draft', 'Submitted', 'Approved', 'Rejected', 'Cancelled']),
             ],
+            'boq_ids' => ['nullable', 'array'],
+            'boq_ids.*' => ['integer', 'exists:boqs,id'],
         ];
     }
 
     protected function updateRules()
     {
-        return array_merge($this->createRules(), [
+        $rules = array_merge($this->createRules(), [
             'id' => 'required|exists:proposals,id',
         ]);
+
+        // Hapus validasi untuk BOQ saat update
+        unset($rules['boq_ids'], $rules['boq_ids.*']);
+
+        return $rules;
     }
 
     public function authorize()

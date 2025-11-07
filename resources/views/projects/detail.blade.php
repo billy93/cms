@@ -1,6 +1,10 @@
-<?php $page = 'projects.show'; ?>
+<?php $page = 'projects.detail'; ?>
 @extends('layout.mainlayout')
 @section('content')
+
+    <!-- BoQ Datatable url -->
+    <div id="boq-route" data-url="{{ route('boqs.index') }}" style="display: none;"></div>
+    
     <!-- Page Wrapper -->
     <div class="page-wrapper">
         <div class="content">
@@ -45,10 +49,8 @@
                                 <div class="d-flex gap-2">
                                     <a 
                                         href="javascript:void(0);" 
-                                        id="c_proposal_add" 
+                                        id="c_proposal_create_btn" 
                                         class="btn btn-primary" 
-                                        data-bs-toggle="offcanvas" 
-                                        data-bs-target="#offcanvas_add"
                                     >
                                     <i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals
                                 </a>
@@ -63,43 +65,8 @@
     </div>
     <!-- /Page Wrapper -->
 
-    <!-- Add New Proposal -->
-    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
-        <div class="offcanvas-header border-bottom">
-            <h4 id="proposal_form_title">Edit Proposal</h4>
-            <button type="button" id="close_proposal_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
-                <i class="ti ti-x"></i>
-            </button>
-        </div>
-        <div class="offcanvas-body">
-            <style>
-				#c_proposal_form td { vertical-align: baseline; } 
-			</style>
-			<form id="c_proposal_form" method="POST"></form>
-        </div>
-    </div>
-    <!-- /Add New Proposal -->
-    
-	<!-- Delete Modal -->
-	<div class="modal fade" id="delete_proposal_modal" tabindex="-1" aria-labelledby="deleteProposalModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="deleteProposalModalLabel">Confirm Delete</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					Are you sure you want to delete this item?
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-danger" id="confirm_delete_proposal">Delete</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Delete Modal -->
-
+    @include('components.proposals.create-modal')
+    @include('components.proposals.modal')
 @endsection
 
 @push('scripts')
@@ -130,45 +97,45 @@
         const customerCode = project.customer ? project.customer.code : '-';
         
         const html = `
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Project Code:</label>
+                    <label class="fw-semibold">Project Code</label>
                     <p class="mb-0">${project.code}</p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Project Status:</label>
+                    <label class="fw-semibold">Project Status</label>
                     <p class="mb-0"><span class="badge ${statusClass}">${project.status.charAt(0).toUpperCase() + project.status.slice(1)}</span></p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Project Name:</label>
+                    <label class="fw-semibold">Project Name</label>
                     <p class="mb-0">${project.name}</p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Customer:</label>
+                    <label class="fw-semibold">Customer</label>
                     <p class="mb-0">${customerName || "-"} ${customerCode ? "(" + customerCode + ")" : ""}</p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Created Date:</label>
+                    <label class="fw-semibold">Created Date</label>
                     <p class="mb-0">${project.created_at ? formatDate(project.created_at) : "-"}</p>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Last Updated:</label>
+                    <label class="fw-semibold">Last Updated</label>
                     <p class="mb-0">${project.updated_at ? formatDate(project.updated_at) : "-"}</p>
                 </div>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Description:</label>
+                    <label class="fw-semibold">Description</label>
                     <p class="mb-0">${project.description || '-'}</p>
                 </div>
             </div>
@@ -179,91 +146,115 @@
 
     function renderProposalInfo(data) {
         const proposalList = data.proposals.map((p, i, a) => {
+            const conditionalActions = p.status !== "Approved" ? 
+            `
+                <button 
+                    class="btn btn-secondary me-2 c_proposal_edit"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvas_add"
+                    data-url="/proposals/${p.id}"
+                >
+                    <i class="ti ti-edit me-1"></i>Edit Proposal
+                </button>
+                <button 
+                    class="btn btn-danger c_proposal_delete"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#delete_proposal_modal"
+                    data-url="/proposals/${p.id}"
+                >
+                    <i class="ti ti-trash me-1"></i>Delete Proposal
+                </button>
+            ` :
+            "";
+
             return `
-                <div class="row ${i !== a.length - 1 ? "pb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
-                    <div class="col-md-6">
+                <div class="row ${i !== a.length - 1 ? "pb-3 mb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Proposal Code:</label>
+                            <label class="fw-semibold">Proposal Code</label>
                             <p class="mb-0">${p.code || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Proposal Status:</label>
+                            <label class="fw-semibold">Proposal Status</label>
                             <p class="mb-0">${p.status ? getProposalStatus(p.status) : "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Type of Sales Code:</label>
+                            <label class="fw-semibold">Type of Sales Code</label>
                             <p class="mb-0">${p.type_of_sales_code || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Sales Code:</label>
+                            <label class="fw-semibold">Sales Code</label>
                             <p class="mb-0">${p.sales_code || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Year of Sales:</label>
+                            <label class="fw-semibold">Year of Sales</label>
                             <p class="mb-0">${p.year_of_sales || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Invoice No:</label>
+                            <label class="fw-semibold">Invoice No</label>
                             <p class="mb-0">${p.invoice_no || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Destination:</label>
+                            <label class="fw-semibold">Destination</label>
                             <p class="mb-0">${p.destination || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">City:</label>
+                            <label class="fw-semibold">City</label>
                             <p class="mb-0">${p.city || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Activity:</label>
+                            <label class="fw-semibold">Activity</label>
                             <p class="mb-0">${p.activity || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Start Date:</label>
+                            <label class="fw-semibold">Start Date</label>
                             <p class="mb-0">${p.date_from ? formatDate(p.date_from) : "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">End Date:</label>
+                            <label class="fw-semibold">End Date</label>
                             <p class="mb-0">${p.date_to ? formatDate(p.date_to) : "-"}</p>
                         </div>
                     </div>
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
+                            <label class="fw-semibold">Created</label>
+                            <p class="mb-0">${p.created_at ? formatDate(p.created_at) : "-"}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
+                            <label class="fw-semibold">Created</label>
+                            <p class="mb-0">${p.updated_at ? formatDate(p.updated_at) : "-"}</p>
+                        </div>
+                    </div>
                     <div class="col-md-12 mt-3">
-                        <button 
-                            class="btn btn-secondary me-2 c_proposal_edit"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvas_add"
-                            data-url="/proposals/${p.id}"
+                        <a 
+                            href="/proposals/${p.id}"
+                            class="btn btn-outline-info me-2"
                         >
-                            <i class="ti ti-edit me-1"></i>Edit Proposal
-                        </button>
-                        <button 
-                            class="btn btn-danger c_proposal_delete"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#delete_proposal_modal"
-                            data-url="/proposals/${p.id}"
-                        >
-                            <i class="ti ti-trash me-1"></i>Delete Proposal
-                        </button>
+                            <i class="ti ti-eye"></i> View Detail
+                        </a>
+                        ${conditionalActions}
                     </div>
                 </div>
             `;
@@ -307,7 +298,7 @@
         loadProjectData(PROJECT_ID);
     });
 </script>
-<script src="/build/js/proposal_script.js"></script>
+<script src="/build/js/proposals/events.js"></script>
 @endpush
 
 

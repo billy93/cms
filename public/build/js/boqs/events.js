@@ -69,7 +69,7 @@ class BoqForm {
       <div class="col-md-6">
         <div class="mb-3">
           <label class="col-form-label">BOQ Code</label>
-          <input type="text" class="form-control" id="boq_code" value="${this.data?.code || "-"}" readonly>
+          <input type="text" class="form-control" id="boq_code" value="${this.data?.code || "-"}" disabled>
         </div>
       </div>
     ` : "";
@@ -81,7 +81,7 @@ class BoqForm {
     let isDisable = false;
 
     try {
-      if (PROPOSAL_ID) {
+      if (!currentProposalId && PROPOSAL_ID) {
         currentProposalId = PROPOSAL_ID;
         isDisable = true;
       }
@@ -194,12 +194,10 @@ class BoqForm {
 
   constructor (formId) {
     this.form = document.getElementById(formId);
-    this.closeForm = document.getElementById("close_boq_form");
+    this.closeForm = document.getElementById("c_boq_canvas_close_btn");
 
     // container buat type (A, B, C, D)
     this.typeContainer = document.createElement("div");
-    this.typeContainer.id = "form_type_container";
-
     this.submitBtnTemplate = document.createElement("template");
     this.submitBtnTemplate.innerHTML = this.submitBtn;
 
@@ -469,13 +467,6 @@ class BoqForm {
 
 
   // ---------------------------------------- INIT ----------------------------------------
-
-  // static async create(formId, mode = "create") {
-  //   const instance = new BoqForm(formId);
-  //   await instance.init(mode);
-  //   return instance;
-  // }
-
   async init(mode = "create", data = {}) {
     this.resetForm();
     this.data = data;
@@ -688,9 +679,9 @@ class BoqForm {
       const adult = parseInt(this.typeContainer.querySelector('#qty_adult').value || 0) * parseFloat(this.typeContainer.querySelector('#price_adult').value || 0);
       const child = parseInt(this.typeContainer.querySelector('#qty_child').value || 0) * parseFloat(this.typeContainer.querySelector('#price_child').value || 0);
       const infant = parseInt(this.typeContainer.querySelector('#qty_infant').value || 0) * parseFloat(this.typeContainer.querySelector('#price_infant').value || 0);
-      this.typeContainer.querySelector('#subtotal_adult').value = this.formatRupiah(adult);
-      this.typeContainer.querySelector('#subtotal_child').value = this.formatRupiah(child);
-      this.typeContainer.querySelector('#subtotal_infant').value = this.formatRupiah(infant);
+      this.typeContainer.querySelector('#subtotal_adult').value = formatRupiah(adult);
+      this.typeContainer.querySelector('#subtotal_child').value = formatRupiah(child);
+      this.typeContainer.querySelector('#subtotal_infant').value = formatRupiah(infant);
       basic = adult + child + infant;
     } else if (this.type === 'C' || this.type === 'D') {
       const subtotalArr = [];
@@ -715,12 +706,12 @@ class BoqForm {
         subtotalArr.push(subtotal);
 
         if (subtotalEl) {
-          subtotalEl.value = this.formatRupiah(subtotal);
+          subtotalEl.value = formatRupiah(subtotal);
         }
       }
 
       const total = subtotalArr.reduce((acc, curr) => acc + curr, 0);
-      this.typeContainer.querySelector(`#total_amount`).value = this.formatRupiah(total);
+      this.typeContainer.querySelector(`#total_amount`).value = formatRupiah(total);
       basic = total;
     }
 
@@ -733,12 +724,12 @@ class BoqForm {
     let invoice = sales + vat;
 
     if (this.type === 'B') {
-      this.typeContainer.querySelector(`#basic_price`).value = this.formatRupiah(basic);
+      this.typeContainer.querySelector(`#basic_price`).value = formatRupiah(basic);
     }
 
-    this.typeContainer.querySelector(`#sales_amount`).value = this.formatRupiah(sales);
-    this.typeContainer.querySelector(`#vat_amount`).value = this.formatRupiah(vat);
-    this.typeContainer.querySelector(`#invoice_amount`).value = this.formatRupiah(invoice);
+    this.typeContainer.querySelector(`#sales_amount`).value = formatRupiah(sales);
+    this.typeContainer.querySelector(`#vat_amount`).value = formatRupiah(vat);
+    this.typeContainer.querySelector(`#invoice_amount`).value = formatRupiah(invoice);
   }
 
   renderTypeA() {
@@ -923,7 +914,7 @@ class BoqForm {
     if (window.$ && $.fn.select2) {
       $('.select').select2({
         width: '100%',
-        dropdownParent: $('#c_boq_form')
+        dropdownParent: $('#c_boq_canvas_form')
       });
 
       // bridge event agar change bisa dideteksi
@@ -987,20 +978,6 @@ class BoqForm {
     return 0;
   }
 
-  formatRupiah(angka) {
-    if (angka === null || angka === undefined || angka === '') return '';
-
-    const num = Number(angka);
-    if (isNaN(num)) return '';
-
-    // Cek apakah ada desimal
-    const hasDecimal = angka.toString().includes('.') || angka.toString().includes(',');
-    return num.toLocaleString('id-ID', {
-      minimumFractionDigits: hasDecimal ? 2 : 0,
-      maximumFractionDigits: hasDecimal ? 2 : 0
-    });
-  }
-
   // ---------------------------------------- DATA & SUBMISSION ----------------------------------------
   resetErrorFields() {
     const errKeys = Object.keys(this.errors);
@@ -1020,6 +997,12 @@ class BoqForm {
     this.resetErrorFields();
     const payload = {};
 
+    const proposalId = document.querySelector('#proposal_id');
+    if (proposalId && parseInt(proposalId.value)) {
+      payload.proposal_id = parseInt(proposalId.value)
+    } else {
+      payload.proposal_id = null;
+    }
 
     const description = this.typeContainer.querySelector(`#description`);
     if (!description || !description.value.trim()) {
@@ -1207,15 +1190,6 @@ class BoqForm {
 
     payload.form_type = this.type;
 
-    const proposalId = document.querySelector('#proposal_id');
-    if (proposalId && parseInt(proposalId.value)) {
-      payload.proposal_id = parseInt(proposalId.value)
-    } else {
-      payload.proposal_id = null;
-    }
-
-    // console.log("Payload", payload);
-
     if (this.mode === "create") {
       try {
         const response = await fetch('/boqs', {
@@ -1229,19 +1203,17 @@ class BoqForm {
         });
 
         const result = await response.json();
-        // console.log(result);
 
         if (response.ok && result.success) {
-          toastr.success(response.message || 'BOQ created successfully!');
           $('#boq_list').DataTable().ajax.reload();
+          showToast("success", response.message || 'BOQ created successfully!');
           if (this.closeForm) this.closeForm.click();
-          // console.log('BOQ created:', result, result.data);
+          this.resetForm()
         } else {
-          console.error('Failed:', result.message || result.errors);
+          showToast("error", `${result.message || result.errors}`);
         }
       } catch (err) {
-        toastr.error('An error occurred while creating BOQ.');
-        console.error('Error:', err);
+        showToast("error", 'An error occurred while creating BOQ.');
       } finally {
         this.isFetching = false;
         this.hideLoading()
@@ -1261,16 +1233,15 @@ class BoqForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          toastr.success(response.message || 'BOQ updated successfully!');
           $('#boq_list').DataTable().ajax.reload();
+          showToast("success", response.message || 'BOQ updated successfully!');
           if (this.closeForm) this.closeForm.click();
-          // console.log('BOQ updated:', result, result.data);
+          this.resetForm()
         } else {
-          console.error('Failed:', result.message || result.errors);
+          showToast("error", `${result.message || result.errors}`);
         }
       } catch (err) {
-        toastr.error('An error occurred while updating BOQ.');
-        console.error('Error:', err);
+        showToast("error", 'An error occurred while updating BOQ.');
       } finally {
         this.isFetching = false;
         this.hideLoading()
@@ -1279,103 +1250,293 @@ class BoqForm {
       alert("Form mode is invalid, it shouldbe either \"create\" or \"edit\".");
       this.isFetching = false;
       this.hideLoading();
-
     }
   }
 }
 
 // ----------------------------------------------- TRIGER -----------------------------------------------
-
 document.addEventListener("DOMContentLoaded", () => {
-  const createBoqBtn = document.querySelector("#c_boq_add");
-  const boqForm = new BoqForm("c_boq_form");
+  const BOQ_CANVAS = document.querySelector("#c_boq_canvas");
+  const BOQ_MODAL = document.querySelector("#c_boq_modal");
+  const BOQ_FORM = BOQ_CANVAS?.querySelector("form#c_boq_canvas_form")
+    ? new BoqForm("c_boq_canvas_form")
+    : null;
+  const BOQ_CANVAS_BS = BOQ_CANVAS ? new bootstrap.Offcanvas(BOQ_CANVAS) : null;
+  const BOQ_MODAL_BS = BOQ_MODAL ? new bootstrap.Modal(BOQ_MODAL) : null;
+  const BOQ_MODAL_TITLE = BOQ_MODAL?.querySelector("#c_boq_modal_title");
+  const BOQ_MODAL_BODY = BOQ_MODAL?.querySelector(".modal-body");
+  const BOQ_CONFIRM_BTN = BOQ_MODAL?.querySelector("#c_boq_modal_confirm_btn");
+  const MODAL_MESSAGES = {
+    unbind: {
+      success: "BoQ has been unbound successfully.",
+      failure: "Failed to unbind BoQ.",
+      error: 'An error occurred while unbinding BoQ.'
+    },
+    delete: {
+      success: "BOQ deleted successfully!",
+      failure: "Failed to delete BOQ.",
+      error: 'An error occurred while deleting BOQ.'
+    },
+    "bulk-unbind": {
+      success: "Selected BoQ(s) have been unbound successfully.",
+      failure: "Failed to unbind selected BoQ(s).",
+      error: 'An error occurred while unbinding selected BoQ(s).'
+    },
+    "bulk-delete": {
+      success: "Selected BoQ(s) deleted successfully!",
+      failure: "Failed to delete selected BoQ(s).",
+      error: 'An error occurred while deleting selected BoQ(s).'
+    }
+  };
 
-  toastr.options = {
-    "closeButton": true,
-    "progressBar": true,
-    "positionClass": "toast-top-right",
-    "timeOut": "3000",
-    "extendedTimeOut": "1000",
-    "hideDuration": "300",
-    "showDuration": "300",
-    "toastClass": "toast show alert alert-success"
+  function resetSelectAll() {
+    const selectAllBtn = document.querySelector("#boq_list #select_all_boq_list");
+    selectAllBtn.checked = false;
   }
 
+  function updateBulkBtn() {
+    console.log(SELECTED_BOQ_ROWS);
 
-  createBoqBtn.addEventListener("click", async (e) => {
-    const title = document.querySelector("#boq_form_title");
-    title.textContent = "Create BOQ";
-    await boqForm.init("create");
-  });
+    const deleteBtn = document.querySelector("#c_boq_bulk_delete_btn");
+    const unbindBtn = document.querySelector("#c_boq_bulk_unbind_btn");
+    if (SELECTED_BOQ_ROWS.length) {
+      if (deleteBtn) {
+        deleteBtn.style.display = "block";
+        deleteBtn.disabled = false;
+      }
+      if (unbindBtn) {
+        unbindBtn.style.display = "block";
+        unbindBtn.disabled = false;
+      }
+    } else {
+      if (deleteBtn) {
+        deleteBtn.style.display = "none";
+        deleteBtn.disabled = true;
+      }
+      if (unbindBtn) {
+        unbindBtn.style.display = "none";
+        unbindBtn.disabled = true;
+      }
+    }
+  }
 
   document.addEventListener("click", async e => {
     const target = e.target;
 
-    if (target.matches(".c_boq_edit")) {
-      // const id = target.getAttribute("data-id");
-      const url = target.getAttribute("data-url");
-
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-        },
-      })
-
-      const resJson = await res.json();
-
-      if (res.ok) {
-        const title = document.querySelector("#boq_form_title");
-        title.textContent = "Edit BOQ";
-        await boqForm.init("edit", resJson.data);
-      } else {
-        console.log("Error on fetching boq for edit form");
+    // CREATE
+    if (target.matches("#c_boq_create_btn")) {
+      e.preventDefault();
+      if (BOQ_CANVAS_BS && BOQ_FORM && !IS_FETCHING) {
+        const title = BOQ_CANVAS.querySelector("#c_boq_canvas_title");
+        title.textContent = "Create BoQ";
+        BOQ_CANVAS_BS.show();
+        BOQ_FORM.resetForm();
+        await BOQ_FORM.init("create");
       }
     }
 
-    if (target.matches(".c_boq_delete")) {
+    // EDIT
+    if (target.matches(".c_boq_edit_btn")) {
       e.preventDefault();
-      const url = target.getAttribute("data-url");
-      const confirmBtn = document.getElementById("confirm_delete_boq");
-      confirmBtn.setAttribute("data-url", url);
+      if (BOQ_CANVAS_BS && BOQ_FORM && !IS_FETCHING) {
+        IS_FETCHING = true;
+
+        const url = target.dataset.url;
+
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+            },
+          })
+
+          const resJson = await response.json();
+
+          if (response.ok && resJson.success) {
+            const title = BOQ_CANVAS.querySelector("#c_boq_canvas_title");
+            title.textContent = "Edit BoQ";
+            BOQ_CANVAS_BS.show();
+            BOQ_FORM.resetForm();
+            await BOQ_FORM.init("edit", resJson.data);
+          } else {
+            showToast("error", resJson.message || "Failed to fetch BoQ data for editing.");
+          }
+        } catch (error) {
+          showToast("error", 'An error occurred while fetching the BoQ data for editing.');
+        } finally {
+          IS_FETCHING = false;
+        }
+      }
     }
 
-    if (target.matches("#confirm_delete_boq")) {
+    // UNBIND SINGLE
+    else if (target.matches(".c_boq_unbind_btn")) {
       e.preventDefault();
+      if (BOQ_MODAL && BOQ_MODAL_BS) {
+        const id = target.dataset.id;
+        const url = target.dataset.url;
+        BOQ_MODAL_TITLE.textContent = "Confirm Unbind BoQ";
+        BOQ_MODAL_BODY.textContent = "Are you sure you want to unbind this BoQ from its proposal?";
+        BOQ_CONFIRM_BTN.textContent = "Yes, Unbind";
+        BOQ_CONFIRM_BTN.setAttribute("data-id", id);
+        BOQ_CONFIRM_BTN.setAttribute("data-url", url);
+        BOQ_CONFIRM_BTN.setAttribute("data-action", "unbind");
+        BOQ_MODAL_BS.show();
+      }
+    }
 
-      const url = target.getAttribute("data-url");
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+    // UNBIND BULK
+    else if (target.matches("#c_boq_bulk_unbind_btn")) {
+      e.preventDefault();
+      if (BOQ_MODAL && BOQ_MODAL_BS) {
+        const url = target.dataset.url;
+        BOQ_MODAL_TITLE.textContent = "Confirm Bulk Unbind BoQ(s)";
+        BOQ_MODAL_BODY.textContent = "Are you sure you want to unbind the selected BoQ(s) from their proposals?";
+        BOQ_CONFIRM_BTN.textContent = "Yes, Unbind";
+        BOQ_CONFIRM_BTN.setAttribute("data-url", url);
+        BOQ_CONFIRM_BTN.setAttribute("data-action", "bulk-unbind");
+        BOQ_MODAL_BS.show();
+      }
+    }
+
+    // DELETE SINGLE
+    else if (target.matches(".c_boq_delete_btn")) {
+      e.preventDefault();
+      if (BOQ_MODAL && BOQ_MODAL_BS) {
+        const id = target.dataset.id;
+        const url = target.dataset.url;
+        BOQ_MODAL_TITLE.textContent = "Confirm Delete BoQ";
+        BOQ_MODAL_BODY.textContent = "Are you sure you want to delete this BoQ? This action cannot be undone.";
+        BOQ_CONFIRM_BTN.textContent = "Yes, Delete";
+        BOQ_CONFIRM_BTN.setAttribute("data-id", id);
+        BOQ_CONFIRM_BTN.setAttribute("data-url", url);
+        BOQ_CONFIRM_BTN.setAttribute("data-action", "delete");
+        BOQ_MODAL_BS.show();
+      }
+    }
+
+    // DELETE BULK 
+    else if (target.matches("#c_boq_bulk_delete_btn")) {
+      e.preventDefault();
+      if (BOQ_MODAL && BOQ_MODAL_BS) {
+        const url = target.dataset.url;
+        BOQ_MODAL_TITLE.textContent = "Confirm Bulk Delete BoQ(s)";
+        BOQ_MODAL_BODY.textContent = "Are you sure you want to delete the selected BoQ(s)? This action cannot be undone.";
+        BOQ_CONFIRM_BTN.textContent = "Yes, Delete";
+        BOQ_CONFIRM_BTN.setAttribute("data-url", url);
+        BOQ_CONFIRM_BTN.setAttribute("data-action", "bulk-delete");
+        BOQ_MODAL_BS.show();
+      }
+    }
+
+    // CONFIRM UNBIND & DELETE (SINGLE & BULK)
+    else if (target.matches("#c_boq_modal_confirm_btn")) {
+      e.preventDefault();
+      if (BOQ_MODAL_BS && IS_FETCHING) return;
+      IS_FETCHING = true;
+
+      const action = target.dataset.action;
+
+      if ((action === "bulk-unbind" || action === "bulk-delete") && !SELECTED_BOQ_ROWS.length) {
+        showToast("error", "No BoQ selected.");
+        IS_FETCHING = false;
+        return;
+      }
 
       try {
-        const response = await fetch(url, {
-          method: "DELETE",
+        let url = target.dataset.url;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+        const options = {
           headers: {
             "X-CSRF-TOKEN": csrfToken,
             "Accept": "application/json"
           }
-        });
+        }
 
+        if (action == "unbind" || action == "bulk-unbind") {
+          options.method = "PATCH";
+        } else if (action == "delete" || action == "bulk-delete") {
+          options.method = "DELETE";
+        }
+
+        if (action === "bulk-unbind") {
+          options.headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify({
+            boq_ids: SELECTED_BOQ_ROWS.map(obj => obj.id)
+          });
+        } else if (action === "bulk-delete") {
+          const ids = SELECTED_BOQ_ROWS.map(obj => obj.id).join(',');
+          url += `?boq_ids=${ids}`;
+        }
+
+        const response = await fetch(url, options);
         const data = await response.json();
 
-        if (data.success) {
-          // Tutup modal
-          const modal = bootstrap.Modal.getInstance(document.getElementById("delete_boq_modal"));
-          modal.hide();
-
-          // DataTable → reload
+        if (response.ok && data.success) {
+          if (action === "unbind" || action === "delete") {
+            const id = target.dataset.id;
+            SELECTED_BOQ_ROWS = [...new Map(
+              SELECTED_BOQ_ROWS.filter(obj => obj.id !== id).map(item => [item.id, item])
+            ).values()];
+          } else if (action === "bulk-unbind" || action === "bulk-delete") {
+            SELECTED_BOQ_ROWS = [];
+          }
+          updateBulkBtn();
+          // resetSelectAll();
           $('#boq_list').DataTable().ajax.reload();
-
-          // Toastr success
-          toastr.success(data.message || "BOQ deleted successfully!");
+          BOQ_MODAL_BS.hide();
+          showToast("success", data.message || MODAL_MESSAGES[action].success);
         } else {
-          toastr.error(data.message || "Failed to delete BOQ.");
+          showToast("error", data.message || MODAL_MESSAGES[action].failure);
         }
       } catch (err) {
-        toastr.error("Server error. Failed to delete BOQ.");
-        console.error(err);
+        showToast("error", MODAL_MESSAGES[action].error);
+      } finally {
+        IS_FETCHING = false;
       }
     }
   });
+
+  document.addEventListener("change", async e => {
+    const target = e.target;
+
+    if (target.matches("#boq_list #select_all_boq_list")) {
+      const checked = target.checked;
+
+      document.querySelectorAll('#boq_list input.row-check').forEach(el => {
+        el.checked = checked;
+
+        if (checked) {
+          SELECTED_BOQ_ROWS.push({
+            id: el.value,
+            code: el.dataset.code
+          });
+        }
+      });
+
+      const unique = new Map(SELECTED_BOQ_ROWS.map(item => [item.id, item]));
+      SELECTED_BOQ_ROWS = Array.from(unique.values());
+      updateBulkBtn();
+    } else if (target.matches("#boq_list input.row-check")) {
+      const checked = target.checked;
+
+      if (!checked) {
+        document.querySelector("#boq_list #select_all_boq_list").checked = false;
+        SELECTED_BOQ_ROWS = SELECTED_BOQ_ROWS.filter(obj => obj.id !== target.value)
+      } else {
+        SELECTED_BOQ_ROWS.push({
+          id: target.value,
+          code: target.dataset.code
+        });
+      }
+
+      const unique = new Map(SELECTED_BOQ_ROWS.map(item => [item.id, item]));
+      SELECTED_BOQ_ROWS = Array.from(unique.values());
+      updateBulkBtn();
+    }
+  })
 });

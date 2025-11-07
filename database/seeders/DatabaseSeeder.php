@@ -20,12 +20,12 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,
-            InvoiceSeeder::class,
             SupplierSeeder::class,       
             ProductCategorySeeder::class,
             ProductSeeder::class,
             ProjectSeeder::class,
             ProposalSeeder::class,
+            InvoiceSeeder::class,
             BoqSeeder::class
         ]);
     }

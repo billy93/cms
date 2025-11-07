@@ -45,7 +45,7 @@
                                                 </ul>
                                             </div>
                                         </div>	
-                                        <a href="javascript:void(0);" id="c_invoice_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add" ><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a>
+                                        <!-- <a href="javascript:void(0);" id="c_invoice_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a> -->
                                     </div>
                                 </div>
                             </div>
@@ -53,7 +53,7 @@
                         </div>
                         <div class="card-body">
                             <!-- Filter -->
-                            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-2 mb-4">
+                            <!-- <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-2 mb-4">
                                 <div class="d-flex align-items-center flex-wrap row-gap-2">
                                     <div class="sort-dropdown drop-down task-drops me-3">
                                         <a href="javascript:void(0);" class="dropdown-toggle"  data-bs-toggle="dropdown">All Invoices </a>
@@ -392,431 +392,39 @@
                                         <a href="{{url('invoice-grid')}}"><i class="ti ti-grid-dots"></i></a>
                                     </div>
                                 </div>	
-                            </div>
+                            </div> -->
                             <!-- /Filter -->
 
                             <!-- Projects List -->
                             <div class="table-responsive custom-table">
 								<table class="table" id="invoice_list" data-url="{{ route('invoices.index') }}">
-                                    asdsad
+                                    <style>
+                                        #invoice_list th.fit, 
+                                        #invoice_list td.fit {
+                                            width: 1% !important; 
+                                            white-space: nowrap; 
+                                        }
+                                    </style>
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>Invoice ID</th>
-                                            <th>Client</th>
-                                            <th>Project</th>
-											<th>Created</th>
-											<th>Bill to</th>
-											<th>Ship to</th>
-											<th>Amount</th>
-											<th>Currency</th>
-											<th>Invoice Date</th>
+                                            <th>ID</th>
+                                            <th>Invoice Code</th>
+                                            <th>Created</th>
+                                            <th>Updated</th>
+                                            <th>Proposal Code</th>
+                                            <th>Sales Code</th>
+                                            <th>Invoice Date</th>
                                             <th>Due Date</th>
-                                            <th>Payment Method</th>
-                                            <th>Description</th>
+                                            <th>Type</th>
                                             <th>Status</th>
-                                            <th>Signature Name</th>
-                                            <th>Signature Image</th>
-                                            <th>Notes</th>
-                                            <th>Terms and conditions</th>
-                                            <th>Subtotal</th>
-                                            <th>Discount</th>
-                                            <th>Extra Discount</th>
-                                            <th>Tax</th>
-                                            <th>Total</th>
-                                            <th class="no-sort text-end">Action</th>
+                                            <th class="no-sort fit text-end">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    @forelse ($invoices as $invoice)
-                                        <tr>
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#{{ $invoice->id }}</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-01.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">NovaWave LLC</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/truellysel.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Truelysell</a></h2>
-                                            </td>
-                                            <td>{{ $invoice->due_date}}</td>
-                                            <td>{{ $invoice->amount}}</td>
-                                            <td>{{ $invoice->amount}}</td>
-                                            <td>{{ $invoice->amount}}</td>
-                                            <td><span class="badge badge-pill badge-status bg-warning">{{ $invoice->status}}</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <!-- <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254057</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-10.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">BlueSky Industries</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/project-01.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Dreamschat</a></h2>
-                                            </td>
-                                            <td>19 Oct 2023</td>
-                                            <td>$1,45,000</td>
-                                            <td>$1,45,000</td>
-                                            <td>$0</td>
-                                            <td><span class="badge badge-pill badge-status bg-success">Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254056</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-08.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">Silver Hawk</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/best.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Truelysell</a></h2>
-                                            </td>
-                                            <td>24 Oct 2023</td>
-                                            <td>$2,15,000</td>
-                                            <td>$1,00,000</td>
-                                            <td>$1,15,000</td>
-                                            <td><span class="badge badge-pill badge-status bg-warning">Partially Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254055</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-07.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">Summit Peak</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/project-02.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Servbook</a></h2>
-                                            </td>
-                                            <td>10 Nov 2023</td>
-                                            <td>$4,80,380</td>
-                                            <td>$4,80,380</td>
-                                            <td>$0</td>
-                                            <td><span class="badge badge-pill badge-status bg-success">Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254054</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-05.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">RiverStone Ventur</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/project-01.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">DreamPOS</a></h2>
-                                            </td>
-                                            <td>18 Nov 2023</td>
-                                            <td>$2,12,000</td>
-                                            <td>$0</td>
-                                            <td>$2,12,000</td>
-                                            <td><span class="badge badge-pill badge-status bg-danger">Unpaid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254053</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-04.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">CoastalStar Co.</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/dream-pos.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Kofejob</a></h2>
-                                            </td>
-                                            <td>20 Nov 2023</td>
-                                            <td>$3,50,000</td>
-                                            <td>$1,50,000</td>
-                                            <td>$2,00,000</td>
-                                            <td><span class="badge badge-pill badge-status bg-warning">Partially Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254052</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-03.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">HarborView</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/servbook.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Doccure</a></h2>
-                                            </td>
-                                            <td>07 Dec 2023</td>
-                                            <td>$1,23,000</td>
-                                            <td>$1,23,000</td>
-                                            <td>$1,23,000</td>
-                                            <td><span class="badge badge-pill badge-status bg-violet">Overdue</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254051</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-02.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">Golden Gate Ltd</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/truellysell.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Best@laundry</a></h2>
-                                            </td>
-                                            <td>14 Dec 2023</td>
-                                            <td>$3,12,500</td>
-                                            <td>$3,12,500</td>
-                                            <td>$0</td>
-                                            <td><span class="badge badge-pill badge-status bg-success">Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254050</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-09.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">Redwood Inc</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/dreamchat.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Dreamsports</a></h2>
-                                            </td>
-                                            <td>22 Dec 2023</td>
-                                            <td>$4,18,000</td>
-                                            <td>$0</td>
-                                            <td>$4,18,000</td>
-                                            <td><span class="badge badge-pill badge-status bg-danger">Unpaid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr >
-                                            <td ><label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>
-                                            </td>
-                                            <td>
-                                                <div class="set-star rating-select"><i class="fa fa-star"></i></div>
-                                            </td>
-                                            <td><a href="#" class="title-name">#1254049</a></td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="{{url('company-details')}}" class="avatar avatar-sm border me-2"><img
-                                                            class="w-auto h-auto" src="{{URL::asset('/build/img/icons/company-icon-01.svg')}}" alt="User Image"></a><a
-                                                        href="{{url('company-details')}}" class="d-flex flex-column">NovaWave LLC</a></h2>
-                                            </td>
-                                            <td>
-                                                <h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto"
-                                                            src="{{URL::asset('/build/img/priority/dreamchat.svg')}}" alt="User Image"></a><a href="#"
-                                                        class="d-flex flex-column">Truelysell</a></h2>
-                                            </td>
-                                            <td>28 Dec 2023</td>
-                                            <td>$5,00,000</td>
-                                            <td>$5,00,000</td>
-                                            <td>$0</td>
-                                            <td><span class="badge badge-pill badge-status bg-success">Paid</span></td>
-                                            <td>
-                                                <div class="dropdown table-action">
-                                                    <a href="#" class="action-icon " data-bs-toggle="dropdown"
-                                                        aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" ><i class="ti ti-edit text-blue"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i>Delete</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr> -->
-                                        @empty
-                                        <tr>
-                                            <td colspan="11" class="text-center">No invoices found.</td>
-                                        </tr>
-                                    @endforelse
                                     </tbody>
                                 </table>								
                             </div>
-                            <div class="row align-items-center" style="row-gap: 1em;">
+                            <div class="row align-items-center mt-2" style="row-gap: 1em;">
 								<div class="col-md-6">
 									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
 										<div class="datatable-info"></div>
@@ -827,17 +435,17 @@
 									<div class="datatable-paginate"></div>
 								</div>
 							</div>
-							<!-- /Projects List -->
-
                         </div>
 					</div>
-
                 </div>
             </div>
-
         </div>
     </div>
 
-    @component('components.model-popup')
-    @endcomponent
+    @include('components.invoices.create-modal')
+    @include('components.invoices.modal')
 @endsection
+
+@push('scripts')
+    <script src="/build/js/invoices/events.js"></script>
+@endpush

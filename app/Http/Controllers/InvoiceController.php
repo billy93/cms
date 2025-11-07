@@ -31,135 +31,137 @@ class InvoiceController extends Controller
         
         if($request->ajax())
         {
-            $invoices = Invoice::query();
+            $invoices = Invoice::with(['customer', 'proposal', 'boqs']);
+
             $result = DataTables::eloquent($invoices)
-            ->addColumn('ship_to', function($invoice) {
-                return '<div style="width:300px; white-space:normal; word-wrap:break-word;">'
-                    . e($invoice->ship_to) .
-                    '</div>';
-            })
-            ->addColumn("created_at", function($invoice) {
-                return Carbon::parse($invoice->created_at)->format('d-M-Y');
-            }) 
-            ->addColumn('description', function($invoice) {
-                return '<div style="width:300px; white-space:normal; word-wrap:break-word;">'
-                    . e($invoice->description) .
-                    '</div>';
-            })
-            ->addColumn('terms_and_conditions', function($invoice) {
-                return '<div style="width:300px; white-space:normal; word-wrap:break-word;">'
-                    . e($invoice->terms_and_conditions) .
-                    '</div>';
-            })
-            ->addColumn('notes', function($invoice) {
-                return '<div style="width:300px; white-space:normal; word-wrap:break-word;">'
-                    . e($invoice->notes) .
-                    '</div>';
-            })
-            ->addColumn('status', function($invoice) {
-                $status = strtolower($invoice->status);
-            
-                $map = [
-                    'paid' => ['label' => 'Paid', 'class' => 'bg-success'],
-                    'pending' => ['label' => 'Pending', 'class' => 'bg-warning'],
-                    'canceled' => ['label' => 'Canceled', 'class' => 'bg-danger'],
-                    'overdue' => ['label' => 'Overdue', 'class' => 'bg-violet'], 
-                ];
-            
-                $statusData = $map[$status] ?? ['label' => ucfirst($status), 'class' => 'bg-secondary'];
-            
-                return '<span class="badge badge-pill badge-status ' . $statusData['class'] . '">' . $statusData['label'] . '</span>';
-            })
-            ->addColumn('actions', function($invoice) {
-                return '
-                    <div class="dropdown table-action">
-                        <a href="javascript:void(0)" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-ellipsis-v"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a 
-                                id="c_invoice_edit" 
-                                class="dropdown-item" 
-                                href="javascript:void(0)" 
-                                data-id="'.$invoice->id.'" 
-                                data-url="'.route('invoices.read', ['invoice_id' => $invoice->id]).'"
-                                data-bs-toggle="offcanvas" 
-                                data-bs-target="#offcanvas_edit">
-                                <i class="ti ti-edit text-blue"></i> Edit
+                ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
+                ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
+                ->addColumn('actions', function($invoice) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="javascript:void(0)" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
                             </a>
-                            <a 
-                                id="c_invoice_delete" 
-                                class="dropdown-item" 
-                                href="javascript:void(0)" 
-                                data-id="'.$invoice->id.'" 
-                                data-url="'.route('invoices.delete', ['invoice_id' => $invoice->id]).'"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#delete_invoice_modal">
-                                <i class="ti ti-trash text-danger"></i> Delete
-                            </a>
-                            <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a>
-                            <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a>
-                            <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a>
-                            <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a>
-                            <a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a  
+                                    class="dropdown-item" 
+                                    href="'.route('invoices.read', ['invoice_id' => $invoice->id]).'"
+                                >
+                                    <i class="ti ti-eye text-info"></i> View Detail
+                                </a>
+                                <a 
+                                    class="dropdown-item c_invoice_edit_btn" 
+                                    href="javascript:void(0)" 
+                                    data-url="'.route('invoices.read', ['invoice_id' => $invoice->id]).'"
+                                >
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a 
+                                    class="dropdown-item c_invoice_delete_btn" 
+                                    href="javascript:void(0)" 
+                                    data-url="'.route('invoices.delete', ['invoice_id' => $invoice->id]).'"
+                                >
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                ';
-                }
-            )
-            ->rawColumns(['description', 'notes', 'status', 'ship_to', 'terms_and_conditions', 'actions'])
-            ->make(true);
-            \Log::info('Response (invoices.index): ' . json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                    ';
+                    }
+                )
+                ->rawColumns(['description', 'notes', 'status', 'ship_to', 'terms_and_conditions', 'actions'])
+                ->make(true);
+                
             return $result; 
         }
 
         return view('invoices');
     }
 
-    public function create(InnvoiceRequest $request): JsonResponse
+    
+    public function create(InvoiceRequest $request): JsonResponse
     {
-        $invoice = $this->invoiceService->createInvoice($request->validated());            
-        return response()->json([
-            'status' => 'success',
-            'data' => $invoice
-        ], 201);
+        try {
+            $invoice = $this->invoiceService->createInvoice($request->validated());
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice created successfully',
+                'data' => $invoice
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to create Invoice'
+            ], 500);
+        }
     }
 
     public function readAll(): JsonResponse
     {
-        $invoices = $this->invoiceService->getAllInvoices();
-        return response()->json([
-            'status' => 'success',
-            'data' => $invoices
-        ], 200);
+        try {
+            $invoices = $this->invoiceService->getAllInvoices();
+            return response()->json([
+                'status' => 'success',
+                'data' => $invoices
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Internal Server Error'
+            ], 500);
+        }
     }
 
-    public function read($invoice_id): JsonResponse
+    public function read(Request $request, $invoice_id)
     {
+        if($request->wantsJson() || $request->ajax()) {
+            try {
+                $invoice = $this->invoiceService->getInvoiceById($invoice_id);
+                return response()->json([
+                    'success' => true,
+                    'data' => $invoice
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Internal Server Error'
+                ], 500);
+            }
+        }
+         
         $invoice = $this->invoiceService->getInvoiceById($invoice_id);
-     \Log::info(json_encode($invoice, JSON_PRETTY_PRINT));
-        return response()->json([
-            'status' => 'success',
-            'data' => $invoice
-        ], 200);
+        return view('invoices.detail', compact('invoice'));
     }
 
-    public function update(InnvoiceRequest $request, $invoice_id): JsonResponse
+    public function update(InvoiceRequest $request): JsonResponse
     {
-        $validatedData = $request->validated();
-        $invoice = $this->invoiceService->updateInvoice($invoice_id, $validatedData);
-        return response()->json([
-            'status' => 'success',
-            'data' => $invoice
-        ], 200);
+        try {
+            $invoice = $this->invoiceService->updateInvoice($request->validated());
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice updated successfully',
+                'data' => $invoice
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Internal Server Error'
+            ], 500);
+        }
     }
 
     public function delete($invoice_id): JsonResponse
     {
-        $this->invoiceService->deletePermission($invoice_id);
-        return response()->json([
-            'status' => 'success',
-            'message' => "Permission with ID {$invoice_id} deleted successfully"
-        ], 200);
+        try {
+            $this->invoiceService->deleteInvoice($invoice_id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Internal Server Error'
+            ], 500);
+        }
     }
 }

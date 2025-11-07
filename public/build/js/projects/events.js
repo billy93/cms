@@ -8,12 +8,26 @@ class ProjectForm {
     this.form = document.getElementById(formId);
     this.closeForm = document.getElementById("close_project_form");
 
+    this.handleDocumentInput = this.handleDocumentInput.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this)
 
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.handleSubmit()
     });
+
+    document.addEventListener("input", this.handleDocumentInput);
+  }
+
+  async handleDocumentInput(e) {
+    const target = e.target;
+
+    if (target.matches("input[data-type='currency']")) {
+      let value = e.target.value.replace(/[^\d,]/g, '');
+      let parts = value.split(',');
+      let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      target.value = parts[1] !== undefined ? `${integerPart},${parts[1]}` : integerPart;
+    }
   }
 
   // ---------------------------------------- FETCHER ----------------------------------------
@@ -33,7 +47,6 @@ class ProjectForm {
         return response.json();
       })
       .then(res => {
-        console.log(res.data);
         this.customers = res.data;
       })
       .catch(err => {
@@ -50,7 +63,6 @@ class ProjectForm {
     this.resetForm();
     this.data = data;
     this.mode = mode;
-    console.log(this.data);
 
     // await this.fetchProducts();
     await this.fetchCustomers();
@@ -69,6 +81,11 @@ class ProjectForm {
       customer_id: "",
       code: "",
       name: "",
+      ref_doc_no: "",
+      value: "",
+      start_date: "",
+      end_date: "",
+      due_date: "",
       description: "",
       status: "",
     }
@@ -77,6 +94,17 @@ class ProjectForm {
       value.customer_id = this.data.customer_id || "";
       value.code = this.data.code || "";
       value.name = this.data.name || "";
+      value.ref_doc_no = this.data.ref_doc_no || "";
+      value.value = this.data.value || "";
+      value.start_date = this.data.start_date
+        ? moment(this.data.start_date).format("YYYY-MM-DD")
+        : "";
+      value.end_date = this.data.end_date
+        ? moment(this.data.end_date).format("YYYY-MM-DD")
+        : "";
+      value.due_date = this.data.due_date
+        ? moment(this.data.due_date).format("YYYY-MM-DD")
+        : "";
       value.description = this.data.description || "";
       value.status = this.data.status || "";
 
@@ -153,16 +181,60 @@ class ProjectForm {
       <div>
         <div class="row">
           ${dynamic}
-          <div class="col-md-12">
+          <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Name<span class="text-danger">*</span></label>
               <input type="text" id="input_name" class="form-control" value="${value.name}">
+              <small id="input_name_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
-            <small id="input_name_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Ref Doc. No.<span class="text-danger">*</span></label>
+              <input type="text" id="input_ref_doc_no" class="form-control" value="${value.ref_doc_no}">
+              <small id="input_ref_doc_no_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Value<span class="text-danger">*</span></label>
+              <input type="text" id="input_value" class="form-control" value="${value.value}" data-type="currency">
+              <small id="input_value_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Start Date<span class="text-danger">*</span></label>
+              <div class="icon-form">
+                <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
+                <input id="input_start_date" type="text" class="form-control datetimepicker" placeholder="DD/MM/YY" value="${value.start_date}">
+              </div>
+              <small id="input_start_date_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">End Date<span class="text-danger">*</span></label>
+              <div class="icon-form">
+                <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
+                <input id="input_end_date" type="text" class="form-control datetimepicker" placeholder="DD/MM/YY" value="${value.end_date}">
+              </div>
+              <small id="input_end_date_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Due Date<span class="text-danger">*</span></label>
+              <div class="icon-form">
+                <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
+                <input id="input_due_date" type="text" class="form-control datetimepicker" placeholder="DD/MM/YY" value="${value.due_date}">
+              </div>
+              <small id="input_due_date_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
           </div>
           <div class="col-md-12">
             <div class="mb-3">
-              <label class="col-form-label">Project Description<span class="text-danger">*</span></label>
+              <label class="col-form-label">Project Description</label>
               <textarea class="form-control" id="input_description">${value.description}</textarea>
               <small id="input_description_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
@@ -176,13 +248,33 @@ class ProjectForm {
     `;
   }
 
-
   initPlugins() {
     // SELECT2 (if using select with class="select", no need when using class="form-select")
     if (window.$ && $.fn.select2) {
       $('.select').select2({
         width: '100%',
         dropdownParent: $('#c_project_form')
+      });
+    }
+    console.log("X");
+
+    if ($('.datetimepicker').length && $.fn.datetimepicker) {
+      $('.datetimepicker').each(function () {
+        console.log("A");
+
+        const el = $(this);
+        const rawValue = el.val();
+        const isIso = rawValue && moment(rawValue, moment.ISO_8601, true).isValid();
+        const parsedDate = isIso ? moment(rawValue) : null;
+
+        el.datetimepicker({
+          format: 'DD/MM/YY',
+          date: parsedDate || null,
+        });
+
+        if (isIso) {
+          el.val(parsedDate.format('DD/MM/YY'));
+        }
       });
     }
   }
@@ -257,21 +349,70 @@ class ProjectForm {
       status: status.value,
     };
 
-    if (!payload.customer_id) {
-      this.errors["input_customer_id_error"] = "Project is required."
-    }
+    const inputs = [
+      {
+        field: "input_customer_id",
+        required: true,
+        message: "Project is required."
+      },
+      {
+        field: "input_name",
+        required: true,
+        message: "Name is required."
+      },
+      {
+        field: "input_ref_doc_no",
+        required: true,
+        message: "Ref Doc. No. is required."
+      },
+      {
+        field: "input_value",
+        required: true,
+        message: "Value is required."
+      },
+      {
+        field: "input_start_date",
+        date: true,
+        required: true,
+        message: "Start Date is required."
+      },
+      {
+        field: "input_end_date",
+        date: true,
+        required: true,
+        message: "End Date is required."
+      },
+      {
+        field: "input_due_date",
+        date: true,
+        required: true,
+        message: "Due Date is required."
+      }, {
+        field: "input_status",
+        required: true,
+        message: "Status is required."
+      },
+      {
+        field: "input_description",
+        required: false,
+        message: "Description is required."
+      },
+    ];
 
-    if (!payload.name) {
-      this.errors["input_name_error"] = "Type of Sales Code is required."
-    }
+    inputs.forEach(id => {
+      const el = this.form.querySelector("#" + id.field);
+      let value = el ? el.value.trim() : "";
 
-    if (!payload.description) {
-      this.errors["input_description_error"] = "description is required."
-    }
+      if (value && id.date) {
+        value = moment(value, 'DD/MM/YY').format('YYYY-MM-DD')
+      }
 
-    if (!payload.status) {
-      this.errors["input_status_error"] = "Status is required."
-    }
+      payload[id.field.replace("input_", "")] = value;
+
+      if (!value && id.required) {
+        this.errors[id.field + "_error"] = id.message;
+      }
+    });
 
     return payload;
   }
@@ -295,8 +436,7 @@ class ProjectForm {
       this.hideLoading()
       return;
     }
-
-    console.log("Payload", payload);
+    console.log(">>>", payload)
 
     if (this.mode === "create") {
       try {
@@ -313,16 +453,15 @@ class ProjectForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          toastr.success(response.message || 'Project created successfully!');
+          showToast("success", response.message || 'Project created successfully!');
           $('#project_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('Project created:', result, result.data);
+          this.resetForm()
         } else {
-          console.error('Failed:', result.message || result.errors);
+          showToast("error", `${result.message || result.errors}`);
         }
       } catch (err) {
-        toastr.error('An error occurred while creating Project.');
-        console.error('Error:', err);
+        showToast("error", 'An error occurred while creating Project.');
       } finally {
         this.isFetching = false;
         this.hideLoading()
@@ -342,16 +481,15 @@ class ProjectForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          toastr.success(response.message || 'Project updated successfully!');
+          showToast("success", response.message || 'Project updated successfully!');
           $('#project_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
-          console.log('Project updated:', result, result.data);
+          this.resetForm()
         } else {
-          console.error('Failed:', result.message || result.errors);
+          showToast("error", `${result.message || result.errors}`);
         }
       } catch (err) {
-        toastr.error('An error occurred while updating Project.');
-        console.error('Error:', err);
+        showToast("error", 'An error occurred while updating Project.');
       } finally {
         this.isFetching = false;
         this.hideLoading()
@@ -361,8 +499,6 @@ class ProjectForm {
       this.isFetching = false;
       this.hideLoading();
     }
-
-    this.resetForm()
   }
 }
 
@@ -414,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
         title.textContent = "Edit Project";
         await projectForm.init("edit", resJson.data);
       } else {
-        console.log("Error on fetching project for edit form");
+        showToast("error", resJson.message || "Failed to fetch Project data for editing.");
       }
     }
 
@@ -452,13 +588,12 @@ document.addEventListener("DOMContentLoaded", () => {
           $('#project_list').DataTable().ajax.reload();
 
           // Toastr success
-          toastr.success(data.message || "Project deleted successfully!");
+          showToast("success", data.message || "Project deleted successfully!");
         } else {
-          toastr.error(data.message || "Failed to delete Project.");
+          showToast("error", data.message || "Failed to delete Project.");
         }
       } catch (err) {
-        toastr.error("Server error. Failed to delete Project.");
-        console.error(err);
+        showToast("error", "Server error. Failed to delete Project.");
       }
     }
   })

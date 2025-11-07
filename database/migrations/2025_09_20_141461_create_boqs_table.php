@@ -18,6 +18,11 @@ return new class extends Migration
                   ->constrained('proposals')
                   ->cascadeOnDelete();
 
+            $table->foreignId('invoice_id')
+                ->nullable()
+                ->constrained('invoices')
+                ->nullOnDelete();
+                  
             // Jenis form
             $table->enum('form_type', ['A', 'B', 'C', 'D'])
                   ->default('A');

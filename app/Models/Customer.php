@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,9 +35,13 @@ class Customer extends Model
      */
     public static function generateCode(): string
     {
-        $prefix = 'CUST' . date('Y');
-        $random = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        return "{$prefix}{$random}";
+        $date = Carbon::now()->format('Ymd');
+        do {
+            $random = strtoupper(Str::random(5));
+            $code = "PRJ-{$date}-{$random}";
+        } while (Boq::where('code', $code)->exists()); 
+
+        return $code;
     }
 
     /**

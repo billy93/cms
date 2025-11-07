@@ -1,20 +1,7 @@
 
 $(document).ready(function () {
 
-	// Helpers
-	function formatRupiah(angka) {
-		if (angka === null || angka === undefined || angka === '') return '';
 
-		const num = Number(angka);
-		if (isNaN(num)) return '';
-
-		// Cek apakah ada desimal
-		const hasDecimal = angka.toString().includes('.') || angka.toString().includes(',');
-		return num.toLocaleString('id-ID', {
-			minimumFractionDigits: hasDecimal ? 2 : 0,
-			maximumFractionDigits: hasDecimal ? 2 : 0
-		});
-	}
 
 
 	// Categories List
@@ -3888,7 +3875,12 @@ $(document).ready(function () {
 			"ajax": {
 				"url": $('#proposal_list').data('url'),
 				"type": "GET",
-				"dataSrc": "data"
+				"dataSrc": function (json) {
+					console.log(json);
+
+					// Pastikan data diubah ke format yang sesuai untuk DataTable
+					return json.data;
+				}
 			},
 			columns: [
 				{ data: 'id', visible: false },
@@ -3900,23 +3892,14 @@ $(document).ready(function () {
 					}
 				},
 				{
+					data: 'updated_at',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
+				},
+				{
 					data: 'project_code',
 					orderable: false,
-				},
-				{ data: 'destination' },
-				{ data: 'city' },
-				{ data: 'activity' },
-				{
-					data: 'date_from',
-					render: function (data, type, row) {
-						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-					}
-				},
-				{
-					data: 'date_to',
-					render: function (data, type, row) {
-						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-					}
 				},
 				{
 					data: 'status',
@@ -3934,24 +3917,17 @@ $(document).ready(function () {
 						return data;
 					}
 				},
-				{ data: 'type_of_sales_code' },
 				{
 					data: 'sales_code',
 					render: function (data, type, row) {
 						return data && data.trim() !== '' ? data : '-';
 					}
 				},
+				{ data: 'invoice_codes' },
 				{
-					data: 'year_of_sales',
-					render: function (data, type, row) {
-						return data && data.trim() !== '' ? data : '-';
-					}
-				},
-				{
-					data: 'invoice_no',
-					render: function (data, type, row) {
-						return data && data.trim() !== '' ? data : '-';
-					}
+					data: 'generate_invoice',
+					orderable: false,
+					searchable: false
 				},
 				{
 					data: 'actions',
@@ -3960,7 +3936,7 @@ $(document).ready(function () {
 				}
 			],
 			columnDefs: [
-				{ targets: [3, 4, 7], width: '1%', className: 'text-nowrap' } // fit-content
+				// { targets: [15], width: '1%', className: 'text-nowrap' } // fit-content
 			]
 		});
 	}
@@ -4143,14 +4119,15 @@ $(document).ready(function () {
 		});
 	}
 
-	// Proposals List
-
-	if ($('#invoices-list').length > 0) {
-		$('#invoices-list').DataTable({
+	// INVOICE DATATABLE
+	if ($('#invoice_list').length > 0) {
+		$('#invoice_list').DataTable({
+			"serverSide": true,
 			"bFilter": false,
 			"bInfo": false,
 			"ordering": true,
 			"autoWidth": true,
+			"order": [["0", "desc"]],
 			"language": {
 				search: ' ',
 				sLengthMenu: '_MENU_',
@@ -4158,221 +4135,85 @@ $(document).ready(function () {
 				info: "_START_ - _END_ of _TOTAL_ items",
 				"lengthMenu": "Show _MENU_ entries",
 				paginate: {
-					next: 'Next <i class=" fa fa-angle-right"></i> ',
-					previous: '<i class="fa fa-angle-left"></i> Prev '
+					next: 'Next <i class="fa fa-angle-right"></i>',
+					previous: '<i class="fa fa-angle-left"></i> Prev'
 				},
 			},
 			initComplete: (settings, json) => {
 				$('.dataTables_paginate').appendTo('.datatable-paginate');
 				$('.dataTables_length').appendTo('.datatable-length');
 			},
-			"data": [
+			"ajax": {
+				"url": $('#invoice_list').data('url'),
+				"type": "GET",
+				"dataSrc": function (json) {
+					console.log(json);
+
+					// Pastikan data diubah ke format yang sesuai untuk DataTable
+					return json.data;
+				}
+			},
+			columns: [
+				{ data: 'id', visible: false },
+				{ data: 'code', orderable: false },
 				{
-					"id": "#1254058",
-					"si_no": "",
-					"star": "",
-					"sent_to": "NovaWave LLC",
-					"pro_img": "build/img/priority/truellysel.svg",
-					"client_img": "build/img/icons/company-icon-01.svg",
-					"amount": "$2,15,000",
-					"paid_amount": "$2,15,000",
-					"balance_amount": "$0",
-					"project": "Truelysell",
-					"due_date": "21 May 2024",
-					"status": "1",
-					"status_name": "Partially Paid",
-					"Action": ""
+					data: 'created_at',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
 				},
 				{
-					"id": "#1254057",
-					"si_no": "",
-					"star": "",
-					"sent_to": "BlueSky Industries",
-					"pro_img": "build/img/priority/project-01.svg",
-					"client_img": "build/img/icons/company-icon-10.svg",
-					"amount": "$1,45,000",
-					"paid_amount": "$1,45,000",
-					"balance_amount": "$0",
-					"project": "Dreamschat",
-					"due_date": "19 Oct 2023",
-					"status": "0",
-					"status_name": "Paid",
-					"Action": ""
+					data: 'updated_at',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
+				},
+				{ data: 'proposal_code', orderable: false },
+				{ data: 'sales_code', orderable: false },
+				{
+					data: 'invoice_date',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
 				},
 				{
-					"id": "#1254056",
-					"si_no": "",
-					"star": "",
-					"sent_to": "Silver Hawk",
-					"pro_img": "build/img/priority/best.svg",
-					"client_img": "build/img/icons/company-icon-08.svg",
-					"amount": "$2,15,000",
-					"paid_amount": "$1,00,000",
-					"balance_amount": "$1,15,000",
-					"project": "Truelysell",
-					"due_date": "24 Oct 2023",
-					"status": "1",
-					"status_name": "Partially Paid",
-					"Action": ""
+					data: 'due_date',
+					render: function (data, type, row) {
+						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+					}
 				},
 				{
-					"id": "#1254055",
-					"si_no": "",
-					"star": "",
-					"sent_to": "Summit  Peak",
-					"pro_img": "build/img/priority/project-02.svg",
-					"client_img": "build/img/icons/company-icon-07.svg",
-					"amount": "$4,80,380",
-					"paid_amount": "$4,80,380",
-					"balance_amount": "$0",
-					"project": "Servbook",
-					"due_date": "10 Nov 2023",
-					"status": "0",
-					"status_name": "Paid",
-					"Action": ""
+					data: 'type',
+					render: function (data, type, row) {
+						if (type === 'display') {
+							switch (data) {
+								case 'Partial': return '<span class="badge badge-status bg-secondary">Partial</span>';
+								case 'Full': return '<span class="badge badge-status bg-success">Full</span>';
+								default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+							}
+						}
+						return data;
+					}
+				}, {
+					data: 'status',
+					render: function (data, type, row) {
+						if (type === 'display') {
+							switch (data) {
+								case 'Unpaid': return '<span class="badge badge-status bg-secondary">Unpaid</span>';
+								case 'Paid': return '<span class="badge badge-status bg-success">Paid</span>';
+								case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
+								default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+							}
+						}
+						return data;
+					}
 				},
 				{
-					"id": "#1254054",
-					"si_no": "",
-					"star": "",
-					"sent_to": "RiverStone Ventur",
-					"pro_img": "build/img/priority/project-01.svg",
-					"client_img": "build/img/icons/company-icon-05.svg",
-					"amount": "$2,12,000",
-					"paid_amount": "$0",
-					"balance_amount": "$2,12,000",
-					"project": "DreamPOS",
-					"due_date": "18 Nov 2023",
-					"status": "2",
-					"status_name": "Unpaid",
-					"Action": ""
-				},
-				{
-					"id": "#1254053",
-					"si_no": "",
-					"star": "",
-					"sent_to": "CoastalStar Co.",
-					"pro_img": "build/img/priority/dream-pos.svg",
-					"client_img": "build/img/icons/company-icon-04.svg",
-					"amount": "$3,50,000",
-					"paid_amount": "$1,50,000",
-					"balance_amount": "$2,00,000",
-					"project": "Kofejob",
-					"due_date": "20 Nov 2023",
-					"status": "1",
-					"status_name": "Partially Paid",
-					"Action": ""
-				},
-				{
-					"id": "#1254052",
-					"si_no": "",
-					"star": "",
-					"sent_to": "HarborView",
-					"pro_img": "build/img/priority/servbook.svg",
-					"client_img": "build/img/icons/company-icon-03.svg",
-					"amount": "$1,23,000",
-					"paid_amount": "$1,23,000",
-					"balance_amount": "$1,23,000",
-					"project": "Doccure",
-					"due_date": "07 Dec 2023",
-					"status": "3",
-					"status_name": "Overdue",
-					"Action": ""
-				},
-				{
-					"id": "#1254051",
-					"si_no": "",
-					"star": "",
-					"sent_to": "Golden Gate Ltd",
-					"pro_img": "build/img/priority/truellysell.svg",
-					"client_img": "build/img/icons/company-icon-02.svg",
-					"amount": "$3,12,500",
-					"paid_amount": "$3,12,500",
-					"balance_amount": "$0",
-					"project": "Best@laundry",
-					"due_date": "14 Dec 2023",
-					"status": "0",
-					"status_name": "Paid",
-					"Action": ""
-				},
-				{
-					"id": "#1254050",
-					"si_no": "",
-					"star": "",
-					"sent_to": "Redwood Inc",
-					"pro_img": "build/img/priority/dreamchat.svg",
-					"client_img": "build/img/icons/company-icon-09.svg",
-					"amount": "$4,18,000",
-					"paid_amount": "$0",
-					"balance_amount": "$4,18,000",
-					"project": "Dreamsports",
-					"due_date": "22 Dec 2023",
-					"open_till": "07 Dec 2024 ",
-					"status": "2",
-					"status_name": "Unpaid",
-					"Action": ""
-				},
-				{
-					"id": "#1254049",
-					"si_no": "",
-					"star": "",
-					"sent_to": "NovaWave LLC",
-					"pro_img": "build/img/priority/dreamchat.svg",
-					"client_img": "build/img/icons/company-icon-01.svg",
-					"amount": "$5,00,000",
-					"paid_amount": "$5,00,000",
-					"balance_amount": "$0",
-					"project": "Truelysell",
-					"due_date": "28 Dec 2023",
-					"status": "0",
-					"status_name": "Paid",
-					"Action": ""
-				},
+					data: 'actions',
+					orderable: false,
+					searchable: false
+				}
 			],
-			"columns": [
-				{
-					"render": function (data, type, row) {
-						return '<label class="checkboxs"><input type="checkbox"><span class="checkmarks"></span></label>';
-					}
-				},
-
-				{
-					"render": function (data, type, row) {
-						return '<div class="set-star rating-select"><i class="fa fa-star"></i></div>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<a href="#" class="title-name">' + row['id'] + '</a>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="company-details" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['client_img'] + '" alt="User Image"></a><a href="company-details">' + row['sent_to'] + '</a></h2>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<h2 class="d-flex align-items-center"><a href="#" class="avatar avatar-sm border me-2"><img class="w-auto h-auto" src="' + row['pro_img'] + '" alt="User Image"></a><a href="#">' + row['project'] + '</a></h2>';
-					}
-				},
-				{ "data": "due_date" },
-				{ "data": "amount" },
-				{ "data": "paid_amount" },
-				{ "data": "balance_amount" },
-				{
-					"render": function (data, type, row) {
-						if (row['status'] == "0") { var class_name = "success"; var status_name = "Paid" } else if (row['status'] == "1") { var class_name = "warning"; var status_name = "Partially Paid" } else if (row['status'] == "2") { var class_name = "danger"; var status_name = "Unpaid" } else if (row['status'] == "3") { var class_name = "violet"; var status_name = "Overdue" }
-						return '<span class="badge badge-pill badge-status bg-' + class_name + '" >' + status_name + '</span>';
-					}
-				},
-				{
-					"render": function (data, type, row) {
-						return '<div class="dropdown table-action"><a href="#" class="action-icon " data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a><div class="dropdown-menu dropdown-menu-right"><a class="dropdown-item " data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit" href="#"><i class="ti ti-edit text-blue"></i> Edit</a><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_invoices"><i class="ti ti-trash text-danger"></i> Delete</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-clipboard-copy text-green"></i> View Invoices</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-checks text-success"></i> Mark as Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-file text-tertiary"></i> Mark as Partially Paid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-sticker text-blue"></i> Mark ad Unpaid</a><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-printer text-info"></i> Print</a></div></div>';
-					}
-				},
-
-			]
 
 		});
 	}
@@ -5940,112 +5781,7 @@ $(document).ready(function () {
 	// 	});
 	// }
 
-	if ($('#boq_list').length > 0) {
-		$('#boq_list').DataTable({
-			"serverSide": true,
-			"bFilter": false,
-			"bInfo": false,
-			"ordering": true,
-			"autoWidth": true,
-			"order": [[0, "desc"]],
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				info: "_START_ - _END_ of _TOTAL_ items",
-				"lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class="fa fa-angle-right"></i>',
-					previous: '<i class="fa fa-angle-left"></i> Prev'
-				},
-			},
-			initComplete: function (settings, json) {
-				const $table = $(settings.nTable).closest('.dataTables_wrapper');
-				$table.find('.dataTables_paginate').appendTo('.table-boq-paginate');
-				$table.find('.dataTables_length').appendTo('.table-boq-length');
-			},
-			"ajax": {
-				"url": $('#boq_list').data('url'),
-				"type": "GET",
-				"dataSrc": function (json) {
-					return json.data;
-				}
-			},
-			columns: [
-				{ data: 'id', visible: false },
-				{ data: 'code' },
-				{ data: 'form_type' },
-				{ data: 'description', className: 'desc-col' },
-				{
-					data: 'created_at',
-					render: function (data, type) {
-						return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-					}
-				},
-				{ data: 'header', orderable: false },
-				{ data: 'subheader', orderable: false },
-				{
-					data: 'unit_price',
-					orderable: false,
-					render: function (data) {
-						return data;
-					}
-				},
-				{ data: 'item_title1', orderable: false },
-				{ data: 'item_title2', orderable: false },
-				{ data: 'item_title3', orderable: false },
-				{ data: 'item_title4', orderable: false },
-				{
-					data: 'multiplier_total',
-					orderable: false,
-					render: function (data) {
-						return data;
-					}
-				},
-				{
-					data: 'total_amount_items',
-					render: function (data) {
-						return data;
-					}
-				},
-				{
-					data: 'management_fee',
-					orderable: false,
-					render: function (data) {
-						return formatRupiah(data);
-					}
-				},
-				{
-					data: 'sales_amount',
-					render: function (data) {
-						return formatRupiah(data);
-					}
-				},
-				{
-					data: 'vat_rate',
-					render: function (data, type) {
-						return type === 'display' ? data + "%" : data;
-					}
-				},
-				{
-					data: 'vat',
-					render: function (data) {
-						return formatRupiah(data);
-					}
-				},
-				{
-					data: 'invoice_amount',
-					render: function (data) {
-						return formatRupiah(data);
-					}
-				},
-				{
-					data: 'actions',
-					orderable: false
-				}
-			]
-		});
-	}
+
 
 	if ($('#permission_list').length > 0) {
 		$('#permission_list').DataTable({

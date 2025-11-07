@@ -24,17 +24,17 @@ class ProposalSeeder extends Seeder
                 'project_id' => $project->id,
                 'code' => Proposal::generateCode(),
                 'sales_code' => null,
-                'type_of_sales_code' => collect(['FIT', 'Non FIT'])->random(),
-                'year_of_sales' => null,
-                'destination' => collect(['Indonesia', 'Overseas'])->random(),
-                'city' => 'City ' . rand(1,10),
-                'activity' => collect([
-                    'Awarding', 'Conference and Seminar', 'Exhibitions', 'Gala Dinner', 'Gathering', 
-                    'Holidays', 'Incentive Trip', 'Meeting', 'Product Launching', 'Shareholders Meeting (RUPS)', 
-                    'Workshop', 'Others'
-                ])->random(),
-                'date_from' => Carbon::now()->addDays(rand(0,10)),
-                'date_to' => Carbon::now()->addDays(rand(11,20)),
+                // 'type_of_sales_code' => collect(['FIT', 'Non FIT'])->random(),
+                // 'year_of_sales' => null,
+                // 'destination' => collect(['Indonesia', 'Overseas'])->random(),
+                // 'city' => 'City ' . rand(1,10),
+                // 'activity' => collect([
+                //     'Awarding', 'Conference and Seminar', 'Exhibitions', 'Gala Dinner', 'Gathering', 
+                //     'Holidays', 'Incentive Trip', 'Meeting', 'Product Launching', 'Shareholders Meeting (RUPS)', 
+                //     'Workshop', 'Others'
+                // ])->random(),
+                // 'date_from' => Carbon::now()->addDays(rand(0,10)),
+                // 'date_to' => Carbon::now()->addDays(rand(11,20)),
                 'invoice_no' => null,
                 'status' => 'Draft',
             ]);

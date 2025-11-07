@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\Proposal;
+use App\Models\Boq;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -11,8 +12,20 @@ class ProposalService
     public function createProposal(array $data)
     {
         return DB::transaction(function () use ($data) {
+            $boq_ids = $data['boq_ids'];
+            \Log::info($boq_ids);
+            unset($data['boq_ids']);
+
             $data['code'] = Proposal::generateCode();
             $proposal = Proposal::create($data);
+
+            $foundBoqs = Boq::whereIn('id', $boq_ids)->get();
+            $newBoqs = collect();
+
+            foreach ($foundBoqs as $boq) {
+                $newBoqs->push($boq->replicateWithItems($proposal->id));
+            } 
+
             return $proposal->fresh(['project']);
         });
     }
@@ -24,7 +37,7 @@ class ProposalService
 
     public function getProposalById($id)
     {
-        $proposal = Proposal::with('project')->find($id);
+        $proposal = Proposal::with(['project.customer', 'boqs', 'invoices.boqs'] )->find($id);
         if (!$proposal) {
             throw new Exception("Proposal with ID {$id} not found");
         }
@@ -39,7 +52,22 @@ class ProposalService
                 throw new Exception("Proposal with ID {$id} not found");
             }
 
+            // 🔒 Guard: Prevent proposal with status 'Approved' from being updated
+            if (strtolower($proposal->status) === 'approved') {
+                throw new Exception("Proposal with status 'Approved' cannot be modified.");
+            }
+            
             $proposal->update($data);
+
+            if (($data['status'] ?? null) === 'Approved') {
+                $proposal->update([
+                    'sales_code' => Proposal::generateSalesCode(
+                        $proposal->project_id,
+                        $proposal->id 
+                    ),
+                ]);
+            }
+
             return $proposal->fresh(['project']);
         });
     }
@@ -50,6 +78,12 @@ class ProposalService
         if (!$proposal) {
             throw new Exception("Proposal with ID {$id} not found");
         }
+
+        // 🔒 Guard: Prevent proposal with status 'Approved' from being deleted
+        if (strtolower($proposal->status) === 'approved') {
+            throw new Exception("Proposal with status 'Approved' cannot be modified.");
+        }
+
         $proposal->delete();
     }
 }

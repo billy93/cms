@@ -37,8 +37,8 @@
 								<div class="col-sm-8">					
 									<div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
 										<div class="dropdown me-2">
-											<a href="javascript:void(0);" class="dropdown-toggle"  data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
-											<div class="dropdown-menu  dropdown-menu-end">
+											<a href="javascript:void(0);" class="dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
+											<div class="dropdown-menu dropdown-menu-end">
 												<ul>
 													<li>
 														<a href="javascript:void(0);" class="dropdown-item"><i class="ti ti-file-type-pdf text-danger me-1"></i>Export as PDF</a>
@@ -49,7 +49,7 @@
 												</ul>
 											</div>
 										</div>	
-										<a href="javascript:void(0);" id="c_boq_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Create BOQ</a>
+										<a href="javascript:void(0);" id="c_boq_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Create BOQ</a>
 									</div>
 								</div>
 							</div>
@@ -59,10 +59,18 @@
 							<div class="table-responsive custom-table">
 								<table class="table" id="boq_list" data-url="{{ route('boqs.index') }}">
 									<style>
-										#boq_list th, 
-										#boq_list td {
-												padding: 12px 30px;
-										} 
+                    #boq_list th, 
+                    #boq_list td {
+                            padding: 12px 30px;
+                    } 
+                    #boq_list th:first-child, 
+                    #boq_list td:first-child {
+                            padding: 12px;
+                    } 
+                    #boq_list th:nth-child(2), 
+                    #boq_list td:nth-child(2) {
+                            padding-left: 0;
+                    }
 										#boq_list tbody tr td {
 											vertical-align: baseline;
 										}
@@ -80,17 +88,19 @@
 									</style>
 									<thead class="thead-light">
 										  <tr>
-												<!-- Kolom selain Items, rowspan 2 -->
-												<th class="td-break" rowspan="2">ID</th>
+												<th class="td-break no-sort" rowspan="2">
+													<label class="checkboxs">
+														<input type="checkbox" id="select_all_boq_list">
+														<span class="checkmarks"></span>
+													</label>
+												</th>
 												<th class="td-break" rowspan="2">BOQ Code</th>
+												<th class="td-break" rowspan="2">Sales Code</th>
 												<th class="td-break" rowspan="2">BOQ Type</th>
 												<th class="td-break" rowspan="2">Description</th>
 												<th class="td-break" rowspan="2">Created</th>
-
-												<!-- Super-header Items, span 8 kolom -->
+												<th class="td-break" rowspan="2">Updated</th>
 												<th colspan="8">Items</th>
-
-												<!-- Kolom lain yang rowspan 2 -->
 												<th class="td-break" rowspan="2">Basic Price</th>
 												<th class="td-break" rowspan="2">Management Fee</th>
 												<th class="td-break" rowspan="2">Sales Amount</th>
@@ -99,9 +109,7 @@
 												<th class="td-break" rowspan="2">Invoice Amount</th>
 												<th class="td-break" rowspan="2" class="no-sort">Action</th>
 											</tr>
-											
 											<tr>
-												<!-- Sub-header untuk Items (harus 8 kolom) -->
 												<th>Header</th>
 												<th>Subheader</th>
 												<th>Unit Price</th>
@@ -109,15 +117,13 @@
 												<th>Title2</th>
 												<th>Title3</th>
 												<th>Title4</th>
-												<th>Multiplier</th> <!-- ini sesuai columns: 'multiplier_total' -->
+												<th>Total Amount</th>
 											</tr>
 									</thead>
-									<tbody>
-											<!-- Data akan di-load via AJAX DataTable -->
-									</tbody>
+									<tbody></tbody>
 								</table>
 							</div>
-							<div class="row align-items-center" style="row-gap: 1em;">
+							<div class="row align-items-center mt-2" style="row-gap: 1em;">
 								<div class="col-md-6">
 									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
 										<div class="datatable-info"></div>
@@ -135,45 +141,16 @@
 		</div>
 	</div>
 	<!-- /Page Wrapper -->
-
-	<!-- Add BOQ -->
-	<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add" style="width: 998px !important;">
-		<div class="offcanvas-header border-bottom">
-			<h5 id="boq_form_title" class="fw-semibold">Create BOQ</h5>
-			<button type="button" id="close_boq_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
-					<i class="ti ti-x"></i>
-			</button>
-		</div>
-		<div class="offcanvas-body">
-			<style>
-				#c_boq_form td { vertical-align: baseline; } 
-			</style>
-			<form id="c_boq_form" method="POST"></form>
-		</div>
-	</div>
-	<!-- /Add BOQ -->
-
-	<!-- Delete Modal -->
-	<div class="modal fade" id="delete_boq_modal" tabindex="-1" aria-labelledby="deleteBoqModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="deleteBoqModalLabel">Confirm Delete</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					Are you sure you want to delete this item?
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-danger" id="confirm_delete_boq">Delete</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Delete Modal -->
+	 
+	 @include('components.boqs.create-modal')
+	 @include('components.boqs.modal')
 @endsection
 
 @push('scripts')
-  <script src="/build/js/boq_script.js"></script>
+	<script>
+		const HIDE_CHECKBOX = true;
+	</script>
+  <script src="/build/js/boqs/shared_var.js"></script>
+	<script src="/build/js/boqs/datatables.js"></script>
+	<script src="/build/js/boqs/events.js"></script>
 @endpush

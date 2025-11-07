@@ -2,6 +2,9 @@
 @extends('layout.mainlayout')
 @section('content')
 
+    <!-- BoQ Datatable url -->
+    <div id="boq-route" data-url="{{ route('boqs.index') }}" style="display: none;"></div>
+    
     <div class="page-wrapper">
         <div class="content">
 
@@ -45,7 +48,7 @@
                                                 </ul>
                                             </div>
                                         </div>	
-                                        <a href="javascript:void(0);" id="c_proposal_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals</a>
+                                        <a href="javascript:void(0);" id="c_proposal_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Add New Proposals</a>
                                     </div>
                                 </div>
                             </div>
@@ -576,13 +579,16 @@
                                     <style>
                                         #proposal_list th.fit, 
                                         #proposal_list td.fit {
-                                            width: 1%; 
+                                            width: 1% !important; 
                                             white-space: nowrap; 
                                         }
                                         #proposal_list th, 
                                         #proposal_list td {
                                             padding: 12px 20px;
-                                        } 
+                                        }
+										#proposal_list tbody tr td {
+											vertical-align: baseline;
+										} 
                                         #proposal_list .td-break {
 											text-align: left !important;
 											word-break: auto-phrase;
@@ -593,29 +599,25 @@
                                         <tr>
                                             <th rowspan="2">ID</th>
                                             <th rowspan="2">Proposal Code</th>
-                                            <th rowspan="2">Created At</th>
+                                            <th rowspan="2">Created</th>
+                                            <th rowspan="2">Updated</th>
                                             <th rowspan="2">Project Code</th>
-                                            <th rowspan="2">Destination</th>
-                                            <th rowspan="2">City</th>
-                                            <th rowspan="2">Activity</th>
-                                            <th class="text-center" colspan="2">Period</th>
+                                           
                                             <th rowspan="2">Status</th>
-                                            <th class="td-break" rowspan="2">Sales Code Type</th>
                                             <th class="td-break" rowspan="2">Sales Code</th>
-                                            <th class="td-break" rowspan="2">Year of Sales</th>
-                                            <th rowspan="2">Invoice No</th>
+                                            <th class="text-center" colspan="2">Invoices</th>
                                             <th class="no-sort fit" rowspan="2">Action</th>
                                         </tr>
                                         <tr>
-                                            <th class="text-center">Start</th>
-                                            <th class="text-center">End</th>
+                                            <th class="text-center">No</th>
+                                            <th class="text-center">Generate</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                     </tbody>
                                 </table>								
                             </div>
-                            <div class="row align-items-center" style="row-gap: 1em;">
+                            <div class="row align-items-center mt-2" style="row-gap: 1em;">
 								<div class="col-md-6">
 									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
 										<div class="datatable-info"></div>
@@ -633,44 +635,12 @@
         </div>
     </div>
 
-    <!-- Add New Proposal -->
-    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
-        <div class="offcanvas-header border-bottom">
-            <h4 id="proposal_form_title">Create Proposal</h4>
-            <button type="button" id="close_proposal_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
-                <i class="ti ti-x"></i>
-            </button>
-        </div>
-        <div class="offcanvas-body">
-            <style>
-				#c_proposal_form td { vertical-align: baseline; } 
-			</style>
-			<form id="c_proposal_form" method="POST"></form>
-        </div>
-    </div>
-    <!-- /Add New Proposal -->
-    
-	<!-- Delete Modal -->
-	<div class="modal fade" id="delete_proposal_modal" tabindex="-1" aria-labelledby="deleteProposalModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="deleteProposalModalLabel">Confirm Delete</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					Are you sure you want to delete this item?
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-danger" id="confirm_delete_proposal">Delete</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Delete Modal -->
+    @include('components.proposals.create-modal')
+    @include('components.proposals.modal')
+    @include('components.invoices.create-modal')
 @endsection
 
 @push('scripts')
-  <script src="/build/js/proposal_script.js"></script>
+  <script src="/build/js/proposals/events.js"></script>
+  <script src="/build/js/invoices/events.js"></script>
 @endpush

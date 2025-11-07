@@ -53,7 +53,10 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::get('/all', 'readAll')->name('readAll');  
         Route::get('/{boq_id}', 'read')->name('read');  
         Route::put('/{boq_id}', 'update')->name('update');  
-        Route::delete('/{boq_id}', 'delete')->name('delete');  
+        Route::delete('/', 'bulkDelete')->name('bulkDelete');  
+        Route::delete('/{boq_id}', 'delete') ->whereNumber('boq_id')->name('delete');  
+        Route::patch('/replicate/{proposal_id?}', 'replicate')->name('replicate'); 
+        Route::patch('/unbind-proposal/{boq_id?}', 'unbindProposal')->name('unbindProposal'); 
     });
 
     Route::prefix('categories')->name('categories.')
@@ -131,7 +134,6 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::get('/{project_id}', 'read')->name('read'); 
         Route::put('/{project_id}', 'update')->name('update'); 
         Route::delete('/{project_id}', 'delete')->name('delete'); 
-        Route::get('/show/{project_id}', 'show')->name('show'); 
     });
 
     Route::prefix('proposals')->name('proposals.')
@@ -140,10 +142,10 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::post('/', 'create')->name('create'); 
         Route::get('/all', 'readAll')->name('readAll'); 
         Route::get('/{proposal_id}', 'read')->name('read'); 
+        Route::get('/{proposal_id}/boqs', 'boqs')->name('boqs'); 
         Route::put('/{proposal_id}', 'update')->name('update'); 
         Route::delete('/{proposal_id}', 'delete')->name('delete'); 
-        Route::get('/show/{proposal_id}', 'show')->name('show'); 
-    });
+      });
 
     Route::prefix('invoices')->name('invoices.')
     ->controller(InvoiceController::class)->group(function() {
@@ -963,13 +965,13 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('kanban-view');
     })->name('kanban-view');
 
-    Route::get('/invoice', function () {
-        return view('invoice');
-    })->name('invoice');
+    // Route::get('/invoice', function () {
+    //     return view('invoice');
+    // })->name('invoice');
 
-    Route::get('/invoice-details', function () {
-        return view('invoice-details');
-    })->name('invoice-details');
+    // Route::get('/invoice-details', function () {
+    //     return view('invoice-details');
+    // })->name('invoice-details');
 
     Route::get('/dashboard', function () {
         return view('project-dashboard');

@@ -700,8 +700,54 @@
 
     <script>
         const BASE_URL = "{{ url('/') }}";
+        let IS_FETCHING = false; 
     </script>
+    
     @include('layout.partials.footer-scripts')
+
+    <!-- Helpers Script -->
+    <script>        
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: "3000",       
+            extendedTimeOut: "1000",
+            hideDuration: 300,
+            showDuration: 300,
+        };
+
+
+        function showToast(type, message) {
+            let toast = toastr[type](message); 
+            $(toast).addClass(type === 'success' ? 'alert alert-success' : 'alert alert-danger');
+        }
+
+        function formatRupiah(angka) {
+            if (angka === null || angka === undefined || angka === '') return '';
+
+            const num = Number(angka);
+            if (isNaN(num)) return '';
+
+            // Cek apakah ada desimal
+            const hasDecimal = angka.toString().includes('.') || angka.toString().includes(',');
+            return num.toLocaleString('id-ID', {
+                minimumFractionDigits: hasDecimal ? 2 : 0,
+                maximumFractionDigits: hasDecimal ? 2 : 0
+            });
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
+    <!-- /Helpers Script -->
+
     @stack('scripts')
 </body>
 

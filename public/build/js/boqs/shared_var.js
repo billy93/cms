@@ -1,0 +1,2 @@
+let SELECTED_BOQ_ROWS = [];
+

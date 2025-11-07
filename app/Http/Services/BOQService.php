@@ -16,14 +16,21 @@ class BoqService
     {
         return DB::transaction(function () use ($data) {
             $items = $data['items'] ?? [];
-            unset($data['items']); // hapus items dari main data
+            unset($data['items']); 
+            
             $data['code'] = BOQ::generateCode();
             $data['proposal_id'] = $data['proposal_id'] ?? null;
-            // 🔹 Buat BOQ dulu (tanpa summary fields)
+
             $boq = Boq::create($data);
 
             if (!empty($data['proposal_id'])) {
                 $proposal = Proposal::find($data['proposal_id']);
+
+                // 🔒 Guard: Prevent proposal with status 'Approved' from being associated with new BOQ 
+                if ($proposal && strtolower($proposal->status) === 'approved') {
+                   throw new Exception("Cannot associate a BOQ with a proposal that has been marked as 'Approved'.");
+                }
+
                 $boq->proposal()->associate($proposal);
                 $boq->save();
             }
@@ -31,10 +38,8 @@ class BoqService
             $totalAmountItems = 0;
 
             if ($data['form_type'] === 'A') {
-                // Type A → total_amount_items langsung dari request
                 $totalAmountItems = $data['total_amount_items'];
             } else {
-                // Type B/C/D → hitung dari items
                 foreach ($items as $itemData) {
                     switch ($data['form_type']) {
                         case 'B':
@@ -43,25 +48,17 @@ class BoqService
                             $itemData['title1_value'] = $itemData['qty'];
                             $multiplier = $itemData['qty'] * $itemData['amount'];
                             break;
-
-                        
                         case 'C':
                         case 'D':
-                            // Ambil amount sementara
                             $amount = $itemData['amount'] ;
 
-                            
-                            // Jika product_id ada, ambil product name jadi subheader
                             if (!empty($itemData['product_id'])) {
                                 $product = Product::find($itemData['product_id']);
                                 $itemData['subheader'] = $product?->name ?? $itemData['subheader'];
                                 $amount = $product->base_cost; 
                             }
 
-                            // Assign unit_price
                             $itemData['unit_price'] = $amount;
-
-                            // Hitung multiplier = amount * semua titleX_value yang ada
                             $multiplier = $amount;
 
                             for ($i = 1; $i <= 4; $i++) {
@@ -71,26 +68,20 @@ class BoqService
                                 }
                             }
 
-                            // Hapus amount biar gak error di create
                             unset($itemData['amount']);
-
                             break;
-
                         default:
                             $multiplier = 0;
                     }
 
-                    // Hitung multiplier_total
                     $itemData['multiplier_total'] = $multiplier;
 
-                    // Simpan item
                     $boq->items()->create($itemData);
 
-                    $totalAmountItems += $itemData['multiplier_total'];
+                    $totalAmountItems += $multiplier;
                 }
             }
 
-            // 🔹 Hitung management_fee
             $managementFee = 0;
             if (!empty($data['management_fee'])) {
                 if (($data['management_fee_type'] ?? 'percent') === 'percent') {
@@ -100,15 +91,11 @@ class BoqService
                 }
             }
 
-            // 🔹 Hitung sales_amount
             $salesAmount = $totalAmountItems + $managementFee;
-
-            // 🔹 Hitung VAT & invoice_amount
             $vatRate = $data['vat_rate']; // langsung pakai number
             $vat = ($salesAmount * $vatRate / 100);
             $invoiceAmount = $salesAmount + $vat;
 
-            // 🔹 Update BOQ dengan summary
             $boq->update([
                 'total_amount_items' => $totalAmountItems,
                 'management_fee' => $data['management_fee'] ?? null,
@@ -128,7 +115,7 @@ class BoqService
 
     public function getBoqById($id)
     {
-        $boq = Boq::with(['items'])->find($id);
+        $boq = Boq::with(['proposal', 'items'])->find($id);
         if (!$boq) {
             throw new Exception("BOQ with ID {$id} not found");
         }
@@ -139,9 +126,21 @@ class BoqService
     public function updateBoq($id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
-            $boq = Boq::find($id);
+            /**
+             * 1. Check if it exists.
+             * 2. Get the related proposal and ensure its status is not equal to 'Approved'.
+             * 3. Separate BOQ items.
+             * 4. Associate the proposal if it exists, associate an empty BOQ if proposal_id does not exist.
+             */
+
+            $boq = Boq::with('proposal')->find($id);
             if (!$boq) {
                 throw new Exception("BOQ with ID {$id} not found");
+            }
+
+            // 🔒 Guard: Prevent BOQ with proposal status 'Approved' from being updated
+            if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
+                throw new Exception("BOQ cannot be modified because the associated proposal has already been marked as 'Approved'.");
             }
 
             $items = $data['items'] ?? [];
@@ -154,16 +153,18 @@ class BoqService
                 $boq->proposal()->dissociate();
             }
 
+            // Save association update
             $boq->save();
-            
-            // Update main fields dulu
+
+            // Update BOQ fields
             $boq->update($data);
 
-            // Hapus items lama → replace total
+            // BOQ Items fully replaced
             $boq->items()->delete();
 
             $totalAmountItems = 0;
 
+            // Creates BOQ Items
             if ($data['form_type'] === 'A') {
                 $totalAmountItems = $data['total_amount_items'];
             } else {
@@ -179,13 +180,14 @@ class BoqService
                         case 'C':
                         case 'D':
                             $amount = $itemData['amount'];
-                            $itemData['unit_price'] = $amount;
 
                             if (!empty($itemData['product_id'])) {
                                 $product = Product::find($itemData['product_id']);
                                 $itemData['subheader'] = $product?->name ?? $itemData['subheader'];
-                            }
+                                $amount = $product->base_cost; 
+                            } 
 
+                            $itemData['unit_price'] = $amount;
                             $multiplier = $amount;
                             for ($i = 1; $i <= 4; $i++) {
                                 $valKey = "title{$i}_value";
@@ -207,7 +209,7 @@ class BoqService
                 }
             }
 
-            // Hitung management fee
+            // Calc management fee
             $managementFee = 0;
             if (!empty($data['management_fee'])) {
                 if (($data['management_fee_type'] ?? 'percent') === 'percent') {
@@ -217,15 +219,15 @@ class BoqService
                 }
             }
 
-            // Hitung sales_amount
+            // Calc sales_amount
             $salesAmount = $totalAmountItems + $managementFee;
 
-            // Hitung VAT & invoice_amount
+            // Calc VAT & invoice_amount
             $vatRate = $data['vat_rate'];
             $vat = ($salesAmount * $vatRate / 100);
             $invoiceAmount = $salesAmount + $vat;
 
-            // Update summary
+            // Update BOQ
             $boq->update([
                 'total_amount_items' => $totalAmountItems,
                 'management_fee' => $data['management_fee'] ?? null,
@@ -238,13 +240,119 @@ class BoqService
         });
     }
 
+    public function replicate(array $boq_ids, ?int $proposal_id = null)
+    {
+        return DB::transaction(function () use ($boq_ids, $proposal_id) {
+            // Jika ada proposal_id, validasi dan ambil datanya
+            $proposal = null;
+            if ($proposal_id) {
+                $proposal = Proposal::find($proposal_id);
+
+                if (!$proposal) {
+                    throw new Exception("Proposal with ID {$proposal_id} not found.");
+                }
+
+                if (strtolower($proposal->status) === 'approved') {
+                    throw new Exception("Cannot bind BOQs to an 'Approved' proposal.");
+                }
+            }
+
+            $foundBoqs = Boq::whereIn('id', $boq_ids)->get();
+            $foundIds = $foundBoqs->pluck('id')->toArray();
+            $missingIds = array_diff($boq_ids, $foundIds);
+
+            if (!empty($missingIds)) {
+                $list = implode(', ', $missingIds);
+                throw new Exception("BOQs with IDs [{$list}] not found.");
+            }
+
+            $newBoqs = collect();
+
+            foreach ($foundBoqs as $boq) {
+                $newBoqs->push($boq->replicateWithItems($proposal_id));
+            }
+
+            return $newBoqs;
+        });
+    }
+
+
+    public function unbindProposal(array $boq_ids = [], ?int $boq_id = null)
+    {
+        return DB::transaction(function () use ($boq_ids, $boq_id) {
+
+            // Single BOQ
+            $boqs = $boq_id
+                ? Boq::with('proposal')->where('id', $boq_id)->get()
+                : Boq::with('proposal')->whereIn('id', $boq_ids)->get();
+
+            // Cek yang tidak ditemukan hanya untuk bulk
+            if (!$boq_id) {
+                $foundIds = $boqs->pluck('id')->toArray();
+                $missingIds = array_diff($boq_ids, $foundIds);
+                if (!empty($missingIds)) {
+                    $list = implode(', ', $missingIds);
+                    throw new \Exception("BOQs with IDs [{$list}] not found.");
+                }
+            }
+
+            // Dissociate proposal dengan guard 'approved'
+            $boqs->each(function ($boq) {
+                if (!$boq->proposal) {
+                    throw new \Exception("BOQ with ID {$boq->id} is not associated with any proposal.");
+                }
+
+                if (strtolower($boq->proposal->status) === 'approved') {
+                    throw new \Exception("Cannot unbind BOQ ID {$boq->id} because its proposal is 'Approved'.");
+                }
+
+                $boq->proposal()->dissociate();
+                $boq->save();
+            });
+
+            return $boqs->fresh('proposal');
+        });
+    }
+
+
 
     public function deleteBoq($id)
     {
-        $boq = Boq::find($id);
+        $boq = Boq::with('proposal')->find($id);
         if (!$boq) {
             throw new Exception("BOQ with ID {$id} not found");
         }
+
+        // 🔒 Guard: Prevent BOQ with proposal status 'Approved' from being deleted
+        if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
+            throw new Exception("BOQ cannot be deleted because the associated proposal has already been marked as 'Approved'.");
+        }
+
         $boq->delete();
     }
+
+    public function deleteBoqs(array $boq_ids): int
+    {
+        return DB::transaction(function () use ($boq_ids) {
+            $boqs = Boq::with('proposal')->whereIn('id', $boq_ids)->get();
+
+            $foundIds = $boqs->pluck('id')->toArray();
+            $missingIds = array_diff($boq_ids, $foundIds);
+
+            if (!empty($missingIds)) {
+                throw new \Exception("BOQs with IDs [" . implode(', ', $missingIds) . "] not found.");
+            }
+
+            $boqs->each(function ($boq) {
+                if ($boq->proposal && strtolower($boq->proposal->status) === 'approved') {
+                    throw new \Exception("BOQ with ID {$boq->id} cannot be deleted because its proposal is 'Approved'.");
+                }
+
+                $boq->delete();
+            });
+
+            return count($boq_ids);
+        });
+    }
+
 }

@@ -59,7 +59,7 @@ class ProjectController extends Controller
                             <div class="dropdown-menu dropdown-menu-end">
                                 <a  
                                     class="dropdown-item" 
-                                    href="'.route('projects.show', ['project_id' => $p->id]).'"
+                                    href="'.route('projects.read', ['project_id' => $p->id]).'"
                                 >
                                     <i class="ti ti-eye text-info"></i> View Detail
                                 </a>
@@ -92,13 +92,6 @@ class ProjectController extends Controller
         return view('projects');
     }
 
-    public function show($project_id)
-    {
-        $project = $this->projectService->getProjectById($project_id);
-        
-        return view('projects.show', compact('project'));
-    }
-    
     public function create(ProjectRequest $request): JsonResponse
     {
         try {
@@ -126,21 +119,26 @@ class ProjectController extends Controller
         ], 200);
     }
 
-    public function read($project_id): JsonResponse
+    public function read(Request $request, $project_id)
     {
-        try {
-            $project = $this->projectService->getProjectById($project_id);
-            return response()->json([
-                'success' => true,
-                'data' => $project
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error reading Project: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load Project'
-            ], 500);
+        if($request->wantsJson() || $request->ajax()) {
+            try {
+                $project = $this->projectService->getProjectById($project_id);
+                return response()->json([
+                    'success' => true,
+                    'data' => $project
+                ], 200);
+            } catch (\Exception $e) {
+                Log::error('Error reading Project: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to load Project'
+                ], 500);
+            }
         }
+        
+        $project = $this->projectService->getProjectById($project_id);
+        return view('projects.detail', compact('project'));
     }
 
     public function update(ProjectRequest $request, $project_id): JsonResponse

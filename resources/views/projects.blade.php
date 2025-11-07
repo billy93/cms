@@ -573,7 +573,7 @@
 										</tbody>
 									</table>								
 								</div>
-								<div class="row align-items-center" style="row-gap: 1em;">
+								<div class="row align-items-center mt-2" style="row-gap: 1em;">
 									<div class="col-md-6">
 										<div class="d-flex align-items-center justify-content-center justify-content-md-start">
 											<div class="datatable-info"></div>
@@ -633,5 +633,5 @@
 @endsection
 
 @push('scripts')
-  <script src="/build/js/project_script.js"></script>
+  <script src="/build/js/projects/events.js"></script>
 @endpush

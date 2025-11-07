@@ -44954,6 +44954,10 @@ table.table.dataTable > thead > tr th {
     }
 }
 
+.toast-container {
+    position: fixed;
+}
+
 .toast-container > div {
     padding: 16px 20px 16px 50px !important;
 }
@@ -44961,6 +44965,13 @@ table.table.dataTable > thead > tr th {
 .toast-success {
     border: 1px solid #2ce18c !important;
     background-color: #39da8a !important;
+    color: #fff !important;
+    font-size: 14px !important;
+}
+
+.toast-error {
+    border: 1px solid #ff5b5b !important;
+    background-color: #e74c3c  !important;
     color: #fff !important;
     font-size: 14px !important;
 }
@@ -44978,6 +44989,21 @@ input[type="text"]:disabled {
     background-color: #ededed !important;
 }
 
+.select2-container--disabled {
+  pointer-events: none !important;
+}
+
 .dataTables_length {
     margin-top: 0 !important;
+}
+
+/* Table */
+.td-break {
+    text-align: left !important;
+    word-break: auto-phrase;
+    white-space: unset !important;
+}
+
+.desc-col {
+    max-width: 300px
 }
