@@ -329,7 +329,7 @@
                                                         href="{{ url('cities') }}">Cities</a></li>
                                             </ul>
                                         </li>
-                                        <li>
+                                        <!-- <li>
                                             <a class="{{ Request::is('testimonials') ? 'active' : '' }}"
                                             href="{{ url('testimonials') }}">Testimonials</a>
                                         </li>
@@ -341,7 +341,7 @@
                                                         Messages</a></li>
                                         <li>
                                             <a class="{{ Request::is('tickets') ? 'active' : '' }}" href="{{ url('tickets') }}">Tickets</a>
-                                        </li>
+                                        </li> -->
                                         <li class="submenu">
                                             <a href="javascript:void(0);">
                                                 <span>Authentication</span><span class="menu-arrow"></span>
@@ -776,7 +776,7 @@
                             <i class="ti ti-moon dark-mode"></i>
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
+                    <!-- <li class="nav-item dropdown">
                         <a href="javascript:void(0);" class="btn btn-header-list" data-bs-toggle="dropdown">
                             <i class="ti ti-layout-grid-add"></i>
                         </a>
@@ -922,8 +922,8 @@
                                 </div>
                             </div>
                         </div>
-                    </li>
-                    <li class="nav-item">
+                    </li> -->
+                    <!-- <li class="nav-item">
                         <a href="faq.html" class="btn btn-help">
                             <i class="ti ti-help-hexagon"></i>
                         </a>
@@ -932,18 +932,18 @@
                         <a href="lead-reports.html" class="btn btn-chart-pie">
                             <i class="ti ti-chart-pie"></i>
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </li>
             <!-- /Nav List -->
             
             <!-- Chat -->
-            <li class="nav-item nav-item-email nav-item-box">
+            <!-- <li class="nav-item nav-item-email nav-item-box">
                 <a href="chat.html">
                     <i class="ti ti-message-circle-exclamation"></i>
                     <span class="badge rounded-pill">14</span>
                 </a>
-            </li>
+            </li> -->
             <!-- /Chat -->
 
             <!-- Notifications -->

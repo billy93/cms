@@ -2527,15 +2527,15 @@ $(document).ready(function () {
 					"client": "1",
 					"due_date": "15 Oct 2023"
 				},
-				{
-					"id": 2,
-					"priority_name": "Dreamschat",
-					"priority_img": "build/img/priority/dreamchat.svg",
-					"recent_name": "BlueSky Industries",
-					"recent_img": "build/img/icons/company-icon-02.svg",
-					"client": "2",
-					"due_date": "22 Oct 2023"
-				},
+				// {
+				// 	"id": 2,
+				// 	"priority_name": "Dreamschat",
+				// 	"priority_img": "build/img/priority/dreamchat.svg",
+				// 	"recent_name": "BlueSky Industries",
+				// 	"recent_img": "build/img/icons/company-icon-02.svg",
+				// 	"client": "2",
+				// 	"due_date": "22 Oct 2023"
+				// },
 				{
 					"id": 3,
 					"priority_name": "Truelysell",

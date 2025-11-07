@@ -217,7 +217,7 @@
 																			<label class="checkboxs">
 																				<input type="checkbox">
 																				<span class="checkmarks"></span>
-																				Dreamschat
+																				Dreamschatsss
 																			</label>
 																		</div>
 																	</li>
@@ -576,7 +576,7 @@
 
 							<!-- Projects List -->
 							<div class="row">
-								<div class="col-xxl-3 col-xl-4 col-md-6">
+								<!-- <div class="col-xxl-3 col-xl-4 col-md-6">
 									<div class="card border">
 										<div class="card-body">
 											<div class="d-flex align-items-center justify-content-between mb-3">
@@ -650,8 +650,8 @@
 											</div>
 										</div>
 									</div>
-								</div>
-								<div class="col-xxl-3 col-xl-4 col-md-6">
+								</div> -->
+								<!-- <div class="col-xxl-3 col-xl-4 col-md-6">
 									<div class="card border">
 										<div class="card-body">
 											<div class="d-flex align-items-center justify-content-between mb-3">
@@ -669,7 +669,7 @@
 														<img src="{{URL::asset('/build/img/priority/dreamchat.svg')}}" class="w-auto h-auto" alt="img">
 													</a>
 													<div>
-														<h5 class="fw-semibold"><a href="{{url('project-details')}}">Dreamschat</a></h5>
+														<h5 class="fw-semibold"><a href="{{url('project-details')}}">Dreamschatsss</a></h5>
 														<p>Web App</p>
 													</div>
 												</div>
@@ -875,8 +875,8 @@
 											</div>
 										</div>
 									</div>
-								</div>
-								<div class="col-xxl-3 col-xl-4 col-md-6">
+								</div> -->
+								<!-- <div class="col-xxl-3 col-xl-4 col-md-6">
 									<div class="card border">
 										<div class="card-body">
 											<div class="d-flex align-items-center justify-content-between mb-3">
@@ -1475,7 +1475,7 @@
 											</div>
 										</div>
 									</div>
-								</div>
+								</div> -->
 							</div>
 							<!-- /Projects List -->
 

@@ -109,7 +109,7 @@
                                     <input type="text" class="form-control bookingrange" placeholder="">
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center flex-wrap row-gap-2">
+                            <!-- <div class="d-flex align-items-center flex-wrap row-gap-2">
                                 <div class="dropdown me-2">
                                     <a href="javascript:void(0);" class="btn bg-soft-purple text-purple"  data-bs-toggle="dropdown"  data-bs-auto-close="outside"><i class="ti ti-columns-3 me-2"></i>Manage Columns</a>
                                     <div class="dropdown-menu  dropdown-menu-md-end dropdown-md p-3">
@@ -172,7 +172,7 @@
                                     <a href="{{url('suppliers')}}" class="active"><i class="ti ti-list-tree"></i></a>
                                     <a href="javascript:void(0);"><i class="ti ti-grid-dots"></i></a>
                                 </div>
-                            </div>  
+                            </div>   -->
                         </div>
                         <!-- /Filter -->
 
