@@ -1,4 +1,5 @@
 class InvoiceForm {
+  isInit = true;
   selectedBoqs = [];
   isSubmitting = false;
   mode = "create";
@@ -67,6 +68,7 @@ class InvoiceForm {
   // ---------------------------------------- INIT ----------------------------------------
   async init(mode = "create", proposal = {}, data = {}) {
     this.resetForm();
+    this.showLoading();
     this.mode = mode;
     this.proposal = proposal;
     this.data = data;
@@ -76,6 +78,8 @@ class InvoiceForm {
     this.form.appendChild(formWrapper);
     this.initDataTable();
     this.initPlugins();
+    this.isInit = false;
+    this.hideLoading();
   }
 
   // ---------------------------------------- DOM ----------------------------------------
@@ -457,6 +461,7 @@ class InvoiceForm {
   }
 
   resetForm() {
+    this.isInit = true;
     this.selectedBoqs = [];
     this.isSubmitting = false;
     this.mode = "create";
@@ -464,6 +469,7 @@ class InvoiceForm {
     this.data = {};
     this.errors = {};
     this.form.innerHTML = "";
+    this.loadingEl = null;
   }
 
   // ---------------------------------------- DATA & SUBMISSION ----------------------------------------

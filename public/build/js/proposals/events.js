@@ -1,4 +1,5 @@
 class ProposalForm {
+  isInit = true;
   selectedBoqs = [];
   mode = "create";
   data = {};
@@ -119,13 +120,14 @@ class ProposalForm {
       })
       .finally(() => {
         this.isFetching = false
-        this.hideLoading();
+        if (!this.isInit) this.hideLoading();
       });
   }
 
   // ---------------------------------------- INIT ----------------------------------------
   async init(mode = "create", data = {}) {
     this.resetForm();
+    this.showLoading();
     this.data = data;
     this.mode = mode;
 
@@ -138,6 +140,8 @@ class ProposalForm {
     this.form.appendChild(formWrapper);
     this.initDataTable();
     this.initPlugins();
+    this.isInit = false;
+    this.hideLoading();
   }
 
   // ---------------------------------------- DOM ----------------------------------------
@@ -539,12 +543,14 @@ class ProposalForm {
   }
 
   resetForm() {
+    this.isInit = true;
     this.selectedBoqs = [];
     this.mode = "create";
     this.data = {};
     this.projects = [];
     this.form.innerHTML = "";
     this.errors = {};
+    this.loadingEl = null;
   }
 
   // ---------------------------------------- DATA & SUBMISSION ----------------------------------------

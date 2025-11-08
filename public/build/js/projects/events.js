@@ -55,7 +55,7 @@ class ProjectForm {
       })
       .finally(() => {
         this.isFetching = false
-        if (this.isInit) this.hideLoading();
+        if (!this.isInit) this.hideLoading();
       });
   }
 
@@ -310,11 +310,13 @@ class ProjectForm {
   }
 
   resetForm() {
+    this.isInit = true;
     this.mode = "create";
     this.data = {};
     this.customers = [];
     this.form.innerHTML = "";
     this.errors = {};
+    this.loadingEl = null;
   }
 
 
@@ -523,7 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       if (PROJECT_CANVAS_BS && PROJECT_FORM && !IS_FETCHING) {
         const title = PROJECT_CANVAS.querySelector("#c_project_canvas_title");
-        title.textContent = "Create Project";
+        title.textContent = "Create Project (Ref to RFP)";
         PROJECT_CANVAS_BS.show();
         PROJECT_FORM.resetForm();
         await PROJECT_FORM.init("create");
@@ -553,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok && resJson.success) {
           const title = PROJECT_CANVAS.querySelector("#c_project_canvas_title");
-          title.textContent = "Edit Project";
+          title.textContent = "Edit Project (Ref to RFP)";
           PROJECT_CANVAS_BS.show();
           PROJECT_FORM.resetForm();
           await PROJECT_FORM.init("edit", resJson.data);

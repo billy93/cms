@@ -1,4 +1,5 @@
 class AppendBoqForm {
+  isInit = true;
   selectedItem = [];
   isDisableSubmit = true;
 
@@ -75,6 +76,7 @@ class AppendBoqForm {
   // ---------------------------------------- INIT ----------------------------------------
   async init(data = {}) {
     this.resetForm();
+    this.showLoading();
     this.data = data;
 
     const formWrapper = document.createElement("div");
@@ -82,6 +84,8 @@ class AppendBoqForm {
     formWrapper.innerHTML = this.createForm();
     this.form.appendChild(formWrapper);
     this.initDataTable();
+    this.isInit = false;
+    this.hideLoading();
   }
 
   // ---------------------------------------- DOM ----------------------------------------
@@ -323,9 +327,11 @@ class AppendBoqForm {
   }
 
   resetForm() {
+    this.isInit = true;
     this.selectedItem = [];
     this.isDisableSubmit = true;
     this.form.innerHTML = "";
+    this.loadingEl = null;
   }
 
   // ----------------------------------------------- TRIGER -----------------------------------------------

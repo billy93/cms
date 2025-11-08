@@ -1,6 +1,6 @@
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="c_project_canvas">
   <div class="offcanvas-header border-bottom">
-    <h4 id="c_project_canvas_title">Create Project</h4>
+    <h4 id="c_project_canvas_title">Create Project (Ref to RFP)</h4>
     <button type="button" id="close_project_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
       <i class="ti ti-x"></i>
     </button>

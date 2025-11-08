@@ -177,6 +177,7 @@ class BoqForm {
     </div>
   `;
 
+  isInit = true;
   types = ["A", "B", "C", "D"];
   type = "A";
   mode = "create";
@@ -436,7 +437,7 @@ class BoqForm {
       })
       .finally(() => {
         this.isFetching = false
-        this.hideLoading();
+        if (!this.isInit) this.hideLoading();
       });
   }
 
@@ -463,7 +464,7 @@ class BoqForm {
       })
       .finally(() => {
         this.isFetching = false
-        this.hideLoading();
+        if (!this.isInit) this.hideLoading();
       });
   }
 
@@ -471,6 +472,7 @@ class BoqForm {
   // ---------------------------------------- INIT ----------------------------------------
   async init(mode = "create", data = {}) {
     this.resetForm();
+    this.showLoading();
     this.data = data;
     this.mode = mode;
 
@@ -503,6 +505,8 @@ class BoqForm {
     }
 
     this.initPlugins();
+    this.isInit = false;
+    this.hideLoading();
   }
 
   // ---------------------------------------- DOM ----------------------------------------
@@ -960,6 +964,7 @@ class BoqForm {
   }
 
   resetForm() {
+    this.isInit = true;
     this.mode = "create";
     this.type = "A";
     this.data = {};
@@ -968,6 +973,7 @@ class BoqForm {
     this.clearRowsData();
     this.form.innerHTML = "";
     this.errors = {};
+    this.loadingEl = null;
 
     //   // Remove global listener
     //   document.removeEventListener("change", this.handleDocumentChange);
