@@ -674,7 +674,7 @@ class ProposalForm {
             loadProjectData(PROJECT_ID)
           } catch (error) { }
 
-          $('#proposal_list').DataTable().ajax.reload();
+          $('#proposal_list').DataTable().ajax.reload(null, false);
           showToast("success", response.message || 'Proposal updated successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
@@ -795,7 +795,7 @@ document.addEventListener("DOMContentLoaded", () => {
             loadProjectData(PROJECT_ID)
           } catch (error) { }
 
-          $('#proposal_list').DataTable().ajax.reload();
+          $('#proposal_list').DataTable().ajax.reload(null, false);
           showToast("success", resJson.message || "Proposal deleted successfully.");
           PROPOSAL_MODAL_BS.hide();
         } else {

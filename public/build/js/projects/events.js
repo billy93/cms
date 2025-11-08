@@ -483,7 +483,7 @@ class ProjectForm {
 
         if (response.ok && result.success) {
           showToast("success", response.message || 'Project updated successfully!');
-          $('#project_list').DataTable().ajax.reload();
+          $('#project_list').DataTable().ajax.reload(null, false);
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
@@ -607,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
             loadProjectData(PROJECT_ID)
           } catch (error) { }
 
-          $('#project_list').DataTable().ajax.reload();
+          $('#project_list').DataTable().ajax.reload(null, false);
           showToast("success", resJson.message || "Project deleted successfully.");
           PROJECT_MODAL_BS.hide();
         } else {

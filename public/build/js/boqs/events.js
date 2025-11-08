@@ -1224,7 +1224,7 @@ class BoqForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          $('#boq_list').DataTable().ajax.reload(null, false);
+          $('#boq_list').DataTable().ajax.reload();
           showToast("success", response.message || 'BOQ created successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
