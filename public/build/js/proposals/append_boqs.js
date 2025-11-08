@@ -8,29 +8,26 @@ class AppendBoqForm {
     this.closeForm = document.getElementById("c_proposal_append_boq_canvas_close_btn");
     this.initDataTable = this.initDataTable.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-
     this.handleDocumentChange = this.handleDocumentChange.bind(this);
+    this.handleDocumentSubmit = this.handleDocumentSubmit.bind(this);
+
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.handleSubmit()
     });
 
     document.addEventListener("change", this.handleDocumentChange);
+    document.addEventListener("submit", this.handleDocumentSubmit, true);
   }
-
 
   // ---------------------------------------- HANDLER GLOBAL ----------------------------------------
   async handleDocumentChange(e) {
     const target = e.target;
 
-    if (target.matches("#select_all_append_boq_list")) {
+    if (target.matches("#select_all_proposal_append_boq_list")) {
       const checked = target.checked;
 
-      if (!checked) {
-        this.selectedItem = []
-      }
-
-      document.querySelectorAll('#append_boq_list input.row-check').forEach(el => {
+      document.querySelectorAll('#proposal_append_boq_list input.row-check').forEach(el => {
         el.checked = checked;
 
         if (checked) {
@@ -38,17 +35,19 @@ class AppendBoqForm {
             id: el.value,
             code: el.dataset.code
           });
+        } else {
+          this.selectedItem = this.selectedItem.filter(obj => obj.id !== el.value);
         }
       });
 
       const unique = new Map(this.selectedItem.map(item => [item.id, item]));
       this.selectedItem = Array.from(unique.values());
       this.updateSelectedEl();
-    } else if (target.matches("#append_boq_list input.row-check")) {
+    } else if (target.matches("#proposal_append_boq_list input.row-check")) {
       const checked = target.checked;
 
       if (!checked) {
-        document.querySelector("#select_all_append_boq_list").checked = false;
+        document.querySelector("#select_all_proposal_append_boq_list").checked = false;
         this.selectedItem = this.selectedItem.filter(obj => obj.id !== target.value)
       } else {
         this.selectedItem.push({
@@ -63,13 +62,23 @@ class AppendBoqForm {
     }
   }
 
+  handleDocumentSubmit(e) {
+    const target = e.target;
+
+    if (target.matches("#c_proposal_append_boq_list_search_form")) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.initDataTable(true);
+    }
+  }
+
   // ---------------------------------------- INIT ----------------------------------------
   async init(data = {}) {
     this.resetForm();
     this.data = data;
 
     const formWrapper = document.createElement("div");
-    formWrapper.id = "append_boq_form_wrapper";
+    formWrapper.id = "proposal_append_boq_form_wrapper";
     formWrapper.innerHTML = this.createForm();
     this.form.appendChild(formWrapper);
     this.initDataTable();
@@ -80,16 +89,22 @@ class AppendBoqForm {
     return `
       <div>
         <h5 class="mb-1">Selected BOQ Codes:</h5>
-        <ul id="selected_proposal_append_boq"><li class="no-selected-tag">No Selected BoQ</li></ul>
+        <ul id="selected_proposal_append_boq" class="mt-2"><li class="no-selected-tag">No Selected BoQ</li></ul>
+      </div>
+      <div class="col-md-12 mb-2 pt-2" style="border-top: 1px solid var(--bs-border-color);">
+        <form class="icon-form mb-3 mb-sm-0" id="c_proposal_append_boq_list_search_form">
+          <span class="form-icon" style="z-index: 0;"><i class="ti ti-search"></i></span>
+          <input type="text" class="form-control" placeholder="Search BoQ" id="c_proposal_append_boq_list_search_input">
+        </form>
       </div>
       <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
         <div class="table-responsive custom-table">
-          <table class="table" id="append_boq_list" data-url="${this.dataTableUrl}">
+          <table class="table" id="proposal_append_boq_list" data-url="${this.dataTableUrl}">
             <thead class="thead-light">
               <tr>
                 <th class="td-break no-sort" rowspan="2" style="position: sticky; z-index: 1;">
                   <label class="checkboxs">
-                    <input type="checkbox" id="select_all_append_boq_list">
+                    <input type="checkbox" id="select_all_proposal_append_boq_list">
                     <span class="checkmarks"></span>
                   </label>
                 </th>
@@ -123,15 +138,15 @@ class AppendBoqForm {
           <div class="col-md-6">
             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
               <div class="datatable-info"></div>
-              <div class="append-table-boq-length"></div>
+              <div class="proposal-append-table-boq-length"></div>
             </div>
           </div>
           <div class="col-md-6 flex-grow-1">
-            <div class="append-table-boq-paginate"></div>
+            <div class="proposal-append-table-boq-paginate"></div>
           </div>
         </div>
       </div>
-      <small id="append-boq-error" class="text-danger mt-1" style="display: none;"></small>
+      <small id="proposal-append-boq-error" class="text-danger mt-1" style="display: none;"></small>
       <div class="d-flex align-items-center justify-content-end mt-4">
         <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
         <button type="submit" class="btn btn-primary" ${this.isDisableSubmit ? "disabled" : ""}>Save</button>
@@ -144,21 +159,28 @@ class AppendBoqForm {
     if (el) {
       if (this.selectedItem.length) {
         this.isDisableSubmit = false;
-        document.querySelector("#append_boq_form_wrapper button[type='submit']").disabled = false;
+        document.querySelector("#proposal_append_boq_form_wrapper button[type='submit']").disabled = false;
         el.innerHTML = this.selectedItem
           .map(obj => `<li class="selected-tag">${obj.code}</li>`)
           .join("");
       } else {
         this.isDisableSubmit = true;
-        document.querySelector("#append_boq_form_wrapper button[type='submit']").disabled = true;
+        document.querySelector("#proposal_append_boq_form_wrapper button[type='submit']").disabled = true;
         el.innerHTML = `<li class="no-selected-tag">No Selected BoQ</li>`;
       }
     }
   }
 
-  initDataTable() {
+  initDataTable(resetPage = false) {
     const self = this;
-    $('#append_boq_list').DataTable({
+    const $table = $('#proposal_append_boq_list');
+
+    if ($.fn.DataTable.isDataTable($table)) {
+      $table.DataTable().ajax.reload(null, resetPage); // false = jangan reset pagination
+      return;
+    }
+
+    $table.DataTable({
       "serverSide": true,
       "bFilter": false,
       "bInfo": false,
@@ -178,19 +200,23 @@ class AppendBoqForm {
       },
       initComplete: function (settings, json) {
         const $table = $(settings.nTable).closest('.dataTables_wrapper');
-        $table.find('.dataTables_paginate').appendTo('.append-table-boq-paginate');
-        $table.find('.dataTables_length').appendTo('.append-table-boq-length');
+        $table.find('.dataTables_paginate').appendTo('.proposal-append-table-boq-paginate');
+        $table.find('.dataTables_length').appendTo('.proposal-append-table-boq-length');
       },
-      "ajax": {
-        "url": $('#append_boq_list').data('url'),
-        "type": "GET",
-        "dataSrc": function (json) {
+      ajax: {
+        url: $('#proposal_append_boq_list').data('url'),
+        type: "GET",
+        data: function (d) {
+          d.search = self.form.querySelector("#c_proposal_append_boq_list_search_input")?.value || "";
+        },
+        dataSrc: function (json) {
           return json.data;
         }
       },
       columns: [
         {
           data: 'id',
+          orderable: false,
           render: function (data, type, row) {
             const checked = self.selectedItem.some(obj => +obj.id === data);
             return `
@@ -307,12 +333,12 @@ class AppendBoqForm {
     if (this.isDisableSubmit) return;
     this.showLoading();
 
-    const errEl = document.querySelector("#append-boq-error");
+    const errEl = document.querySelector("#proposal-append-boq-error");
     errEl.textContent = "";
     errEl.style.display = "none";
 
     if (!this.selectedItem.length) {
-      const errEl = document.querySelector("#append-boq-error");
+      const errEl = document.querySelector("#proposal-append-boq-error");
       errEl.textContent = "Required at least one BOQ selected!";
       errEl.style.display = "block";
       this.hideLoading()
@@ -374,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = e.target;
 
     if (target.matches("#c_append_boq_btn")) {
-      console.log("AA");
       if (PROPOSAL_APPEND_BOQ_CANVAS_BS && PROPOSAL_APPEND_BOQ_FORM && !IS_FETCHING) {
         PROPOSAL_APPEND_BOQ_CANVAS_BS.show();
         PROPOSAL_APPEND_BOQ_FORM.resetForm();

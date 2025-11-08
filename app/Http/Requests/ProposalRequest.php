@@ -46,6 +46,7 @@ class ProposalRequest extends ApiFormRequest
     {
         $rules = array_merge($this->createRules(), [
             'id' => 'required|exists:proposals,id',
+            'note' => ['nullable', 'string', 'required_if:status,Lose'], 
         ]);
 
         // Hapus validasi untuk BOQ saat update

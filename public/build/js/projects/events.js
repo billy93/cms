@@ -1,4 +1,5 @@
 class ProjectForm {
+  isInit = true;
   mode = "create";
   data = {};
   customers = [];
@@ -54,13 +55,14 @@ class ProjectForm {
       })
       .finally(() => {
         this.isFetching = false
-        this.hideLoading();
+        if (this.isInit) this.hideLoading();
       });
   }
 
   // ---------------------------------------- INIT ----------------------------------------
   async init(mode = "create", data = {}) {
     this.resetForm();
+    this.showLoading();
     this.data = data;
     this.mode = mode;
 
@@ -72,6 +74,8 @@ class ProjectForm {
     formWrapper.innerHTML = this.createForm();
     this.form.appendChild(formWrapper);
     this.initPlugins();
+    this.isInit = false;
+    this.hideLoading();
   }
 
   createForm() {
@@ -249,19 +253,15 @@ class ProjectForm {
   }
 
   initPlugins() {
-    // SELECT2 (if using select with class="select", no need when using class="form-select")
     if (window.$ && $.fn.select2) {
       $('.select').select2({
         width: '100%',
-        dropdownParent: $('#c_project_form')
+        dropdownParent: $('#c_project_canvas_form')
       });
     }
-    console.log("X");
 
     if ($('.datetimepicker').length && $.fn.datetimepicker) {
       $('.datetimepicker').each(function () {
-        console.log("A");
-
         const el = $(this);
         const rawValue = el.val();
         const isIso = rawValue && moment(rawValue, moment.ISO_8601, true).isValid();
@@ -436,7 +436,6 @@ class ProjectForm {
       this.hideLoading()
       return;
     }
-    console.log(">>>", payload)
 
     if (this.mode === "create") {
       try {
@@ -458,7 +457,7 @@ class ProjectForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
-          showToast("error", `${result.message || result.errors}`);
+          showToast("error", result.message || result.errors);
         }
       } catch (err) {
         showToast("error", 'An error occurred while creating Project.');
@@ -486,7 +485,7 @@ class ProjectForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
-          showToast("error", `${result.message || result.errors}`);
+          showToast("error", result.message || result.errors);
         }
       } catch (err) {
         showToast("error", 'An error occurred while updating Project.');
@@ -505,95 +504,117 @@ class ProjectForm {
 // ----------------------------------------------- TRIGER -----------------------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
-  const projectForm = new ProjectForm("c_project_form");
+  const PROJECT_CANVAS = document.querySelector("#c_project_canvas");
+  const PROJECT_MODAL = document.querySelector("#c_project_modal");
+  const PROJECT_FORM = PROJECT_CANVAS?.querySelector("form#c_project_canvas_form")
+    ? new ProjectForm("c_project_canvas_form")
+    : null;
+  const PROJECT_CANVAS_BS = PROJECT_CANVAS ? new bootstrap.Offcanvas(PROJECT_CANVAS) : null;
+  const PROJECT_MODAL_BS = PROJECT_MODAL ? new bootstrap.Modal(PROJECT_MODAL) : null;
 
-  toastr.options = {
-    "closeButton": true,
-    "progressBar": true,
-    "positionClass": "toast-top-right",
-    "timeOut": "3000",
-    "extendedTimeOut": "1000",
-    "hideDuration": "300",
-    "showDuration": "300",
-    "toastClass": "toast show alert alert-success"
-  }
+  // const modal = bootstrap.Modal.getInstance(document.getElementById("delete_project_modal"));
+  // modal.hide();
 
   document.addEventListener("click", async e => {
-    const target = e.target;
+    let target = e.target;
 
-    if (target.matches("#c_project_add")) {
-      const title = document.querySelector("#project_form_title");
-      title.textContent = "Create Project";
-      projectForm.resetForm();
-      await projectForm.init("create");
-    }
-
-    if (target.matches(".c_project_edit")) {
-      // const id = target.getAttribute("data-id");
-      const url = target.getAttribute("data-url");
-
-
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-        },
-      })
-
-      const resJson = await res.json();
-
-      if (res.ok) {
-        const title = document.querySelector("#project_form_title");
-        projectForm.resetForm();
-        title.textContent = "Edit Project";
-        await projectForm.init("edit", resJson.data);
-      } else {
-        showToast("error", resJson.message || "Failed to fetch Project data for editing.");
+    // CREATE
+    if (target.matches("#c_project_create_btn")) {
+      e.preventDefault();
+      if (PROJECT_CANVAS_BS && PROJECT_FORM && !IS_FETCHING) {
+        const title = PROJECT_CANVAS.querySelector("#c_project_canvas_title");
+        title.textContent = "Create Project";
+        PROJECT_CANVAS_BS.show();
+        PROJECT_FORM.resetForm();
+        await PROJECT_FORM.init("create");
       }
     }
 
-    // Klik delete → inject url ke tombol confirm
-    if (target.matches(".c_project_delete")) {
+    // EDIT
+    if (target.closest(".c_project_edit_btn")) {
+      target = target.closest(".c_project_edit_btn");
       e.preventDefault();
-      const url = target.getAttribute("data-url");
-      const confirmBtn = document.getElementById("confirm_delete_project");
-      confirmBtn.setAttribute("data-url", url);
-    }
+      if (!PROJECT_CANVAS_BS || !PROJECT_FORM || IS_FETCHING) return;
+      IS_FETCHING = true;
 
-    if (target.matches("#confirm_delete_project")) {
-      e.preventDefault();
-
-      const url = target.getAttribute("data-url");
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+      const url = target.dataset.url;
 
       try {
         const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+          },
+        })
+
+        const resJson = await response.json();
+
+        if (response.ok && resJson.success) {
+          const title = PROJECT_CANVAS.querySelector("#c_project_canvas_title");
+          title.textContent = "Edit Project";
+          PROJECT_CANVAS_BS.show();
+          PROJECT_FORM.resetForm();
+          await PROJECT_FORM.init("edit", resJson.data);
+        } else {
+          showToast("error", resJson.message || "Failed to fetch project data for editing.");
+        }
+      } catch (error) {
+        console.log(error);
+
+        showToast("error", 'An error occurred while fetching the project data for editing.');
+      } finally {
+        IS_FETCHING = false;
+      }
+    }
+
+    // DELETE
+    else if (target.closest(".c_project_delete_btn")) {
+      target = target.closest(".c_project_delete_btn");
+      e.preventDefault();
+      if (!PROJECT_MODAL_BS || IS_FETCHING) return;
+      const url = target.dataset.url;
+      const confirmBtn = PROJECT_MODAL.querySelector("#c_project_modal_confirm_btn");
+      confirmBtn.dataset.url = url;
+      PROJECT_MODAL_BS.show();
+    }
+
+    // CONFIRM DELETE 
+    else if (target.matches("#c_project_modal_confirm_btn")) {
+      e.preventDefault();
+      if (!PROJECT_CANVAS_BS || !PROJECT_FORM || IS_FETCHING) return;
+      IS_FETCHING = true;
+
+      try {
+        const url = target.dataset.url;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+        const resopnse = await fetch(url, {
           method: "DELETE",
           headers: {
             "X-CSRF-TOKEN": csrfToken,
             "Accept": "application/json"
           }
         });
+        const resJson = await resopnse.json();
 
-        const data = await response.json();
+        if (resopnse.ok && resJson.success) {
+          try {
+            // Used on project.detail page
+            loadProjectData(PROJECT_ID)
+          } catch (error) { }
 
-        if (data.success) {
-          // Tutup modal
-          const modal = bootstrap.Modal.getInstance(document.getElementById("delete_project_modal"));
-          modal.hide();
-
-          // DataTable → reload
           $('#project_list').DataTable().ajax.reload();
-
-          // Toastr success
-          showToast("success", data.message || "Project deleted successfully!");
+          showToast("success", resJson.message || "Project deleted successfully.");
+          PROJECT_MODAL_BS.hide();
         } else {
-          showToast("error", data.message || "Failed to delete Project.");
+          showToast("error", resJson.message || "Failed to delete project.");
         }
-      } catch (err) {
-        showToast("error", "Server error. Failed to delete Project.");
+      } catch (error) {
+        showToast("error", "An error occurred while deleting the project.");
+      } finally {
+        IS_FETCHING = false;
       }
     }
   })

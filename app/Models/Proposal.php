@@ -17,22 +17,12 @@ class Proposal extends Model
         'project_id',
         'code',
         'sales_code',
-        'type_of_sales_code',
-        'year_of_sales',
-        'destination',
-        'city',
-        'activity',
-        'date_from',
-        'date_to',
-        'invoice_no',
+        'note',
         'status'
     ];
 
     protected $casts = [
-        'date_from' => 'date',
-        'date_to' => 'date',
         'status' => 'string',
-        'year_of_sales' => 'string' 
     ];
 
     /**

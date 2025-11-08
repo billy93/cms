@@ -240,10 +240,11 @@ class BoqService
         });
     }
 
+    
     public function replicate(array $boq_ids, ?int $proposal_id = null)
     {
         return DB::transaction(function () use ($boq_ids, $proposal_id) {
-            // Jika ada proposal_id, validasi dan ambil datanya
+            // 🔹 Validasi proposal jika dikirim
             $proposal = null;
             if ($proposal_id) {
                 $proposal = Proposal::find($proposal_id);
@@ -253,7 +254,7 @@ class BoqService
                 }
 
                 if (strtolower($proposal->status) === 'win') {
-                    throw new Exception("Cannot bind BOQs to an 'Win' proposal.");
+                    throw new Exception("Cannot bind BOQs to a 'Win' proposal.");
                 }
             }
 
@@ -269,13 +270,22 @@ class BoqService
             $newBoqs = collect();
 
             foreach ($foundBoqs as $boq) {
+                // 🔹 Jika BOQ belum punya proposal, langsung associate
+                if (is_null($boq->proposal_id)) {
+                    $boq->proposal_id = $proposal_id;
+                    $boq->save();
+
+                    $newBoqs->push($boq);
+                    continue;
+                }
+
+                // 🔹 Jika sudah punya proposal, replikasi penuh
                 $newBoqs->push($boq->replicateWithItems($proposal_id));
             }
 
             return $newBoqs;
         });
     }
-
 
     public function unbindProposal(array $boq_ids = [], ?int $boq_id = null)
     {

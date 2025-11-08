@@ -94,6 +94,12 @@
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
+                                        <label class="fw-semibold">Payment Method</label>
+                                        <p class="mb-0">{{ $invoice->payment_method ?: "-" }}</p>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
                                         <label class="fw-semibold">Ship To</label>
                                         <p class="mb-0">{{ $invoice->ship_to ?: "-" }}</p>
                                     </div>
@@ -103,7 +109,7 @@
                                         <label class="fw-semibold">Bill To</label>
                                         <p class="mb-0">{{ $invoice->bill_to ?: "-" }}</p>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Total Amount</label>
@@ -115,7 +121,7 @@
                                 </div>
                                 <div class="col-md-12">
                                     <div class="table-responsive custom-table">
-                                        <table class="table" id="invoice_items">
+                                        <table class="table" id="invoice_items_list">
                                             <thead class="thead-light">
                                             <tr>
                                                 <th class="td-break">BOQ Code</th>
@@ -133,11 +139,11 @@
                                     <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
-                                                <div class="invoice_items_length"></div>
+                                                <div class="invoice_items_list_datatable_length"></div>
                                             </div>
                                         </div>
                                         <div class="col-md-6 flex-grow-1">
-                                            <div class="invoice_items_paginate"></div>
+                                            <div class="invoice_items_list_datatable_paginate"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -156,7 +162,7 @@
         document.addEventListener('DOMContentLoaded', function () {
            function initInvoicesDataTable(data) {
                 const self = this;
-                const $table = $(`#invoice_items`);
+                const $table = $(`#invoice_items_list`);
 
                 // 🔹 Kalau DataTable sudah ada → cuma update data-nya
                 if ($.fn.DataTable.isDataTable($table)) {
@@ -189,8 +195,8 @@
                     },
                     initComplete: function (settings, json) {
                         const $wrapper = $(settings.nTable).closest('.dataTables_wrapper');
-                        $wrapper.find('.dataTables_paginate').appendTo(`.invoice_items_paginate`);
-                        $wrapper.find('.dataTables_length').appendTo(`.invoice_items_length`);
+                        $wrapper.find('.dataTables_paginate').appendTo(`.invoice_items_list_datatable_paginate`);
+                        $wrapper.find('.dataTables_length').appendTo(`.invoice_items_list_datatable_length`);
                     },
                     data,
                     columns: [

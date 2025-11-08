@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let showCheckbox = true;
 
   try {
-    if (HIDE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
+    if (HIDE_BOQ_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
       showCheckbox = false;
     }
   } catch (err) { }
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
           visible: showCheckbox ? true : false,
           orderable: showCheckbox ? false : true,
           render: function (data, type, row) {
-            const checked = SELECTED_BOQ_ROWS.some(obj => +obj.id === data);
+            const checked = SELECTED_BOQ_DATATABLES_ROWS.some(obj => +obj.id === data);
             return `
 							<label class="checkboxs">
 								<input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-code="${row.code}">
@@ -153,6 +153,4 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
     });
   }
-
-
 });

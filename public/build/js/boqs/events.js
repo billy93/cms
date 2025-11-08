@@ -1308,11 +1308,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateBulkBtn() {
-    console.log(SELECTED_BOQ_ROWS);
+    console.log(SELECTED_BOQ_DATATABLES_ROWS);
 
     const deleteBtn = document.querySelector("#c_boq_bulk_delete_btn");
     const unbindBtn = document.querySelector("#c_boq_bulk_unbind_btn");
-    if (SELECTED_BOQ_ROWS.length) {
+    if (SELECTED_BOQ_DATATABLES_ROWS.length) {
       if (deleteBtn) {
         deleteBtn.style.display = "block";
         deleteBtn.disabled = false;
@@ -1453,7 +1453,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const action = target.dataset.action;
 
-      if ((action === "bulk-unbind" || action === "bulk-delete") && !SELECTED_BOQ_ROWS.length) {
+      if ((action === "bulk-unbind" || action === "bulk-delete") && !SELECTED_BOQ_DATATABLES_ROWS.length) {
         showToast("error", "No BoQ selected.");
         IS_FETCHING = false;
         return;
@@ -1479,10 +1479,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (action === "bulk-unbind") {
           options.headers["Content-Type"] = "application/json";
           options.body = JSON.stringify({
-            boq_ids: SELECTED_BOQ_ROWS.map(obj => obj.id)
+            boq_ids: SELECTED_BOQ_DATATABLES_ROWS.map(obj => obj.id)
           });
         } else if (action === "bulk-delete") {
-          const ids = SELECTED_BOQ_ROWS.map(obj => obj.id).join(',');
+          const ids = SELECTED_BOQ_DATATABLES_ROWS.map(obj => obj.id).join(',');
           url += `?boq_ids=${ids}`;
         }
 
@@ -1492,11 +1492,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.ok && data.success) {
           if (action === "unbind" || action === "delete") {
             const id = target.dataset.id;
-            SELECTED_BOQ_ROWS = [...new Map(
-              SELECTED_BOQ_ROWS.filter(obj => obj.id !== id).map(item => [item.id, item])
+            SELECTED_BOQ_DATATABLES_ROWS = [...new Map(
+              SELECTED_BOQ_DATATABLES_ROWS.filter(obj => obj.id !== id).map(item => [item.id, item])
             ).values()];
           } else if (action === "bulk-unbind" || action === "bulk-delete") {
-            SELECTED_BOQ_ROWS = [];
+            SELECTED_BOQ_DATATABLES_ROWS = [];
           }
           updateBulkBtn();
           // resetSelectAll();
@@ -1518,47 +1518,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = e.target;
 
     if (target.matches("#boq_list #select_all_boq_list")) {
-      e.stopPropagation();
       e.preventDefault();
       const checked = target.checked;
-      console.log("checked", checked);
 
       document.querySelectorAll('#boq_list input.row-check').forEach(el => {
         el.checked = checked;
-        console.log("child", el.checked);
 
         if (checked) {
-          SELECTED_BOQ_ROWS.push({
+          SELECTED_BOQ_DATATABLES_ROWS.push({
             id: el.value,
             code: el.dataset.code
           });
         } else {
-          SELECTED_BOQ_ROWS = SELECTED_BOQ_ROWS.filter(obj => obj.id !== el.value);
+          SELECTED_BOQ_DATATABLES_ROWS = SELECTED_BOQ_DATATABLES_ROWS.filter(obj => obj.id !== el.value);
         }
       });
 
-      const unique = new Map(SELECTED_BOQ_ROWS.map(item => [item.id, item]));
-      SELECTED_BOQ_ROWS = Array.from(unique.values());
-      console.log(">>>", SELECTED_BOQ_ROWS);
-
+      const unique = new Map(SELECTED_BOQ_DATATABLES_ROWS.map(item => [item.id, item]));
+      SELECTED_BOQ_DATATABLES_ROWS = Array.from(unique.values());
       updateBulkBtn();
     } else if (target.matches("#boq_list input.row-check")) {
-      e.stopPropagation();
       e.preventDefault();
       const checked = target.checked;
 
       if (!checked) {
         document.querySelector("#boq_list #select_all_boq_list").checked = false;
-        SELECTED_BOQ_ROWS = SELECTED_BOQ_ROWS.filter(obj => obj.id !== target.value)
+        SELECTED_BOQ_DATATABLES_ROWS = SELECTED_BOQ_DATATABLES_ROWS.filter(obj => obj.id !== target.value)
       } else {
-        SELECTED_BOQ_ROWS.push({
+        SELECTED_BOQ_DATATABLES_ROWS.push({
           id: target.value,
           code: target.dataset.code
         });
       }
 
-      const unique = new Map(SELECTED_BOQ_ROWS.map(item => [item.id, item]));
-      SELECTED_BOQ_ROWS = Array.from(unique.values());
+      const unique = new Map(SELECTED_BOQ_DATATABLES_ROWS.map(item => [item.id, item]));
+      SELECTED_BOQ_DATATABLES_ROWS = Array.from(unique.values());
       updateBulkBtn();
     }
   });

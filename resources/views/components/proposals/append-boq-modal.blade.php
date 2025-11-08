@@ -44,7 +44,6 @@
         flex-wrap: wrap;
         list-style: none;
         gap: 6px; 
-        margin-bottom: 24px;
       }
       #c_proposal_append_boq_canvas .selected-tag {
         padding: 4px 6px;  

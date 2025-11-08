@@ -13,7 +13,6 @@ class ProposalService
     {
         return DB::transaction(function () use ($data) {
             $boq_ids = $data['boq_ids'];
-            \Log::info($boq_ids);
             unset($data['boq_ids']);
 
             $data['code'] = Proposal::generateCode();
@@ -32,7 +31,7 @@ class ProposalService
 
     public function getAllProposals()
     {
-        return Proposal::with('project')->get();
+        return Proposal::with('project', 'invoices')->get();
     }
 
     public function getProposalById($id)

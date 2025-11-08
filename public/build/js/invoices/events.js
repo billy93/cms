@@ -208,10 +208,10 @@ class InvoiceForm {
             <small id="input_invoice_due_date_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
-        <div class="col-md-12 mt-3 mb-3" id="invoice_canvas_boq_section">
+        <div class="col-md-12" id="invoice_canvas_boq_section">
           <div>
-            <h5 class="mb-1">Selected BOQ Codes:</h5>
-            <ul id="selected_invoice_canvas_boq">${selectedBoqEl}</ul>
+            <label class="col-form-label">BoQ(s)</label>
+            <ul id="selected_invoice_canvas_boq" class="mt-2 mb-2">${selectedBoqEl}</ul>
           </div>
           <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
             <div class="table-responsive custom-table">
@@ -665,7 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const INVOICE_MODAL_BS = INVOICE_MODAL ? new bootstrap.Modal(INVOICE_MODAL) : null;
 
   document.addEventListener("click", async e => {
-    const target = e.target;
+    let target = e.target;
 
     // CREATE
     if (target.matches("#c_invoice_create_btn")) {
@@ -675,7 +675,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
           const url = target.dataset.url;
-          console.log(url);
           const resopnse = await fetch(url, {
             headers: {
               "Accept": "application/json",
@@ -700,7 +699,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // EDIT
-    else if (target.matches(".c_invoice_edit_btn")) {
+    else if (target.closest(".c_invoice_edit_btn")) {
+      target = target.closest(".c_invoice_edit_btn");
       e.preventDefault();
       if (INVOICE_CANVAS_BS && INVOICE_FORM && !IS_FETCHING) {
         IS_FETCHING = true;
@@ -731,11 +731,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // DELETE
-    else if (target.matches(".c_invoice_delete_btn")) {
+    else if (target.closest(".c_invoice_delete_btn")) {
+      target = target.closest(".c_invoice_delete_btn");
       e.preventDefault();
       if (INVOICE_MODAL && INVOICE_MODAL_BS) {
         const url = target.dataset.url;
-        const confirmBtn = INVOICE_MODAL?.getElementById("c_invoice_modal_confirm_btn");
+        const confirmBtn = INVOICE_MODAL.querySelector("#c_invoice_modal_confirm_btn");
         confirmBtn.dataset.url = url;
         INVOICE_MODAL_BS.show();
       }
@@ -761,6 +762,11 @@ document.addEventListener("DOMContentLoaded", () => {
           const resJson = await resopnse.json();
 
           if (resopnse.ok && resJson.success) {
+            try {
+              // On proposal.detail page
+              loadProposalData(PROPOSAL_ID);
+            } catch (error) { }
+
             $('#invoice_list').DataTable().ajax.reload(null, false);
             showToast("success", resJson.message || "Invoice deleted successfully.");
             INVOICE_MODAL_BS.hide();

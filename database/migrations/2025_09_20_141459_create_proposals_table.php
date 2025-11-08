@@ -36,7 +36,7 @@ return new class extends Migration
             // ]);
             // $table->date('date_from');
             // $table->date('date_to');
-            $table->string('invoice_no')->nullable();
+            $table->text('note')->nullable();
             $table->enum('status', ['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled'])->default('Draft');
             $table->timestamps();
             $table->softDeletes();

@@ -68,7 +68,7 @@
     @include('components.proposals.create-modal')
     @include('components.proposals.modal')
 @endsection
-
+ 
 @push('scripts')
 <script>
     const PROJECT_ID = parseInt('{{ $project->id }}');
@@ -105,20 +105,26 @@
             </div>
             <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
-                    <label class="fw-semibold">Project Status</label>
-                    <p class="mb-0"><span class="badge ${statusClass}">${project.status.charAt(0).toUpperCase() + project.status.slice(1)}</span></p>
-                </div>
-            </div>
-            <div class="col-md-6 col-xxl-4">
-                <div class="form-group mb-2">
                     <label class="fw-semibold">Project Name</label>
                     <p class="mb-0">${project.name}</p>
                 </div>
             </div>
             <div class="col-md-6 col-xxl-4">
                 <div class="form-group mb-2">
+                    <label class="fw-semibold">Project Status</label>
+                    <p class="mb-0"><span class="badge ${statusClass}">${project.status.charAt(0).toUpperCase() + project.status.slice(1)}</span></p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
+                    <label class="fw-semibold">Ref. Doc. No.</label>
+                    <p class="mb-0">${project.ref_doc_no || "-"}</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
                     <label class="fw-semibold">Customer</label>
-                    <p class="mb-0">${customerName || "-"} ${customerCode ? "(" + customerCode + ")" : ""}</p>
+                    <p class="mb-0">${customerName || "-"}</p>
                 </div>
             </div>
             <div class="col-md-6 col-xxl-4">
@@ -131,6 +137,24 @@
                 <div class="form-group mb-2">
                     <label class="fw-semibold">Last Updated</label>
                     <p class="mb-0">${project.updated_at ? formatDate(project.updated_at) : "-"}</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
+                    <label class="fw-semibold">Start Date</label>
+                    <p class="mb-0">${project.start_date ? formatDate(project.start_date) : "-"}</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
+                    <label class="fw-semibold">End Date</label>
+                    <p class="mb-0">${project.end_date ? formatDate(project.end_date) : "-"}</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
+                    <label class="fw-semibold">Due Date</label>
+                    <p class="mb-0">${project.due_date ? formatDate(project.due_date) : "-"}</p>
                 </div>
             </div>
             <div class="col-md-6 col-xxl-4">
@@ -149,20 +173,32 @@
             const conditionalActions = p.status !== "Win" ? 
             `
                 <button 
-                    class="btn btn-secondary me-2 c_proposal_edit_btn"
+                    class="btn btn-sm btn-secondary me-2 c_proposal_edit_btn"
                     data-url="/proposals/${p.id}"
                 >
-                    <i class="ti ti-edit me-1"></i>Edit Proposal
+                    <i class="ti ti-edit" style="font-size: 1.25rem"></i>
                 </button>
                 <button 
-                    class="btn btn-danger c_proposal_delete_btn"
+                    class="btn btn-sm btn-danger c_proposal_delete_btn"
                     data-url="/proposals/${p.id}"
                 >
-                    <i class="ti ti-trash me-1"></i>Delete Proposal
+                    <i class="ti ti-trash" style="font-size: 1.25rem"></i>
                 </button>
             ` :
             "";
 
+            const invoices = p.invoices?.length 
+                ? "<ul>" + p.invoices.map(invoice => `<li>${invoice.code}</li>`).join("") + "</ul>" 
+                : "-";
+
+            const noteField = p.status.toLowerCase() === "lose" ? 
+                `<div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Invoice(s)</label>
+                        <p class="mb-0">${p.note || "-"}</p>
+                    </div>
+                </div>` : "";
+                
             return `
                 <div class="row ${i !== a.length - 1 ? "pb-3 mb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
                     <div class="col-md-6 col-xxl-4">
@@ -179,56 +215,8 @@
                     </div>
                     <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Type of Sales Code</label>
-                            <p class="mb-0">${p.type_of_sales_code || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
                             <label class="fw-semibold">Sales Code</label>
                             <p class="mb-0">${p.sales_code || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">Year of Sales</label>
-                            <p class="mb-0">${p.year_of_sales || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">Invoice No</label>
-                            <p class="mb-0">${p.invoice_no || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">Destination</label>
-                            <p class="mb-0">${p.destination || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">City</label>
-                            <p class="mb-0">${p.city || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">Activity</label>
-                            <p class="mb-0">${p.activity || "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">Start Date</label>
-                            <p class="mb-0">${p.date_from ? formatDate(p.date_from) : "-"}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-xxl-4">
-                        <div class="form-group mb-2">
-                            <label class="fw-semibold">End Date</label>
-                            <p class="mb-0">${p.date_to ? formatDate(p.date_to) : "-"}</p>
                         </div>
                     </div>
                     <div class="col-md-6 col-xxl-4">
@@ -239,16 +227,23 @@
                     </div>
                     <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Created</label>
+                            <label class="fw-semibold">Last Updated</label>
                             <p class="mb-0">${p.updated_at ? formatDate(p.updated_at) : "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-12 mt-3">
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
+                            <label class="fw-semibold">Invoice(s)</label>
+                            <p class="mb-0">${invoices}</p>
+                        </div>
+                    </div>
+                    ${noteField}
+                    <div class="col-md-12 mt-3 d-flex justify-content-end">
                         <a 
                             href="/proposals/${p.id}"
-                            class="btn btn-outline-info me-2"
+                            class="btn btn-sm btn-outline-info me-2"
                         >
-                            <i class="ti ti-eye"></i> View Detail
+                            <i class="ti ti-eye" style="font-size: 1.25rem"></i>
                         </a>
                         ${conditionalActions}
                     </div>
@@ -262,9 +257,7 @@
     function getStatusClass(status) {
         switch(status) {
             case 'Active': return 'badge-pill badge-status bg-success';
-            case 'Inactive': return 'badge-pill badge-status bg-secondary';
-            case 'Completed': return 'badge-pill badge-status bg-primary';
-            case 'Cancelled': return 'badge-pill badge-status bg-danger';
+            case 'Inactive': return 'badge-pill badge-status bg-dark';
             default: return 'badge-pill badge-status bg-secondary';
         }
     }
@@ -278,15 +271,6 @@
             case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
             default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
         }
-    }
-
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
     }
 
     $(document).ready(function() {

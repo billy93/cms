@@ -9,10 +9,11 @@ class ProposalForm {
     this.form = document.getElementById(formId);
     this.closeForm = document.getElementById("c_poposal_canvas_close_btn");
     this.dataTableUrl = document.getElementById('boq-route').dataset.url;
+    this.initDataTable = this.initDataTable.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this)
-
     this.handleDocumentChange = this.handleDocumentChange.bind(this);
     this.handleDocumentSubmit = this.handleDocumentSubmit.bind(this);
+
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.handleSubmit()
@@ -29,10 +30,6 @@ class ProposalForm {
     if (target.matches("#proposal_canvas_boq_list #select_all_proposal_canvas_boq")) {
       const checked = target.checked;
 
-      if (!checked) {
-        this.selectedBoqs = [];
-      }
-
       document.querySelectorAll('#proposal_canvas_boq_list input.row-check').forEach(el => {
         el.checked = checked;
 
@@ -41,6 +38,8 @@ class ProposalForm {
             id: el.value,
             code: el.dataset.code
           });
+        } else {
+          this.selectedBoqs = this.selectedBoqs.filter(obj => obj.id !== el.value);
         }
       });
 
@@ -63,6 +62,26 @@ class ProposalForm {
       const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
       this.selectedBoqs = Array.from(unique.values());
       this.updateSelectedEl();
+    } else if (target.matches("#input_status")) {
+      const noteInputWrapper = this.form.querySelector("#input_note_wrapper");
+
+      if (noteInputWrapper) {
+        if (target.value === "Lose") {
+          noteInputWrapper.innerHTML = `
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="col-form-label">Note<span class="text-danger">*</span></label>
+                <textarea class="form-control" id="input_note"></textarea>
+                <small id="input_note_error" class="text-danger mt-1" style="display: none;"></small>
+              </div>
+            </div>
+          `;
+          noteInputWrapper.style.display = "block";
+        } else {
+          noteInputWrapper.style.display = "none";
+          noteInputWrapper.innerHTML = "";
+        }
+      }
     }
   }
 
@@ -128,13 +147,15 @@ class ProposalForm {
     const value = {
       project_id: "",
       code: "",
-      status: "Draft"
+      status: "Draft",
+      note: "",
     }
 
     if (isEditing && this.data) {
       value.project_id = this.data.project_id || "";
       value.code = this.data.code || "";
       value.status = this.data.status || "";
+      value.note = this.data.note || "";
     }
 
     let isDisableProjectId = false;
@@ -259,6 +280,19 @@ class ProposalForm {
       `;
     }
 
+    const noteField = isEditing && value.status === "Lose" ? `
+      <div id="input_note_wrapper">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label class="col-form-label">Note<span class="text-danger">*</span></label>
+            <textarea class="form-control" id="input_note">${value.note}</textarea>
+            <small id="input_note_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
+      </div>
+    `:
+      "<div id='input_note_wrapper' style='display: none;'></div>";
+
     return `
       <div>
         <div class="row">
@@ -273,6 +307,7 @@ class ProposalForm {
               <small id="input_status_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
+          ${noteField}
           ${boqList}
         </div>
         <div class="d-flex align-items-center justify-content-end mt-4">
@@ -341,6 +376,7 @@ class ProposalForm {
       columns: [
         {
           data: 'id',
+          orderable: false,
           render: function (data, type, row) {
             const checked = self.selectedBoqs.some(obj => +obj.id === data);
             return `
@@ -422,6 +458,11 @@ class ProposalForm {
       $('.select').select2({
         width: '100%',
         dropdownParent: $('#c_proposal_canvas_form')
+      });
+
+      // bridge event agar change bisa dideteksi
+      $('.select').on('select2:select', function () {
+        this.dispatchEvent(new Event('change', { bubbles: true }));
       });
     }
 
@@ -526,6 +567,7 @@ class ProposalForm {
 
     const project_id = this.form.querySelector("#input_project_id");
     const status = this.form.querySelector("#input_status");
+    const note = this.form.querySelector("#input_note");
 
 
     const payload = {
@@ -540,6 +582,14 @@ class ProposalForm {
 
     if (!payload.status) {
       this.errors["input_status_error"] = "Status is required."
+    }
+
+    if (this.mode === "edit") {
+      payload.note = (note?.value || "").trim();
+
+      if (payload.status === "Lose" && !payload.note) {
+        this.errors["input_note_error"] = "Note is required."
+      }
     }
 
     return payload;
@@ -590,7 +640,7 @@ class ProposalForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
-          showToast("error", 'Failed:', result.message || result.errors);
+          showToast("error", result.errors?.note[0] || result.message);
         }
       } catch (err) {
         showToast("error", 'An error occurred while creating Proposal.');
@@ -623,7 +673,7 @@ class ProposalForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
-          showToast("error", 'Failed:', result.message || result.errors);
+          showToast("error", result.errors?.note[0] || result.message);
         }
       } catch (err) {
         showToast("error", 'An error occurred while updating Proposal.');
@@ -650,7 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PROPOSAL_MODAL_BS = PROPOSAL_MODAL ? new bootstrap.Modal(PROPOSAL_MODAL) : null;
 
   document.addEventListener("click", async e => {
-    const target = e.target;
+    let target = e.target;
 
     // CREATE
     if (target.matches("#c_proposal_create_btn")) {
@@ -665,7 +715,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // EDIT
-    if (target.matches(".c_proposal_edit_btn")) {
+    if (target.closest(".c_proposal_edit_btn")) {
+      target = target.closest(".c_proposal_edit_btn");
       e.preventDefault();
       if (!PROPOSAL_CANVAS_BS || !PROPOSAL_FORM || IS_FETCHING) return;
       IS_FETCHING = true;
@@ -703,7 +754,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // DELETE
-    else if (target.matches(".c_proposal_delete_btn")) {
+    else if (target.closest(".c_proposal_delete_btn")) {
+      target = target.closest(".c_proposal_delete_btn");
       e.preventDefault();
       if (!PROPOSAL_MODAL_BS || IS_FETCHING) return;
       const url = target.dataset.url;

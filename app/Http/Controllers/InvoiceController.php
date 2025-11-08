@@ -31,9 +31,28 @@ class InvoiceController extends Controller
         
         if($request->ajax())
         {
+            $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $invoices = Invoice::with(['customer', 'proposal', 'boqs']);
 
             $result = DataTables::eloquent($invoices)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(payment_method) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(bill_to) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(ship_to) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(note) LIKE ?', ["%{$search}%"])
+                            ->orWhereHas('customer', fn($p) =>
+                                $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                            )
+                            ->orWhereHas('proposal', fn($p) =>
+                                $p->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            );
+                        });
+                    }
+                })
                 ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
                 ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
                 ->addColumn('actions', function($invoice) {

@@ -23,9 +23,23 @@ class ProposalController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+                $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $proposals = Proposal::with('project', 'boqs', 'invoices');
 
             return DataTables::eloquent($proposals)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(sales_code) LIKE ?', ["%{$search}%"])
+                            ->orWhereHas('project', fn($p) =>
+                                $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                                  ->orWhereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            );
+                        });
+                    }
+                })
                 ->addColumn('project_code', fn($p) => $p->project->code ?? '-')
                 ->addColumn('project_name', fn($p) => $p->project->name ?? '-')
                 ->addColumn('invoice_codes', function ($p) {

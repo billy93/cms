@@ -25,15 +25,15 @@
                             <!-- Search -->
                             <div class="row align-items-center">
                                 <div class="col-sm-4">
-                                    <div class="icon-form mb-3 mb-sm-0">
-                                        <span class="form-icon"><i class="ti ti-search"></i></span>
-                                        <input type="text" class="form-control" placeholder="Search Invoices">
-                                    </div>							
-                                </div>		
+									<form class="icon-form mb-3 mb-sm-0" id="c_invoice_list_search_form">
+										<span class="form-icon"><i class="ti ti-search"></i></span>
+										<input type="text" class="form-control" placeholder="Search Invoices" id="c_invoice_list_search_input">
+									</form>	
+								</div>	
                                 <div class="col-sm-8">					
                                     <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
                                         <div class="dropdown me-2">
-                                            <a href="javascript:void(0);" class="dropdown-toggle"  data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
+                                            <a href="javascript:void(0);" class="dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
                                             <div class="dropdown-menu  dropdown-menu-end">
                                                 <ul>
                                                     <li>
@@ -407,7 +407,12 @@
                                     </style>
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>ID</th>
+                                            <th class="td-break no-sort">
+												<label class="checkboxs">
+													<input type="checkbox" id="select_all_invoice_list">
+													<span class="checkmarks"></span>
+												</label>
+											</th>
                                             <th>Invoice Code</th>
                                             <th>Created</th>
                                             <th>Updated</th>
@@ -427,12 +432,12 @@
                             <div class="row align-items-center mt-2" style="row-gap: 1em;">
 								<div class="col-md-6">
 									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
-										<div class="datatable-info"></div>
-										<div class="datatable-length"></div>
+										<div class="invoice_list_datatable_info"></div>
+										<div class="invoice_list_datatable_length"></div>
 									</div>
 								</div>
 								<div class="col-md-6 flex-grow-1">
-									<div class="datatable-paginate"></div>
+									<div class="invoice_list_datatable_paginate"></div>
 								</div>
 							</div>
                         </div>
@@ -447,5 +452,10 @@
 @endsection
 
 @push('scripts')
+	<script>
+		const HIDE_INVOICE_DATATABLE_CHECKBOX = true;
+	</script>
+    <script src="/build/js/invoices/shared_var.js"></script>
+    <script src="/build/js/invoices/datatables.js"></script>
     <script src="/build/js/invoices/events.js"></script>
 @endpush

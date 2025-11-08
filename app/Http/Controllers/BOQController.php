@@ -22,7 +22,7 @@ class BoqController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-             $searchValue = $request->search;
+            $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $boqs = Boq::with(['proposal', 'items']);
 
@@ -45,9 +45,6 @@ class BoqController extends Controller
                         });
                     }
                 })
-                ->addColumn('checkbox', fn($boq) =>
-                    '<label class="checkboxs"><input type="checkbox" class="row-check" value="' . $boq->id . '"><span class="checkmarks"></span></label>'
-                )
                 ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
                 ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
                 ->addColumn('header', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->header}</li>")->toArray()).'</ul>')

@@ -262,6 +262,11 @@ use App\Services\MenuService;
                                 href="{{ url('invoices') }}">
                                 <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
                         </li> -->
+                        <li>
+                            <a class="{{ Request::is('invoices') ? 'active' : '' }}"
+                                href="{{ url('invoices') }}">
+                                <i class="ti ti-file-invoice"></i><span>Invoices</span></a>
+                        </li>
                         @endif
                         @if(MenuService::canAccess('/boqs'))
                         <li>

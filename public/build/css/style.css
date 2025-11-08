@@ -45004,6 +45004,16 @@ input[type="text"]:disabled {
     white-space: unset !important;
 }
 
+th.fit, 
+td.fit {
+    width: 1% !important; 
+    white-space: nowrap; 
+}
+th.no-sort::after,
+th.no-sort::before {
+  display: none !important;
+}
+
 .desc-col {
     max-width: 300px
 }

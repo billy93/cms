@@ -35,7 +35,6 @@ class ProposalSeeder extends Seeder
                 // ])->random(),
                 // 'date_from' => Carbon::now()->addDays(rand(0,10)),
                 // 'date_to' => Carbon::now()->addDays(rand(11,20)),
-                'invoice_no' => null,
                 'status' => 'Draft',
             ]);
         }

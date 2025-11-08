@@ -225,8 +225,6 @@
                 success: function(response) {
                     if(response.success) {
                         PROPOSAL = response.data;
-                        console.log(PROPOSAL);
-                         
                         renderProposalInfo(response.data);
                         renderInvoicesInfo(response.data);
                     } else {
@@ -240,9 +238,17 @@
         }
 
         function renderProposalInfo(proposal) {
-            const invoices = proposal.invoices.length 
+            const invoices = proposal.invoices?.length 
                 ? "<ul>" + proposal.invoices.map(invoice => `<li>${invoice.code}</li>`).join("") + "</ul>" 
                 : "-";
+
+            const noteField = proposal.status.toLowerCase() === "lose" ? 
+                `<div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Invoice(s)</label>
+                        <p class="mb-0">${proposal.note || "-"}</p>
+                    </div>
+                </div>` : "";
 
             const html = `
                 <div class="col-md-6 col-xxl-4">
@@ -259,20 +265,8 @@
                 </div>
                 <div class="col-md-6 col-xxl-4">
                     <div class="form-group mb-2">
-                        <label class="fw-semibold">Proposal Status</label>
-                        <p class="mb-0">${proposal.status ? getProposalStatus(proposal.status) : "-"}</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-xxl-4">
-                    <div class="form-group mb-2">
                         <label class="fw-semibold">Sales Code</label>
                         <p class="mb-0">${proposal.sales_code || "-"}</p>
-                    </div>
-                </div>
-                <div class="col-md-6 col-xxl-4">
-                    <div class="form-group mb-2">
-                        <label class="fw-semibold">Invoice(s)</label>
-                        <p class="mb-0">${invoices}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-xxl-4">
@@ -287,6 +281,19 @@
                         <p class="mb-0">${proposal.updated_at ? formatDate(proposal.updated_at) : "-"}</p>
                     </div>
                 </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Proposal Status</label>
+                        <p class="mb-0">${proposal.status ? getProposalStatus(proposal.status) : "-"}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Invoice(s)</label>
+                        <p class="mb-0">${invoices}</p>
+                    </div>
+                </div>
+                ${noteField}
             `;
             
             $('#proposal_info').html(html);
@@ -300,6 +307,23 @@
             }
 
             proposal.invoices.forEach((invoice, i, a) => {
+                const conditionalActions = invoice.status !== "Paid" ? 
+                `
+                    <button 
+                        class="btn btn-sm btn-secondary me-2 c_invoice_edit_btn"
+                        data-url="/invoices/${invoice.id}"
+                    >
+                        <i class="ti ti-edit" style="font-size: 1.25rem"></i>
+                    </button>
+                    <button 
+                        class="btn btn-sm btn-danger c_invoice_delete_btn"
+                        data-url="/invoices/${invoice.id}"
+                    >
+                        <i class="ti ti-trash" style="font-size: 1.25rem"></i>
+                    </button>
+                ` :
+                "";
+
                 const html = `
                     <div class="row ${i !== a.length - 1 ? "pb-3 mb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
                         <div class="col-md-6 col-xxl-4">
@@ -347,7 +371,7 @@
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Payment Method</label>
-                                <p class="mb-0">${formatRupiah(invoice.payment_method) || "-"}</p>
+                                <p class="mb-0">${invoice.payment_method || "-"}</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
@@ -386,6 +410,15 @@
                                     <div class="invoice_items_${invoice.id}_paginate"></div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-md-12 mt-3 d-flex justify-content-end">
+                            <a 
+                                href="/invoices/${invoice.id}"
+                                class="btn btn-sm btn-outline-info me-2"
+                            >
+                                <i class="ti ti-eye" style="font-size: 1.25rem"></i>
+                            </a>
+                            ${conditionalActions}
                         </div>
                     </div>
                 `;
@@ -511,7 +544,7 @@
     <script src="/build/js/boqs/datatables.js"></script>
 
 @if($proposal->status !== "Win")
-    <script src="/build/js/proposals/proposal_2_script.js"></script>
+    <script src="/build/js/proposals/append_boqs.js"></script>
     <script src="/build/js/boqs/events.js"></script>
 @endif
 

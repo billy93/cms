@@ -22,34 +22,28 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $projects = Project::with(['proposals', 'customer']);
 
             return DataTables::eloquent($projects)
-                ->addColumn('customer_name', fn($p) => $p->customer->name ?? '-')
-                ->addColumn('proposal_action', function ($project) {
-                    $createBtn = '<button class="btn btn-sm btn-outline-primary" data-project-id="' . $project->id . '">Create Proposal</button>';
-
-                    $viewBtn = '';
-                    if ($project->proposals && $project->proposals->count() > 0) {
-                        $viewBtn = '<button class="btn btn-sm btn-outline-success ms-1" data-project-id="' . $project->id . '">View Proposal</button>';
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(ref_doc_no) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
+                            ->orWhereHas('customer', fn($p) =>
+                                $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                            )
+                            ->orWhereHas('proposals', fn($p) =>
+                                $p->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            );
+                        });
                     }
-
-                    return '
-                        <div class="d-flex gap-2">
-                            ' . $createBtn . '
-                            ' . $viewBtn . '
-                        </div>
-                    ';
                 })
-                ->addColumn('status_badge', fn($p) =>
-                    match ($p->status) {
-                        'Active' => '<span class="badge badge-status bg-success">Active</span>',
-                        'Inactive' => '<span class="badge badge-status bg-secondary">Inactive</span>',
-                        'Completed' => '<span class="badge badge-status bg-primary">Completed</span>',
-                        'Cancelled' => '<span class="badge badge-status bg-danger">Cancelled</span>',
-                        default => '<span class="badge badge-status bg-dark">Unknown</span>'
-                    }
-                )
+                ->addColumn('customer_name', fn($p) => $p->customer->name ?? '-')
                 ->addColumn('actions', function ($p) {
                     return '
                         <div class="dropdown table-action">
@@ -64,21 +58,17 @@ class ProjectController extends Controller
                                     <i class="ti ti-eye text-info"></i> View Detail
                                 </a>
                                 <a  
-                                    class="dropdown-item c_project_edit" 
+                                    class="dropdown-item c_project_edit_btn" 
                                     href="#" 
-                                    data-id="'.$p->id.'" 
                                     data-url="'.route('projects.read', ['project_id' => $p->id]).'"
-                                    data-bs-toggle="offcanvas"
-                                    data-bs-target="#offcanvas_add">
+                                >
                                     <i class="ti ti-edit text-blue"></i> Edit
                                 </a>
                                 <a  
-                                    class="dropdown-item c_project_delete" 
+                                    class="dropdown-item c_project_delete_btn" 
                                     href="javascript:void(0);" 
-                                    data-id="'.$p->id.'" 
                                     data-url="'.route('projects.delete', ['project_id' => $p->id]).'"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#delete_project_modal">
+                                >
                                     <i class="ti ti-trash text-danger"></i> Delete
                                 </a>
                             </div>

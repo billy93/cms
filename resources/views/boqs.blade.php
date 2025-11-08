@@ -148,7 +148,7 @@
 
 @push('scripts')
 	<script>
-		const HIDE_CHECKBOX = true;
+		const HIDE_BOQ_DATATABLE_CHECKBOX = true;
 	</script>
   <script src="/build/js/boqs/shared_var.js"></script>
 	<script src="/build/js/boqs/datatables.js"></script>
