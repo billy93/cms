@@ -41,7 +41,7 @@ class Project extends Model
         do {
             $random = strtoupper(Str::random(5));
             $code = "PRJ-{$date}-{$random}";
-        } while (Boq::where('code', $code)->exists()); 
+        } while (Project::where('code', $code)->exists()); 
 
         return $code;
     }

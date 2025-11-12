@@ -3,300 +3,195 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
+use App\Http\Requests\ProductRequest;
+use App\Http\Services\ProductService;
 
 class ProductController extends Controller
 {
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
     /**
-     * Display a listing of products
+     * Display product listing (for DataTables).
      */
     public function index(Request $request)
     {
-        // If it's an API request, return JSON
-        if ($request->expectsJson() || $request->is('api/*')) {
-            return $this->apiIndex($request);
+        if ($request->ajax()) {
+            $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
+            $products = Product::with(['supplier', 'categories']);
+
+            return DataTables::eloquent($products)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(products.name) LIKE ?', ["%{$search}%"])
+                              ->orWhereRaw('LOWER(products.description) LIKE ?', ["%{$search}%"])
+                              ->orWhereHas('supplier', fn($p) =>
+                                  $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                              )
+                              ->orWhereHas('categories', fn($p) =>
+                                  $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                              );
+                        });
+                    }
+                })
+                ->addColumn('supplier_name', fn($p) => $p->supplier->name ?? '-')
+                ->addColumn('categories', function ($p) {
+                    if ($p->categories->isEmpty()) {
+                        return '-';
+                    }
+
+                    return $p->categories->map(function ($cat) {
+                        return '<span class="badge bg-primary me-1">' . e($cat->name) . '</span>';
+                    })->implode(' ');
+                })
+                ->addColumn('actions', function ($p) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item" 
+                                    href="'.route('products.read', ['product_id' => $p->id]).'"
+                                >
+                                    <i class="ti ti-eye text-info"></i> View Detail
+                                </a>
+                                <a  
+                                    class="dropdown-item c_product_edit_btn" 
+                                    href="#" 
+                                    data-url="'.route('products.read', ['product_id' => $p->id]).'"
+                                >
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_product_delete_btn" 
+                                    href="javascript:void(0);" 
+                                    data-url="'.route('products.delete', ['product_id' => $p->id]).'"
+                                >
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    ';
+                })
+                ->rawColumns(['categories', 'actions'])
+                ->make(true);
         }
-        
-        // Otherwise return the view
+
         return view('products');
     }
-    
-    /**
-     * API method to get products
-     */
-    public function apiIndex(Request $request): JsonResponse
-    {
-        try {
-            $query = Product::with(['supplier', 'category']);
-
-            // Search functionality
-            if ($request->filled('search')) {
-                $query->where(function($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%')
-                      ->orWhere('description', 'like', '%' . $request->search . '%')
-                      ->orWhere('unit', 'like', '%' . $request->search . '%');
-                });
-            }
-
-            // Filter by category
-            if ($request->filled('category_id') && $request->category_id !== 'all') {
-                $query->where('category_id', $request->category_id);
-            }
-
-            // Filter by supplier
-            if ($request->filled('supplier_id') && $request->supplier_id !== 'all') {
-                $query->where('supplier_id', $request->supplier_id);
-            }
-
-            // Pagination
-            $perPage = $request->get('per_page', 15);
-            $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-            return response()->json([
-                'success' => true,
-                'data' => $products->items(),
-                'pagination' => [
-                    'current_page' => $products->currentPage(),
-                    'last_page' => $products->lastPage(),
-                    'per_page' => $products->perPage(),
-                    'total' => $products->total(),
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving products: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
-     * Store a newly created product
+     * Create a new Product.
      */
-    public function store(Request $request): JsonResponse
+    public function create(ProductRequest $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'unit' => 'required|string|max:32',
-                'base_cost' => 'required|numeric|min:0',
-                'category_id' => 'required|exists:product_categories,id',
-                'supplier_id' => 'required|exists:suppliers,id'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            DB::beginTransaction();
-
-            $product = Product::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'unit' => $request->unit,
-                'base_cost' => $request->base_cost,
-                'category_id' => $request->category_id,
-                'supplier_id' => $request->supplier_id
-            ]);
-
-            DB::commit();
-
-            // Load relationships
-            $product->load(['supplier', 'category']);
-
+            $product = $this->productService->createProduct($request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Product created successfully',
                 'data' => $product
             ], 201);
-
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating product: ' . $e->getMessage()
+                'message' => 'Failed to create Product'
             ], 500);
         }
     }
 
     /**
-     * Display the specified product
+     * Read all products (JSON).
      */
-    public function show($id): JsonResponse
+    public function readAll(): JsonResponse
     {
         try {
-            $product = Product::with(['supplier', 'category'])->findOrFail($id);
-
+            $products = $this->productService->getAllProducts();
             return response()->json([
                 'success' => true,
-                'data' => $product
-            ]);
+                'data' => $products
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
-            ], 404);
+                'message' => $e->getMessage() ?: 'Failed to fetch Products'
+            ], 500);
         }
     }
 
     /**
-     * Update the specified product
+     * Read a single product by ID.
      */
-    public function update(Request $request, $id): JsonResponse
+    public function read(Request $request, $product_id)
     {
-        try {
-            $product = Product::findOrFail($id);
-
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'unit' => 'required|string|max:32',
-                'base_cost' => 'required|numeric|min:0',
-                'category_id' => 'required|exists:product_categories,id',
-                'supplier_id' => 'required|exists:suppliers,id'
-            ]);
-
-            if ($validator->fails()) {
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $product = $this->productService->getProductById($product_id);
+                return response()->json([
+                    'success' => true,
+                    'data' => $product
+                ], 200);
+            } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
+                    'message' => 'Failed to load Product'
+                ], 500);
             }
+        }
 
-            DB::beginTransaction();
+        $product = $this->productService->getProductById($product_id);
+        return view('products.detail', compact('product'));
+    }
 
-            $product->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'unit' => $request->unit,
-                'base_cost' => $request->base_cost,
-                'category_id' => $request->category_id,
-                'supplier_id' => $request->supplier_id
-            ]);
-
-            DB::commit();
-
-            // Load relationships
-            $product->load(['supplier', 'category']);
-
+    /**
+     * Update product.
+     */
+    public function update(ProductRequest $request, $product_id): JsonResponse
+    {
+        try {
+            $product = $this->productService->updateProduct($product_id, $request->validated());
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully',
                 'data' => $product
-            ]);
-
+            ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
+            Log::error('Error updating Product: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating product: ' . $e->getMessage()
+                'message' => 'Failed to update Product'
             ], 500);
         }
     }
 
     /**
-     * Remove the specified product
+     * Delete product.
      */
-    public function destroy($id): JsonResponse
+    public function delete($product_id): JsonResponse
     {
         try {
-            $product = Product::findOrFail($id);
-
-            DB::beginTransaction();
-            $product->delete();
-            DB::commit();
-
+            $this->productService->deleteProduct($product_id);
             return response()->json([
                 'success' => true,
                 'message' => 'Product deleted successfully'
-            ]);
-
+            ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
+            Log::error('Error deleting Product: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting product: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get products by category
-     */
-    public function getByCategory($categoryId): JsonResponse
-    {
-        try {
-            $products = Product::with(['supplier', 'category'])
-                ->where('category_id', $categoryId)
-                ->orderBy('name', 'asc')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $products
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving products: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get products by supplier
-     */
-    public function getBySupplier($supplierId): JsonResponse
-    {
-        try {
-            $products = Product::with(['supplier', 'category'])
-                ->where('supplier_id', $supplierId)
-                ->orderBy('name', 'asc')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $products
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving products: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get all product categories
-     */
-    public function getCategories(): JsonResponse
-    {
-        try {
-            $categories = ProductCategory::orderBy('name', 'asc')->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $categories
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving categories: ' . $e->getMessage()
+                'message' => 'Failed to delete Product'
             ], 500);
         }
     }

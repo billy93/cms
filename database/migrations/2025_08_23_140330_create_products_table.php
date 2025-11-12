@@ -6,41 +6,32 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('code')->unique();
+            $table->string('name', 255);
             $table->text('description')->nullable();
-            $table->string('unit', 32);
-            $table->double('base_cost');
-            $table->unsignedBigInteger('category_id'); // FK ke product_categories
-            $table->unsignedBigInteger('supplier_id');
+            $table->string('unit', 50)->default('Pcs');
+            $table->decimal('base_cost', 20, 2)->default(0);
+
+            // Supplier (1:M)
+            $table->foreignId('supplier_id')
+                ->nullable()
+                ->constrained('suppliers')
+                ->onUpdate('cascade')
+                ->onDelete('set null'); // kalau supplier dihapus, product tetap ada
+
             $table->timestamps();
-
-            // Index & FK
-            $table->index('supplier_id', 'idx_products_supplier_id');
-            $table->foreign('supplier_id', 'fk_products_supplier')
-                  ->references('id')->on('suppliers')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
-
-            $table->index('category_id', 'idx_products_category_id');
-            $table->foreign('category_id', 'fk_products_category')
-                  ->references('id')->on('product_categories')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign(['supplier_id']);
+        }); 
         Schema::dropIfExists('products');
     }
 };

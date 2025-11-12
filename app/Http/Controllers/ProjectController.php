@@ -100,13 +100,23 @@ class ProjectController extends Controller
         }
     }
 
-    public function readAll(): JsonResponse
+    public function readAll(Request $request): JsonResponse
     {
-        $projects = $this->projectService->getAllProjects();
-        return response()->json([
-            'status' => 'success',
-            'data' => $projects
-        ], 200);
+        if($request->wantsJson() || $request->ajax()) {
+            try {
+                $projects = $this->projectService->getAllProjects();
+                return response()->json([
+                    'success' => true,
+                    'data' => $project
+                ], 201);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to fetch Projects'
+                ], 500);
+            }
+        }
+        abort(404);
     }
 
     public function read(Request $request, $project_id)
@@ -119,7 +129,6 @@ class ProjectController extends Controller
                     'data' => $project
                 ], 200);
             } catch (\Exception $e) {
-                Log::error('Error reading Project: ' . $e->getMessage());
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to load Project'
@@ -141,7 +150,6 @@ class ProjectController extends Controller
                 'data' => $project
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error updating Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update Project'

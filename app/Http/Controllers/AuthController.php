@@ -51,18 +51,52 @@ class AuthController extends Controller
 
     $credentials = $request->only(['email', 'password']);
 
-    if(Auth::attempt($credentials, $remember)) {
+    if (Auth::attempt($credentials, $remember)) {
       $request->session()->regenerate();
+
+      // 🔹 Cek apakah request dari Postman / JSON client
+      if ($request->expectsJson() || $request->isJson()) {
+        return response()->json([
+          'message' => 'Login success',
+          'user' => Auth::user(),
+          'csrf_token' => csrf_token(), // token baru setelah session diregenerate
+        ]);
+      }
+
+      // 🔹 Kalau dari form biasa (web)
       return redirect()->intended('/project-dashboard');
     } 
 
+    // 🔹 Gagal login
     $user = User::where('email', $request->email)->first();
+    $errorMessage = 'Invalid email or password!';
 
-    // Return With Specific Error Message
-    if(!$user) return back()->with('access_denied', 'Invalid email or password!')->withInput($request->except('password'));
-    if($user && !Hash::check($request->password, $user->password)) return back()->with('access_denied', 'Invalid email or password!')->withInput($request->except('password'));
+    if ($request->expectsJson() || $request->isJson()) {
+      return response()->json([
+          'message' => $errorMessage,
+          'status' => 'error',
+          'csrf_token' => csrf_token(), // tetap balikin token biar bisa retry login
+      ], 401);
+    }
+
+    // 🔹 Kalau dari form biasa
+    if (!$user || ($user && !Hash::check($request->password, $user->password))) {
+      return back()
+        ->with('access_denied', $errorMessage)
+        ->withInput($request->except('password'));
+    }
   }
 
+  public function getCsrf(Request $request)
+  {
+    // Ambil token dari helper bawaan Laravel
+    $token = csrf_token();
+
+    // Laravel juga otomatis akan set cookie "XSRF-TOKEN" jika middleware web aktif
+    return response()->json([
+      'csrf_token' => $token
+    ]);
+  }
 
   public function signout()
   {

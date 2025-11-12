@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,8 +13,8 @@ class Supplier extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'supplier_code',
-        'supplier_name',
+        'code',
+        'name',
         'address',
         'contact_person',
         'phone',
@@ -29,129 +31,23 @@ class Supplier extends Model
         'status' => 'string',
     ];
 
+    
     /**
      * Generate unique supplier code
      */
-    public static function generateSupplierCode()
+    public static function generateCode()
     {
-        $prefix = 'SUPP';
-        
-        // Get the highest supplier code number
-        $lastSupplier = self::orderBy('supplier_code', 'desc')->first();
-        
-        if ($lastSupplier) {
-            $lastNumber = (int) substr($lastSupplier->supplier_code, 4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-        
-        $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-        
-        // Check if code already exists (in case of gaps or concurrent inserts)
-        while (self::where('supplier_code', $newCode)->exists()) {
-            $newNumber++;
-            $newCode = $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-        }
-        
-        return $newCode;
+        $date = Carbon::now()->format('Ymd');
+        do {
+            $random = strtoupper(Str::random(5));
+            $code = "SUP-{$date}-{$random}";
+        } while (Boq::where('code', $code)->exists()); 
+
+        return $code;
     }
 
-    /**
-     * Scope for active suppliers
-     */
-    public function scopeActive($query)
+    public function products()
     {
-        return $query->where('status', 'active');
+        return $this->hasMany(Product::class);
     }
-
-    /**
-     * Scope for inactive suppliers
-     */
-    public function scopeInactive($query)
-    {
-        return $query->where('status', 'inactive');
-    }
-
-    /**
-     * Search suppliers by name, code, or contact person
-     */
-    public function scopeSearch($query, $search)
-    {
-        return $query->where(function ($q) use ($search) {
-            $q->where('supplier_name', 'like', "%{$search}%")
-              ->orWhere('supplier_code', 'like', "%{$search}%")
-              ->orWhere('contact_person', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%")
-              ->orWhere('tax_number', 'like', "%{$search}%");
-        });
-    }
-
-    /**
-     * Boot method to add event listeners
-     */
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::created(function ($supplier) {
-            \Log::info('Supplier created: ' . $supplier->supplier_code);
-        });
-    }
-
-    /**
-     * Get supplier's full address
-     */
-    public function getFullAddressAttribute()
-    {
-        return $this->address;
-    }
-
-    /**
-     * Check if supplier is active
-     */
-    public function isActive()
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Get formatted bank account info
-     */
-    public function getBankInfoAttribute()
-    {
-        if ($this->bank_name && $this->bank_account_number) {
-            return $this->bank_name . ' - ' . $this->bank_account_number . ' (' . $this->bank_account_name . ')';
-        }
-        return null;
-    }
-
-    /**
-     * Get all PICs for this supplier
-     */
-    public function pics()
-    {
-        return $this->hasMany(SupplierPic::class);
-    }
-
-    /**
-     * Get active PICs for this supplier
-     */
-    public function activePics()
-    {
-        return $this->hasMany(SupplierPic::class)->active();
-    }
-
-    /**
-     * Relationships will be added here when other models are created
-     */
-    // public function products()
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
-
-    // public function purchaseOrders()
-    // {
-    //     return $this->hasMany(PurchaseOrder::class);
-    // }
 }

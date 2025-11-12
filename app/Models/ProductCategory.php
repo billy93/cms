@@ -2,19 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
 
 class ProductCategory extends Model
 {
-    protected $fillable = [
-        'name'
-    ];
+  use HasFactory;
 
-    /**
-     * Get the products for the category.
-     */
-    public function products()
-    {
-        return $this->hasMany(Product::class, 'category_id');
-    }
+  protected $table = 'product_categories';
+
+  protected $fillable = [
+    'name',
+    'description',
+  ];
+  
+  // Category belongs to many products
+  public function products()
+  {
+    return $this->belongsToMany(Product::class, 'category_product', 'category_id', 'product_id')
+                ->withTimestamps();
+  } 
 }

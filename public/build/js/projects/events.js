@@ -438,6 +438,7 @@ class ProjectForm {
       this.hideLoading()
       return;
     }
+    console.log(payload);
 
     if (this.mode === "create") {
       try {

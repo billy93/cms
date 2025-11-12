@@ -12,6 +12,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BOQController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\MenuController;
 use App\Http\Middlewares\AuthMiddleware;
 
@@ -21,6 +22,8 @@ use App\Http\Middlewares\AuthMiddleware;
 // Route::get('register', [CustomAuthController::class, 'register'])->name('register-user');
 // Route::post('custom-registration', [CustomAuthController::class, 'customRegistration'])->name('register.custom'); 
 // Route::get('signout', [CustomAuthController::class, 'signOut'])->name('signout');
+
+Route::get('/signin', [AuthController::class, 'getCsrf']);
 
 Route::middleware(['guest'])->group(function () {
     Route::post('/signin', [AuthController::class, 'signin'])->name('auth.signin');
@@ -69,16 +72,36 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
+    // Route::prefix('products')->name('products.')
+    // ->controller(ProductController::class)->group(function () {
+    //     Route::post('/', 'store')->name('store');
+    //     Route::get('/all', 'index')->name('all');
+    //     Route::get('/categories', 'getCategories')->name('categories');
+    //     Route::get('/category/{categoryId}', 'getByCategory')->name('by-category');
+    //     Route::get('/supplier/{supplier}', 'getBySupplier')->name('by-supplier');
+    //     Route::get('/{id}', 'show')->name('show');
+    //     Route::put('/{id}', 'update')->name('update');
+    //     Route::delete('/{id}', 'destroy')->name('destroy');
+    // });
+
     Route::prefix('products')->name('products.')
-    ->controller(ProductController::class)->group(function () {
-        Route::post('/', 'store')->name('store');
-        Route::get('/all', 'index')->name('all');
-        Route::get('/categories', 'getCategories')->name('categories');
-        Route::get('/category/{categoryId}', 'getByCategory')->name('by-category');
-        Route::get('/supplier/{supplier}', 'getBySupplier')->name('by-supplier');
-        Route::get('/{id}', 'show')->name('show');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'destroy')->name('destroy');
+    ->controller(productController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{product_id}', 'read')->name('read'); 
+        Route::put('/{product_id}', 'update')->name('update'); 
+        Route::delete('/{product_id}', 'delete')->name('delete'); 
+    });
+
+    Route::prefix('suppliers')->name('suppliers.')
+    ->controller(SupplierController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{supplier_id}', 'read')->name('read'); 
+        Route::put('/{supplier_id}', 'update')->name('update'); 
+        Route::delete('/{supplier_id}', 'delete')->name('delete'); 
     });
 
     Route::prefix('roles-permissions')->name('roles.')
@@ -627,7 +650,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
 
-    Route::get('/products', [ProductController::class, 'index'])->name('products');
+    // Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     Route::get('/register-2', function () {
         return view('register-2');
@@ -1038,13 +1061,13 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     //     return view('customers.detail', compact('id'));
     // })->name('customers.detail');
 
-    Route::get('/suppliers', function () {
-        return view('suppliers.index');
-    })->name('suppliers');
+    // Route::get('/suppliers', function () {
+    //     return view('suppliers.index');
+    // })->name('suppliers');
 
-    Route::get('/suppliers/{id}', function ($id) {
-        return view('suppliers.detail', compact('id'));
-    })->name('suppliers.detail');
+    // Route::get('/suppliers/{id}', function ($id) {
+    //     return view('suppliers.detail', compact('id'));
+    // })->name('suppliers.detail');
 
     // Project routes
     // Route::get('/projects', function () {
