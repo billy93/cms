@@ -32,7 +32,7 @@
                                                 </ul>
                                             </div>
                                         </div>
-										<a href="javascript:void(0);" id="c_category_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Create BOQ</a>
+										<a href="javascript:void(0);" id="c_category_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Create Category</a>
                                     </div>
                                 </div>
                             </div>
