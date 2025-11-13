@@ -47,7 +47,7 @@ class ProductCategoryRequest extends ApiFormRequest
                 'max:255',
                 Rule::unique('product_categories', 'name')->ignore($this->id),
             ],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'description' => ['nullable', 'string', 'max:500'],
         ];
     }
 

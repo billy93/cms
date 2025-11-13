@@ -10,7 +10,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BOQController;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\MenuController;
@@ -63,26 +63,14 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     });
 
     Route::prefix('categories')->name('categories.')
-    ->controller(CategoryController::class)->group(function () {
-        Route::post('/', 'store')->name('store');
-        Route::get('/all', 'index')->name('all');
-        Route::get('/active', 'getActiveCategories')->name('active');
-        Route::get('/{id}', 'show')->name('show');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'destroy')->name('destroy');
+    ->controller(ProductCategoryController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{category_id}', 'read')->name('read'); 
+        Route::put('/{category_id}', 'update')->name('update'); 
+        Route::delete('/{category_id}', 'delete')->name('delete'); 
     });
-
-    // Route::prefix('products')->name('products.')
-    // ->controller(ProductController::class)->group(function () {
-    //     Route::post('/', 'store')->name('store');
-    //     Route::get('/all', 'index')->name('all');
-    //     Route::get('/categories', 'getCategories')->name('categories');
-    //     Route::get('/category/{categoryId}', 'getByCategory')->name('by-category');
-    //     Route::get('/supplier/{supplier}', 'getBySupplier')->name('by-supplier');
-    //     Route::get('/{id}', 'show')->name('show');
-    //     Route::put('/{id}', 'update')->name('update');
-    //     Route::delete('/{id}', 'destroy')->name('destroy');
-    // });
 
     Route::prefix('products')->name('products.')
     ->controller(productController::class)->group(function() {
@@ -139,14 +127,13 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     });
 
     Route::prefix('customers')->name('customers.')
-    ->controller(CustomerController::class)->group(function() {
+    ->controller(customerController::class)->group(function() {
         Route::get('/', 'index')->name('index'); 
         Route::post('/', 'create')->name('create'); 
         Route::get('/all', 'readAll')->name('readAll'); 
         Route::get('/{customer_id}', 'read')->name('read'); 
         Route::put('/{customer_id}', 'update')->name('update'); 
         Route::delete('/{customer_id}', 'delete')->name('delete'); 
-        Route::get('/show/{customer_id}', 'show')->name('show'); 
     });
 
     Route::prefix('projects')->name('projects.')
@@ -174,7 +161,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
     ->controller(InvoiceController::class)->group(function() {
         Route::get('/', 'index')->name('index'); 
         Route::post('/', 'create')->name('create'); 
-        Route::post('/all', 'readAll')->name('readAll'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
         Route::get('/{invoice_id}', 'read')->name('read'); 
         Route::put('/{invoice_id}', 'update')->name('update'); 
         Route::delete('/{invoice_id}', 'delete')->name('delete'); 
@@ -648,7 +635,7 @@ Route::middleware([AuthMiddleware::class])->group(function () {
         return view('project-reports');
     })->name('project-reports'); 
 
-    Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
+    // Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
 
     // Route::get('/products', [ProductController::class, 'index'])->name('products');
 

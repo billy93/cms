@@ -27,10 +27,10 @@ class CustomerPic extends Model
     /**
      * Get the customer that owns the PIC
      */
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
+    // public function customer()
+    // {
+    //     return $this->belongsTo(Customer::class);
+    // }
 
     /**
      * Scope for active PICs

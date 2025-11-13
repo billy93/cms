@@ -61,15 +61,15 @@
 									<style>
                     #boq_list th, 
                     #boq_list td {
-                            padding: 12px 30px;
+											padding: 12px 30px;
                     } 
                     #boq_list th:first-child, 
                     #boq_list td:first-child {
-                            padding: 12px;
+											padding: 12px;
                     } 
                     #boq_list th:nth-child(2), 
                     #boq_list td:nth-child(2) {
-                            padding-left: 0;
+											padding-left: 0;
                     }
 										#boq_list tbody tr td {
 											vertical-align: baseline;

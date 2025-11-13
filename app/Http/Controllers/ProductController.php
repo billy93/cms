@@ -25,10 +25,21 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            \Log::info($request); 
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $products = Product::with(['supplier', 'categories']);
 
+            if($request->supplier_id) {
+                $products->where('supplier_id', $request->supplier_id);
+            }
+
+            if($request->category_id) {
+                $products->whereHas('categories', function($q) use ($request) {
+                    $q->where('product_categories.id', $request->category_id);
+                });
+            }
+            
             return DataTables::eloquent($products)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {
@@ -115,20 +126,23 @@ class ProductController extends Controller
     /**
      * Read all products (JSON).
      */
-    public function readAll(): JsonResponse
+    public function readAll(Request $request): JsonResponse
     {
-        try {
-            $products = $this->productService->getAllProducts();
-            return response()->json([
-                'success' => true,
-                'data' => $products
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage() ?: 'Failed to fetch Products'
-            ], 500);
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $products = $this->productService->getAllProducts();
+                return response()->json([
+                    'success' => true,
+                    'data' => $products
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to fetch Products'
+                ], 500);
+            }
         }
+        abort(404);
     }
 
     /**

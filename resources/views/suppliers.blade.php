@@ -179,11 +179,16 @@
                         <!-- Supplier List -->
                         <div class="table-responsive custom-table">
                             <table class="table" id="supplier_list" data-url="{{ route('suppliers.index') }}"> 
+                                <style>
+                                    #supplier_list td {
+                                        vertical-align: baseline;
+                                    }
+                                </style>
                                 <thead class="thead-light">
                                     <tr>
                                         <th class="td-break no-sort">
                                             <label class="checkboxs">
-                                                <input type="checkbox" id="select_all_project_list">
+                                                <input type="checkbox" id="select_all_supplier_list">
                                                 <span class="checkmarks"></span>
                                             </label>
                                         </th>
@@ -203,7 +208,7 @@
                                 <tbody></tbody>
                             </table>
                         </div>
-                        <div class="row align-items-center">
+                        <div class="row align-items-center mt-2">
                             <div class="col-md-6">
                                 <div class="datatable-length"></div>
                             </div>

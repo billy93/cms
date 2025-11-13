@@ -143,7 +143,7 @@ class BoqSeeder extends Seeder
             continue; // skip kalau produk gak ada
           }
 
-          $unitPrice = $product->base_cost;
+          $unitPrice = $product->getAttributes()['base_cost'];
           $multiplierTotal = $unitPrice * $data['qty'];
 
           BoqItem::create([

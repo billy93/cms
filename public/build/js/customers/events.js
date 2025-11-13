@@ -1,4 +1,4 @@
-class SupplierForm {
+class CustomerForm {
   isInit = true;
   mode = "create";
   data = {};
@@ -6,7 +6,7 @@ class SupplierForm {
 
   constructor (formId) {
     this.form = document.getElementById(formId);
-    this.closeForm = document.getElementById("close_supplier_form");
+    this.closeForm = document.getElementById("close_customer_form");
 
     this.handleDocumentInput = this.handleDocumentInput.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -31,7 +31,7 @@ class SupplierForm {
     this.mode = mode;
 
     const formWrapper = document.createElement("div");
-    formWrapper.id = "supplier_form_wrapper";
+    formWrapper.id = "customer_form_wrapper";
     formWrapper.innerHTML = this.createForm();
     this.form.appendChild(formWrapper);
     this.initPlugins();
@@ -44,31 +44,29 @@ class SupplierForm {
 
     const value = {
       code: "",
+      status: "Active",
       name: "",
       address: "",
       contact_person: "",
       phone: "",
       email: "",
-      tax_number: "",
       bank_name: "",
       bank_account_number: "",
       bank_account_name: "",
-      status: "",
       notes: "",
     }
 
     if (isEdit && this.data) {
       value.code = this.data.code || "";
+      value.status = this.data.status || "Active";
       value.name = this.data.name || "";
       value.address = this.data.address || "";
       value.contact_person = this.data.contact_person || "";
       value.phone = this.data.phone || "";
       value.email = this.data.email || "";
-      value.tax_number = this.data.tax_number || "";
       value.bank_name = this.data.bank_name || "";
       value.bank_account_number = this.data.bank_account_number || "";
       value.bank_account_name = this.data.bank_account_name || "";
-      value.status = this.data.status || "";
       value.notes = this.data.notes || "";
     }
 
@@ -76,99 +74,92 @@ class SupplierForm {
       return `<option value="${s}" ${value.status === s ? "selected" : ""}>${s}</option>`;
     });
 
-    const supplierCodeField = isEdit ? `
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label class="col-form-label">Code<span class="text-danger">*</span></label>
-          <input type="text" id="input_supp_code" class="form-control" value="${value.name}" disabled>
+    const dynamic = isEdit ?
+      `
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Customer Code</label>
+              <input type="text" id="input_customer_code" class="form-control btn-disabled" value="${value.code}" disabled>
+          </div>
         </div>
-      </div>
-    ` : "";
+      ` : ""
+      ;
 
     return `
       <div>
         <div class="row">
-          ${supplierCodeField}
+          ${dynamic}
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Name<span class="text-danger">*</span></label>
-              <input type="text" id="input_supp_name" class="form-control" value="${value.name}">
-              <small id="input_supp_name_error" class="text-danger mt-1" style="display: none;"></small>
+              <label class="col-form-label">Status<span class="text-danger">*</span></label>
+              <select id="input_customer_status" class="select form-control" style="text-transform: capitaliza;">
+                <option value="" ${!value.status ? "selected" : ""}>-- Select Status --</option>
+                ${selectStatusOptions}
+              </select>
+              <small id="input_customer_status_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Address<span class="text-danger">*</span></label>
-              <input type="text" id="input_supp_address" class="form-control" value="${value.address}">
-              <small id="input_supp_address_error" class="text-danger mt-1" style="display: none;"></small>
+              <label class="col-form-label">Customer Name<span class="text-danger">*</span></label>
+              <input type="text" id="input_customer_name" class="form-control btn-disabled" value="${value.name}">
+              <small id="input_customer_name_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Contact Person</label>
-              <input type="text" id="input_supp_contact_person" class="form-control" value="${value.contact_person}" data-type="currency">
-              <small id="input_supp_contact_person_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="text" id="input_customer_contact_person" class="form-control btn-disabled" value="${value.contact_person}">
+              <small id="input_customer_contact_person_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Phone<span class="text-danger">*</span></label>
-              <input type="tel" id="input_supp_phone" class="form-control" value="${value.phone}" data-type="currency">
-              <small id="input_supp_phone_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="text" id="input_customer_phone" class="form-control btn-disabled" value="${value.phone}">
+              <small id="input_customer_phone_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Email</label>
-              <input type="email" id="input_supp_email" class="form-control" value="${value.email}" data-type="currency">
-              <small id="input_supp_email_error" class="text-danger mt-1" style="display: none;"></small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3">
-              <label class="col-form-label">Tax No.</label>
-              <input type="text" id="input_supp_tax_number" class="form-control" value="${value.tax_number}" data-type="currency">
-              <small id="input_supp_tax_number_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="email" id="input_customer_email" class="form-control btn-disabled" value="${value.email}">
+              <small id="input_customer_email_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Name</label>
-              <input type="text" id="input_supp_bank_name" class="form-control" value="${value.bank_name}" data-type="currency">
-              <small id="input_supp_bank_name_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="text" id="input_customer_bank_name" class="form-control btn-disabled" value="${value.bank_name}">
+              <small id="input_customer_bank_name_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Account Number</label>
-              <input type="text" id="input_supp_bank_account_number" class="form-control" value="${value.bank_account_number}" data-type="currency">
-              <small id="input_supp_bank_account_number_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="text" id="input_customer_bank_account_number" class="form-control btn-disabled" value="${value.bank_account_number}">
+              <small id="input_customer_bank_account_number_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Account Name</label>
-              <input type="text" id="input_supp_bank_account_name" class="form-control" value="${value.bank_account_name}" data-type="currency">
-              <small id="input_supp_bank_account_name_error" class="text-danger mt-1" style="display: none;"></small>
+              <input type="text" id="input_customer_bank_account_name" class="form-control btn-disabled" value="${value.bank_account_name}">
+              <small id="input_customer_bank_account_name_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-12">
             <div class="mb-3">
-              <div class="d-flex align-items-center justify-content-between">
-                <label class="col-form-label">Status<span class="text-danger">*</span></label>
-              </div>
-              <select id="input_supp_status" class="select">
-                <option value="" ${!value.status ? "selected" : ""}>-- Select Status --</option>
-                ${selectStatusOptions}
-              </select>
-              <small id="input_supp_status_error" class="text-danger mt-1" style="display: none;"></small>
+              <label class="col-form-label">Address<span class="text-danger">*</span></label>
+              <textarea class="form-control" id="input_customer_address">${value.address}</textarea>
+              <small id="input_customer_address_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-12">
             <div class="mb-3">
               <label class="col-form-label">Notes</label>
-              <textarea class="form-control" id="input_supp_notes">${value.notes}</textarea>
-              <small id="input_supp_notes_error" class="text-danger mt-1" style="display: none;"></small>
+              <textarea class="form-control" id="input_customer_notes">${value.notes}</textarea>
+              <small id="input_customer_notes_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
         </div>
@@ -182,29 +173,9 @@ class SupplierForm {
 
   initPlugins() {
     if (window.$ && $.fn.select2) {
-      console.log("ASS");
-
       $('.select').select2({
         width: '100%',
-        dropdownParent: $('#c_supplier_canvas_form')
-      });
-    }
-
-    if ($('.datetimepicker').length && $.fn.datetimepicker) {
-      $('.datetimepicker').each(function () {
-        const el = $(this);
-        const rawValue = el.val();
-        const isIso = rawValue && moment(rawValue, moment.ISO_8601, true).isValid();
-        const parsedDate = isIso ? moment(rawValue) : null;
-
-        el.datetimepicker({
-          format: 'DD/MM/YY',
-          date: parsedDate || null,
-        });
-
-        if (isIso) {
-          el.val(parsedDate.format('DD/MM/YY'));
-        }
+        dropdownParent: $('#c_customer_canvas_form')
       });
     }
   }
@@ -271,57 +242,57 @@ class SupplierForm {
 
     const inputs = [
       {
-        field: "input_supp_name",
+        field: "input_customer_name",
         required: true,
         message: "Name is required."
       },
       {
-        field: "input_supp_address",
-        required: true,
-        message: "Address is required."
+        field: "input_customer_status",
+        required: false,
+        message: "Status is required."
       },
       {
-        field: "input_supp_contact_person",
+        field: "input_customer_contact_person",
         required: false,
         message: "Contact Person is required."
       },
       {
-        field: "input_supp_phone",
+        field: "input_customer_phone",
         required: true,
         message: "Phone is required."
       },
       {
-        field: "input_supp_email",
+        field: "input_customer_email",
         required: false,
         message: "Email is required."
       },
       {
-        field: "input_supp_tax_number",
-        required: false,
-        message: "Tax No. is required."
-      },
-      {
-        field: "input_supp_bank_name",
+        field: "input_customer_bank_name",
         required: false,
         message: "Bank Name is required."
       },
       {
-        field: "input_supp_bank_account_number",
+        field: "input_customer_bank_account_number",
         required: false,
-        message: "Bank Acc. No. is required."
+        message: "Bank Name is required."
       },
       {
-        field: "input_supp_bank_account_name",
+        field: "input_customer_bank_account_name",
         required: false,
-        message: "Bank Acc. Name is required."
+        message: "Bank Name is required."
       },
       {
-        field: "input_supp_status",
+        field: "input_customer_bank_account_name",
+        required: false,
+        message: "Bank Name is required."
+      },
+      {
+        field: "input_customer_address",
         required: true,
-        message: "Status is required."
+        message: "Address is required."
       },
       {
-        field: "input_supp_notes",
+        field: "input_customer_notes",
         required: false,
         message: "Notes is required."
       },
@@ -331,11 +302,7 @@ class SupplierForm {
       const el = this.form.querySelector("#" + id.field);
       let value = el ? el.value.trim() : "";
 
-      if (value && id.date) {
-        value = moment(value, 'DD/MM/YY').format('YYYY-MM-DD')
-      }
-
-      payload[id.field.replace("input_supp_", "")] = value;
+      payload[id.field.replace("input_customer_", "")] = value;
 
       if (!value && id.required) {
         this.errors[id.field + "_error"] = id.message;
@@ -367,7 +334,7 @@ class SupplierForm {
 
     if (this.mode === "create") {
       try {
-        const response = await fetch('/suppliers', {
+        const response = await fetch('/customers', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -380,22 +347,22 @@ class SupplierForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          showToast("success", response.message || 'Supplier created successfully!');
-          $('#supplier_list').DataTable().ajax.reload();
+          showToast("success", response.message || 'Customer created successfully!');
+          $('#customer_list').DataTable().ajax.reload();
           if (this.closeForm) this.closeForm.click();
           this.resetForm()
         } else {
           showToast("error", result.message || result.errors);
         }
       } catch (err) {
-        showToast("error", 'An error occurred while creating Supplier.');
+        showToast("error", 'An error occurred while creating Customer.');
       } finally {
         this.isFetching = false;
         this.hideLoading()
       }
     } else if (this.mode === "edit") {
       try {
-        const response = await fetch(`/suppliers/${this.data.id}`, {
+        const response = await fetch(`/customers/${this.data.id}`, {
           method: 'PUT',
           headers: {
             "Content-Type": "application/json",
@@ -408,8 +375,8 @@ class SupplierForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          showToast("success", response.message || 'Supplier updated successfully!');
-          $('#supplier_list').DataTable().ajax.reload(null, false);
+          showToast("success", response.message || 'Customer updated successfully!');
+          $('#customer_list').DataTable().ajax.reload(null, false);
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
           console.log(result);
@@ -418,7 +385,7 @@ class SupplierForm {
           showToast("error", result.message || result.errors);
         }
       } catch (err) {
-        showToast("error", 'An error occurred while updating Supplier.');
+        showToast("error", 'An error occurred while updating Customer.');
       } finally {
         this.isFetching = false;
         this.hideLoading();
@@ -434,34 +401,34 @@ class SupplierForm {
 // ----------------------------------------------- TRIGER -----------------------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
-  const SUPPLIER_CANVAS = document.querySelector("#c_supplier_canvas");
-  const SUPPLIER_MODAL = document.querySelector("#c_supplier_modal");
-  const SUPPLIER_FORM = SUPPLIER_CANVAS?.querySelector("form#c_supplier_canvas_form")
-    ? new SupplierForm("c_supplier_canvas_form")
+  const CUSTOMER_CANVAS = document.querySelector("#c_customer_canvas");
+  const CUSTOMER_MODAL = document.querySelector("#c_customer_modal");
+  const CUSTOMER_FORM = CUSTOMER_CANVAS?.querySelector("form#c_customer_canvas_form")
+    ? new CustomerForm("c_customer_canvas_form")
     : null;
-  const SUPPLIER_CANVAS_BS = SUPPLIER_CANVAS ? new bootstrap.Offcanvas(SUPPLIER_CANVAS) : null;
-  const SUPPLIER_MODAL_BS = SUPPLIER_MODAL ? new bootstrap.Modal(SUPPLIER_MODAL) : null;
+  const CUSTOMER_CANVAS_BS = CUSTOMER_CANVAS ? new bootstrap.Offcanvas(CUSTOMER_CANVAS) : null;
+  const CUSTOMER_MODAL_BS = CUSTOMER_MODAL ? new bootstrap.Modal(CUSTOMER_MODAL) : null;
 
   document.addEventListener("click", async e => {
     let target = e.target;
 
     // CREATE
-    if (target.matches("#c_supplier_create_btn")) {
+    if (target.matches("#c_customer_create_btn")) {
       e.preventDefault();
-      if (SUPPLIER_CANVAS_BS && SUPPLIER_FORM && !IS_FETCHING) {
-        const title = SUPPLIER_CANVAS.querySelector("#c_supplier_canvas_title");
-        title.textContent = "Create Supplier";
-        SUPPLIER_CANVAS_BS.show();
-        SUPPLIER_FORM.resetForm();
-        await SUPPLIER_FORM.init("create");
+      if (CUSTOMER_CANVAS_BS && CUSTOMER_FORM && !IS_FETCHING) {
+        const title = CUSTOMER_CANVAS.querySelector("#c_customer_canvas_title");
+        title.textContent = "Create Customer";
+        CUSTOMER_CANVAS_BS.show();
+        CUSTOMER_FORM.resetForm();
+        await CUSTOMER_FORM.init("create");
       }
     }
 
     // EDIT
-    if (target.closest(".c_supplier_edit_btn")) {
-      target = target.closest(".c_supplier_edit_btn");
+    if (target.closest(".c_customer_edit_btn")) {
+      target = target.closest(".c_customer_edit_btn");
       e.preventDefault();
-      if (!SUPPLIER_CANVAS_BS || !SUPPLIER_FORM || IS_FETCHING) return;
+      if (!CUSTOMER_CANVAS_BS || !CUSTOMER_FORM || IS_FETCHING) return;
       IS_FETCHING = true;
 
       const url = target.dataset.url;
@@ -479,38 +446,38 @@ document.addEventListener("DOMContentLoaded", () => {
         const resJson = await response.json();
 
         if (response.ok && resJson.success) {
-          const title = SUPPLIER_CANVAS.querySelector("#c_supplier_canvas_title");
-          title.textContent = "Edit Supplier";
-          SUPPLIER_CANVAS_BS.show();
-          SUPPLIER_FORM.resetForm();
-          await SUPPLIER_FORM.init("edit", resJson.data);
+          const title = CUSTOMER_CANVAS.querySelector("#c_customer_canvas_title");
+          title.textContent = "Edit Customer";
+          CUSTOMER_CANVAS_BS.show();
+          CUSTOMER_FORM.resetForm();
+          await CUSTOMER_FORM.init("edit", resJson.data);
         } else {
-          showToast("error", resJson.message || "Failed to fetch supplier data for editing.");
+          showToast("error", resJson.message || "Failed to fetch customer data for editing.");
         }
       } catch (error) {
         console.log(error);
 
-        showToast("error", 'An error occurred while fetching the supplier data for editing.');
+        showToast("error", 'An error occurred while fetching the customer data for editing.');
       } finally {
         IS_FETCHING = false;
       }
     }
 
     // DELETE
-    else if (target.closest(".c_supplier_delete_btn")) {
-      target = target.closest(".c_supplier_delete_btn");
+    else if (target.closest(".c_customer_delete_btn")) {
+      target = target.closest(".c_customer_delete_btn");
       e.preventDefault();
-      if (!SUPPLIER_MODAL_BS || IS_FETCHING) return;
+      if (!CUSTOMER_MODAL_BS || IS_FETCHING) return;
       const url = target.dataset.url;
-      const confirmBtn = SUPPLIER_MODAL.querySelector("#c_supplier_modal_confirm_btn");
+      const confirmBtn = CUSTOMER_MODAL.querySelector("#c_customer_modal_confirm_btn");
       confirmBtn.dataset.url = url;
-      SUPPLIER_MODAL_BS.show();
+      CUSTOMER_MODAL_BS.show();
     }
 
     // CONFIRM DELETE 
-    else if (target.matches("#c_supplier_modal_confirm_btn")) {
+    else if (target.matches("#c_customer_modal_confirm_btn")) {
       e.preventDefault();
-      if (!SUPPLIER_CANVAS_BS || !SUPPLIER_FORM || IS_FETCHING) return;
+      if (!CUSTOMER_CANVAS_BS || !CUSTOMER_FORM || IS_FETCHING) return;
       IS_FETCHING = true;
 
       try {
@@ -527,14 +494,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const resJson = await resopnse.json();
 
         if (resopnse.ok && resJson.success) {
-          $('#supplier_list').DataTable().ajax.reload(null, false);
-          showToast("success", resJson.message || "Supplier deleted successfully.");
-          SUPPLIER_MODAL_BS.hide();
+          $('#customer_list').DataTable().ajax.reload(null, false);
+          showToast("success", resJson.message || "Customer deleted successfully.");
+          CUSTOMER_MODAL_BS.hide();
         } else {
-          showToast("error", resJson.message || "Failed to delete supplier.");
+          showToast("error", resJson.message || "Failed to delete customer.");
         }
       } catch (error) {
-        showToast("error", "An error occurred while deleting the supplier.");
+        showToast("error", "An error occurred while deleting the customer.");
       } finally {
         IS_FETCHING = false;
       }

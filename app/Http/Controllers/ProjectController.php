@@ -107,7 +107,7 @@ class ProjectController extends Controller
                 $projects = $this->projectService->getAllProjects();
                 return response()->json([
                     'success' => true,
-                    'data' => $project
+                    'data' => $projects
                 ], 201);
             } catch (\Exception $e) {
                 return response()->json([

@@ -151,6 +151,18 @@ document.addEventListener("DOMContentLoaded", () => {
           orderable: false
         }
       ],
+      columnDefs: [
+        {
+          targets: 0, // kolom pertama
+          createdCell: function (td, cellData, rowData, row, col) {
+            $(td).css({
+              position: 'sticky',
+              zIndex: 1,
+              backgroundColor: '#fff'
+            });
+          }
+        },
+      ]
     });
   }
 });

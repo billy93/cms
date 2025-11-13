@@ -470,7 +470,7 @@
         'packages',
         'packages-grid',
         'domain',
-        'purchase-transaction'
+        'purchase-transaction',
     ]))
     <!-- Select2 JS -->
     <script src="{{ URL::asset('build/plugins/select2/js/select2.min.js') }}"></script>
@@ -620,7 +620,7 @@
      <script src="{{ URL::asset('build/plugins/stickynote/sticky.js') }}"></script>
  @endif
 
- @if (Route::is(['ui-toasts', 'categories', 'products', 'products.index', 'roles.index', 'permission.index']))
+ @if (Route::is(['ui-toasts', 'categories', 'categories.index', 'products', 'products.index', 'roles.index', 'permission.index']))
      <!-- Mask JS -->
      <script src="{{ URL::asset('build/plugins/toastr/toastr.min.js') }}"></script>
      <script src="{{ URL::asset('build/plugins/toastr/toastr.js') }}"></script>

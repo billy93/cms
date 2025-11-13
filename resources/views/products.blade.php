@@ -114,15 +114,13 @@
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="products-tbody">
-                                        <!-- Products will be loaded here via AJAX -->
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                             <!-- /Products List -->
 
                             <!-- Pagination -->
-                            <div class="row align-items-center">
+                            <div class="row align-items-center mt-2">
                                 <div class="col-md-6">
                                     <div class="datatable-length"></div>
                                 </div>
@@ -143,12 +141,11 @@
 	@include('components.products.modal')
 @endsection
 
-
 @push('scripts')
-	<script>
-		const HIDE_PROJECT_DATATABLE_CHECKBOX = true;
-	</script>
-  <script src="/build/js/products/shared_var.js"></script>
-  <script src="/build/js/products/datatables.js"></script>
-  <script src="/build/js/products/events.js"></script>
+    <script>
+        const HIDE_PRODUCT_DATATABLE_CHECKBOX = true;
+    </script>
+    <script src="/build/js/products/shared_var.js"></script>
+    <script src="/build/js/products/datatables.js"></script>
+    <script src="/build/js/products/events.js"></script>
 @endpush

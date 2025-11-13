@@ -12,18 +12,6 @@
             <div class="row">
                 <div class="col-md-12">
 
-                    @component('components.breadcrumb')
-                    @slot('title')
-                    Project Detail
-                    @endslot
-                    @slot('item1')
-                    Projects
-                    @endslot
-                    @slot('item2')
-                    project-detail
-                    @endslot
-                    @endcomponent
-
                     <!-- Project Info Card -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -119,6 +107,12 @@
                 <div class="form-group mb-2">
                     <label class="fw-semibold">Ref. Doc. No.</label>
                     <p class="mb-0">${project.ref_doc_no || "-"}</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xxl-4">
+                <div class="form-group mb-2">
+                    <label class="fw-semibold">Value</label>
+                    <p class="mb-0">${project.value || "-"}</p>
                 </div>
             </div>
             <div class="col-md-6 col-xxl-4">

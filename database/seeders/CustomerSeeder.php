@@ -14,7 +14,7 @@ class CustomerSeeder extends Seeder
     {
         $customers = [
             [
-                'code' => 'CUST000001',
+                'code' => Customer::generateCode(),
                 'name' => 'PT Maju Bersama',
                 'address' => 'Jl. Sudirman No. 123, Jakarta Pusat, DKI Jakarta 12190',
                 'contact_person' => 'Budi Santoso',
@@ -24,7 +24,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Customer utama untuk proyek IT infrastructure'
             ],
             [
-                'code' => 'CUST000002',
+                'code' => Customer::generateCode(),
                 'name' => 'CV Sukses Mandiri',
                 'address' => 'Jl. Thamrin No. 45, Jakarta Pusat, DKI Jakarta 10350',
                 'contact_person' => 'Siti Aminah',
@@ -34,7 +34,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Konsultan manajemen dan training'
             ],
             [
-                'code' => 'CUST000003',
+                'code' => Customer::generateCode(),
                 'name' => 'PT Global Teknologi',
                 'address' => 'Jl. Gatot Subroto No. 67, Jakarta Selatan, DKI Jakarta 12930',
                 'contact_person' => 'Ahmad Rizki',
@@ -44,7 +44,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Perusahaan teknologi informasi'
             ],
             [
-                'code' => 'CUST000004',
+                'code' => Customer::generateCode(),
                 'name' => 'UD Makmur Jaya',
                 'address' => 'Jl. Hayam Wuruk No. 89, Jakarta Barat, DKI Jakarta 11160',
                 'contact_person' => 'Dewi Sartika',
@@ -54,7 +54,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Distributor produk elektronik'
             ],
             [
-                'code' => 'CUST000005',
+                'code' => Customer::generateCode(),
                 'name' => 'PT Sejahtera Abadi',
                 'address' => 'Jl. Asia Afrika No. 234, Bandung, Jawa Barat 40262',
                 'contact_person' => 'Rudi Hermawan',
@@ -64,7 +64,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Manufaktur tekstil dan garmen'
             ],
             [
-                'code' => 'CUST000006',
+                'code' => Customer::generateCode(),
                 'name' => 'CV Berkah Sentosa',
                 'address' => 'Jl. Ahmad Yani No. 156, Surabaya, Jawa Timur 60231',
                 'contact_person' => 'Nina Kartika',
@@ -74,7 +74,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Customer non-aktif - pindah lokasi'
             ],
             [
-                'code' => 'CUST000007',
+                'code' => Customer::generateCode(),
                 'name' => 'PT Dinamis Kreatif',
                 'address' => 'Jl. Pemuda No. 78, Semarang, Jawa Tengah 50132',
                 'contact_person' => 'Eko Prasetyo',
@@ -84,7 +84,7 @@ class CustomerSeeder extends Seeder
                 'notes' => 'Agency kreatif dan digital marketing'
             ],
             [
-                'code' => 'CUST000008',
+                'code' => Customer::generateCode(),
                 'name' => 'UD Mitra Usaha',
                 'address' => 'Jl. Veteran No. 345, Medan, Sumatera Utara 20112',
                 'contact_person' => 'Sri Wahyuni',

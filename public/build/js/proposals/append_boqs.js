@@ -95,7 +95,7 @@ class AppendBoqForm {
         <h5 class="mb-1">Selected BOQ Codes:</h5>
         <ul id="selected_proposal_append_boq" class="mt-2"><li class="no-selected-tag">No Selected BoQ</li></ul>
       </div>
-      <div class="col-md-12 mb-2 pt-2" style="border-top: 1px solid var(--bs-border-color);">
+      <div class="col-md-12 mb-2 mt-2 pt-2" style="border-top: 1px solid var(--bs-border-color);">
         <form class="icon-form mb-3 mb-sm-0" id="c_proposal_append_boq_list_search_form">
           <span class="form-icon" style="z-index: 0;"><i class="ti ti-search"></i></span>
           <input type="text" class="form-control" placeholder="Search BoQ" id="c_proposal_append_boq_list_search_input">

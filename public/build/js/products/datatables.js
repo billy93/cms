@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let showCheckbox = true;
 
   try {
-    if (HIDE_PROJECT_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
+    if (HIDE_PRODUCT_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
       showCheckbox = false;
     }
   } catch (err) { }
@@ -67,12 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'name' },
         { data: 'unit' },
-        {
-          data: 'base_cost',
-          render: function (data, type, row) {
-            return formatRupiah(data);
-          }
-        },
+        { data: 'base_cost' },
         { data: 'description' },
         {
           data: 'categories',
@@ -99,18 +94,28 @@ document.addEventListener("DOMContentLoaded", () => {
           searchable: false
         }
       ],
-      // columnDefs: [
-      //   {
-      //     targets: 5, // kolom ke-4 (0-based index)
-      //     createdCell: function (td) {
-      //       $(td).css({
-      //         'display': 'flex',
-      //         'flex-wrap': 'wrap',
-      //         'max-width': '200px',
-      //       });
-      //     }
-      //   }
-      // ]
+      columnDefs: [
+        {
+          targets: 0, // kolom pertama
+          createdCell: function (td, cellData, rowData, row, col) {
+            $(td).css({
+              position: 'sticky',
+              zIndex: 1,
+              backgroundColor: '#fff'
+            });
+          }
+        },
+        //   {
+        //     targets: 5, // kolom ke-4 (0-based index)
+        //     createdCell: function (td) {
+        //       $(td).css({
+        //         'display': 'flex',
+        //         'flex-wrap': 'wrap',
+        //         'max-width': '200px',
+        //       });
+        //     }
+        //   }
+      ]
     });
   }
 });

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('name');
             $table->string('ref_doc_no'); 
-            $table->decimal('value', 20, 2); 
+            $table->decimal('value', 15, 2); 
             $table->date('start_date'); 
             $table->date('end_date'); 
             $table->date('due_date'); 

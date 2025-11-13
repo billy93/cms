@@ -1,24 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const PROJECT_LIST_SEARCH_FORM = document.querySelector("#c_project_list_search_form");
-  const PROJECT_LIST_SEARCH_INPUT = document.querySelector("#c_project_list_search_input");
+  const CUSTOMER_LIST_SEARCH_FORM = document.querySelector("#c_customer_list_search_form");
+  const CUSTOMER_LIST_SEARCH_INPUT = document.querySelector("#c_customer_list_search_input");
 
-  if (PROJECT_LIST_SEARCH_FORM && PROJECT_LIST_SEARCH_INPUT) {
-    PROJECT_LIST_SEARCH_FORM.addEventListener("submit", (e) => {
+  if (CUSTOMER_LIST_SEARCH_FORM && CUSTOMER_LIST_SEARCH_INPUT) {
+    CUSTOMER_LIST_SEARCH_FORM.addEventListener("submit", (e) => {
       e.preventDefault();
-      $('#project_list').DataTable().ajax.reload();
+      $('#customer_list').DataTable().ajax.reload();
     });
   }
 
   let showCheckbox = true;
 
   try {
-    if (HIDE_PROJECT_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
+    if (HIDE_CUSTOMER_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
       showCheckbox = false;
     }
   } catch (err) { }
 
-  if ($('#project_list').length > 0) {
-    $('#project_list').DataTable({
+  if ($('#customer_list').length > 0) {
+    $('#customer_list').DataTable({
       "serverSide": true,
       "bFilter": false,
       "bInfo": false,
@@ -41,10 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
         $('.dataTables_length').appendTo('.datatable-length');
       },
       ajax: {
-        url: $('#project_list').data('url'),
+        url: $('#customer_list').data('url'),
         type: "GET",
         data: function (d) {
-          d.search = PROJECT_LIST_SEARCH_INPUT?.value || "";
+          d.search = CUSTOMER_LIST_SEARCH_INPUT?.value || "";
         },
         dataSrc: function (json) {
           return json.data;
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
           visible: showCheckbox ? true : false,
           orderable: showCheckbox ? false : true,
           render: function (data, type, row) {
-            const checked = SELECTED_PROJECT_DATATABLES_ROWS.some(obj => +obj.id === data);
+            const checked = SELECTED_CUSTOMER_DATATABLES_ROWS.some(obj => +obj.id === data);
             return `
 							<label class="checkboxs">
 								<input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-code="${row.code}">
@@ -67,27 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'code' },
         { data: 'name' },
-        { data: 'customer_name' },
-        { data: 'ref_doc_no' },
-        { data: 'value' },
-        {
-          data: 'start_date',
-          render: function (data, type, row) {
-            return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
-          }
-        },
-        {
-          data: 'end_date',
-          render: function (data, type, row) {
-            return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
-          }
-        },
-        {
-          data: 'due_date',
-          render: function (data, type, row) {
-            return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
-          }
-        },
+        { data: 'address' },
+        { data: 'contact_person' },
+        { data: 'phone' },
+        { data: 'email' },
         {
           data: 'status',
           render: function (data, type, row) {
@@ -102,11 +85,23 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         {
+          data: 'created_at',
+          render: function (data, type) {
+            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
+          }
+        },
+        {
+          data: 'updated_at',
+          render: function (data, type) {
+            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
+          }
+        },
+        {
           data: 'actions',
           orderable: false,
           searchable: false
         }
-      ]
+      ],
     });
   }
 });

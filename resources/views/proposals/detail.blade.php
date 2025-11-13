@@ -82,7 +82,7 @@
                         <div class="card-body">
 							<div class="table-responsive custom-table">
                                 <table class="table" id="boq_list" data-url="{{ route('proposals.boqs', $proposal->id) }}">
-									<style>
+                                    <style>
                                         #boq_list tr > th, 
                                         #boq_list tr > td {
                                             padding: 12px 30px;
@@ -91,17 +91,7 @@
                                         #boq_list tr > td:first-child {
                                             left: 0;
                                             padding: 12px;
-                                        } 
-                                        #boq_list tr > td:first-child {
-                                            position: sticky;
-                                            z-index: 1;
-                                            background-color: #fff; 
-                                        } 
-                                        #boq_list tr > td:first-child {
-                                            position: sticky;
-                                            z-index: 1;
-                                            background-color: #fff; 
-                                        } 
+                                        }
                                         #boq_list th:nth-child(2), 
                                         #boq_list td:nth-child(2) {
                                             padding-left: 0;

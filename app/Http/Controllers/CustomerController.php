@@ -75,35 +75,49 @@ class CustomerController extends Controller
             Log::error('Error creating Customer: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create Customer'
+                'message' => $e->getMessage() ?: 'Failed to create Customer'
             ], 500);
         }
     }
 
-    public function readAll(): JsonResponse
+    public function readAll(Request $request): JsonResponse
     {
-        $customers = $this->customerService->getAllCustomers();
-        return response()->json([
-            'status' => 'success',
-            'data' => $customers
-        ], 200);
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $customers = $this->customerService->getAllCustomers();
+                return response()->json([
+                    'status' => 'success',
+                    'data' => $customers
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to load Customers'
+                ], 500);
+            }
+        }
+        abort(404);
     }
 
-    public function read($customer_id): JsonResponse
+    public function read(Request $request, $customer_id): JsonResponse
     {
-        try {
-            $customer = $this->customerService->getCustomerById($customer_id);
-            return response()->json([
-                'success' => true,
-                'data' => $customer
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error reading Customer: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load Customer'
-            ], 500);
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $customer = $this->customerService->getCustomerById($customer_id);
+                return response()->json([
+                    'success' => true,
+                    'data' => $customer
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to load Customer'
+                ], 500);
+            }
         }
+
+        $customer = $this->customerService->getCustomerById($customer_id);
+        return view('customers.detail', compact('customer'));
     }
 
     public function update(CustomerRequest $request, $customer_id): JsonResponse
@@ -116,10 +130,9 @@ class CustomerController extends Controller
                 'data' => $customer
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error updating Customer: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update Customer'
+                'message' => $e->getMessage() ?: 'Failed to update Customer'
             ], 500);
         }
     }
@@ -133,10 +146,9 @@ class CustomerController extends Controller
                 'message' => 'Customer deleted successfully'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error deleting Customer: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete Customer'
+                'message' => $e->getMessage() ?: 'Failed to delete Customer'
             ], 500);
         }
     }

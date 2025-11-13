@@ -68,6 +68,7 @@
 											<th rowspan="2">Project Name</th>
 											<th rowspan="2">Customer</th>
 											<th rowspan="2">Ref. Doc. No.</th>
+											<th rowspan="2">Value</th>
 											<th colspan="2" class="text-center">Period</th>
 											<th class="td-break" rowspan="2">Due Date</th>
 											<th rowspan="2">Status</th>

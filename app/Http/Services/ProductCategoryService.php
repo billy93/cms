@@ -18,7 +18,7 @@ class ProductCategoryService
 
     public function getAllCategories()
     {
-        return ProductCategory::with('products')->get();
+        return ProductCategory::all();
     }
 
     public function getCategoryById($id)

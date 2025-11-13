@@ -1,24 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const SUPPLIER_LIST_SEARCH_FORM = document.querySelector("#c_supplier_list_search_form");
-  const SUPPLIER_LIST_SEARCH_INPUT = document.querySelector("#c_supplier_list_search_input");
+  const CATEGORY_LIST_SEARCH_FORM = document.querySelector("#c_category_list_search_form");
+  const CATEGORY_LIST_SEARCH_INPUT = document.querySelector("#c_category_list_search_input");
 
-  if (SUPPLIER_LIST_SEARCH_FORM && SUPPLIER_LIST_SEARCH_INPUT) {
-    SUPPLIER_LIST_SEARCH_FORM.addEventListener("submit", (e) => {
+  if (CATEGORY_LIST_SEARCH_FORM && CATEGORY_LIST_SEARCH_INPUT) {
+    CATEGORY_LIST_SEARCH_FORM.addEventListener("submit", (e) => {
       e.preventDefault();
-      $('#supplier_list').DataTable().ajax.reload();
+      $('#category_list').DataTable().ajax.reload();
     });
   }
 
   let showCheckbox = true;
 
   try {
-    if (HIDE_SUPPLIER_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
+    if (HIDE_CATEGORY_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
       showCheckbox = false;
     }
   } catch (err) { }
 
-  if ($('#supplier_list').length > 0) {
-    $('#supplier_list').DataTable({
+  if ($('#category_list').length > 0) {
+    $('#category_list').DataTable({
       "serverSide": true,
       "bFilter": false,
       "bInfo": false,
@@ -41,14 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
         $('.dataTables_length').appendTo('.datatable-length');
       },
       ajax: {
-        url: $('#supplier_list').data('url'),
+        url: $('#category_list').data('url'),
         type: "GET",
         data: function (d) {
-          d.search = SUPPLIER_LIST_SEARCH_INPUT?.value || "";
+          d.search = CATEGORY_LIST_SEARCH_INPUT?.value || "";
         },
         dataSrc: function (json) {
-          console.log(json.data);
-
           return json.data;
         }
       },
@@ -58,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
           visible: showCheckbox ? true : false,
           orderable: showCheckbox ? false : true,
           render: function (data, type, row) {
-            const checked = SELECTED_SUPPLIER_DATATABLES_ROWS.some(obj => +obj.id === data);
+            const checked = SELECTED_CATEGORY_DATATABLES_ROWS.some(obj => +obj.id === data);
             return `
 							<label class="checkboxs">
 								<input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-code="${row.code}">
@@ -67,31 +65,26 @@ document.addEventListener("DOMContentLoaded", () => {
 						`;
           }
         },
-        { data: 'code' },
         { data: 'name' },
-        { data: 'address' },
-        { data: 'contact_person' },
-        { data: 'phone' },
-        { data: 'email' },
-        { data: 'tax_number' },
-        { data: 'bank_name' },
-        { data: 'bank_account_number' },
-        { data: 'bank_account_name' },
+        { data: 'description' },
+        {
+          data: 'created_at',
+          render: function (data, type) {
+            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
+          }
+        },
+        {
+          data: 'updated_at',
+          render: function (data, type) {
+            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
+          }
+        },
         {
           data: 'actions',
           orderable: false,
           searchable: false
         }
       ],
-      columnDefs: [
-        {
-          targets: [3],
-          createdCell: function (td, cellData, rowData, row, col) {
-            $(td).css('white-space', 'normal');
-            $(td).css('min-width', '240px');
-          }
-        }
-      ]
     });
   }
 });

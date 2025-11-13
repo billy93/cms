@@ -188,7 +188,7 @@ class ProductForm {
 
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Base Cost<span class="text-danger">*</span></label>
+              <label class="col-form-label">Value<span class="text-danger">*</span></label>
               <input type="text" id="input_product_base_cost" class="form-control" value="${value.base_cost}" data-type="currency">
               <small id="input_product_base_cost_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
@@ -392,12 +392,6 @@ class ProductForm {
     if (checkedCategories.length === 0) {
       this.errors["input_product_category_ids_error"] = "At least one category must be selected.";
     }
-
-    // Convert base_cost to number
-    payload.base_cost = parseFloat(payload.base_cost) || 0;
-
-    // Convert supplier_id ke int/null
-    payload.supplier_id = payload.supplier_id ? parseInt(payload.supplier_id) : null;
 
     return payload;
   }

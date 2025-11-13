@@ -3734,69 +3734,6 @@ $(document).ready(function () {
 		});
 	}
 
-	// Proposals List
-	if ($('#customer_list').length > 0) {
-		$('#customer_list').DataTable({
-			"serverSide": true,
-			"bFilter": false,
-			"bInfo": false,
-			"ordering": true,
-			"autoWidth": true,
-			"order": [["0", "desc"]],
-			"language": {
-				search: ' ',
-				sLengthMenu: '_MENU_',
-				searchPlaceholder: "Search",
-				info: "_START_ - _END_ of _TOTAL_ items",
-				"lengthMenu": "Show _MENU_ entries",
-				paginate: {
-					next: 'Next <i class="fa fa-angle-right"></i>',
-					previous: '<i class="fa fa-angle-left"></i> Prev'
-				},
-			},
-			initComplete: (settings, json) => {
-				$('.dataTables_paginate').appendTo('.datatable-paginate');
-				$('.dataTables_length').appendTo('.datatable-length');
-			},
-			"ajax": {
-				"url": $('#customer_list').data('url'),
-				"type": "GET",
-				"dataSrc": "data"
-			},
-			columns: [
-				{ data: 'id', visible: false },
-				{ data: 'code' },
-				{ data: 'name' },
-				{ data: 'contact_person' },
-				{ data: 'phone' },
-				{ data: 'email' },
-				{
-					data: 'status',
-					render: function (data, type, row) {
-						if (type === 'display') {
-							switch (data) {
-								case 'Active': return '<span class="badge bg-success">Active</span>';
-								case 'Inactive': return '<span class="badge bg-dark">Inactive</span>';
-								default: return '<span class="badge bg-secondary">Unknown</span>';
-							}
-						}
-						return data;
-					}
-				},
-				{
-					data: 'actions',
-					orderable: false,
-					searchable: false
-				}
-			],
-		});
-	}
-
-
-
-
-	// Contracts List
-
 	if ($('#contracts-list').length > 0) {
 		$('#contracts-list').DataTable({
 			"bFilter": false,

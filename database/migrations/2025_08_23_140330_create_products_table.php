@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->text('description')->nullable();
             $table->string('unit', 50)->default('Pcs');
-            $table->decimal('base_cost', 20, 2)->default(0);
+            $table->decimal('base_cost', 15, 2)->default(0);
 
             // Supplier (1:M)
             $table->foreignId('supplier_id')

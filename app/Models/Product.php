@@ -50,10 +50,36 @@ class Product extends Model
     }
 
     /**
- * Get the BOQ items related to this product.
- */
+     * Get the BOQ items related to this product.
+     */
     public function boqItems(): HasMany
     {
         return $this->hasMany(BoqItem::class, 'product_id');
+    }
+
+    
+    public function setBaseCostAttribute($value)
+    {
+        if (is_null($value)) {
+            $this->attributes['base_cost'] = 0;
+            return;
+        }
+
+        // Bersihkan simbol dan separator ribuan
+        $clean = preg_replace('/[^0-9,]/', '', $value);
+
+        // Ubah koma ke titik, hapus titik ribuan
+        $clean = str_replace(',', '.', str_replace('.', '', $clean));
+
+        // Simpan sebagai float
+        $this->attributes['base_cost'] = (float) $clean;
+    }
+
+    /**
+     * Accessor: format numeric value ke format Rupiah saat dibaca
+     */
+    public function getBaseCostAttribute($value)
+    {
+        return number_format($value ?? 0, 2, ',', '.'); // contoh: 1.250.000,50
     }
 }

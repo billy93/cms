@@ -112,23 +112,31 @@
                                     </div>
                                 </div>
                                 <div class="form-group mb-2">
-                                    <label class="fw-semibold">Items</label>
+                                    <label class="fw-semibold">Products</label>
                                 </div>
                                 <div class="col-md-12">
                                     <div class="table-responsive custom-table">
-                                        <table class="table" id="supplier_product_list">
+                                        <table class="table" id="supplier_product_list" data-url="{{ route('products.index') }}">
+                                            <style>
+                                                #supplier_product_list td {
+                                                    vertical-align: baseline;
+                                                }
+                                            </style>
                                             <thead class="thead-light">
                                             <tr>
+                                                <th class="td-break">ID</th>
                                                 <th class="td-break">Name</th>
-                                                <th class="td-break">Description</th>
                                                 <th class="td-break">Unit</th>
                                                 <th class="td-break">Base Cost</th>
+                                                <th class="td-break">Description</th>
+                                                <th class="td-break">Created</th>
+                                                <th class="td-break">Updated</th>
                                             </tr>
                                             </thead>
                                             <tbody></tbody>
                                         </table>
                                     </div>
-                                    <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
+                                    <div class="row align-items-center mt-2" style="row-gap: 1em; padding: 10px 15px;">
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
                                                 <div class="supplier_product_list_datatable_length"></div>
@@ -148,3 +156,72 @@
     </div>
     <!-- /Page Wrapper -->
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if ($('#supplier_product_list').length > 0) {
+                $('#supplier_product_list').DataTable({
+                    "serverSide": true,
+                    "bFilter": false,
+                    "bInfo": false,
+                    "ordering": true,
+                    "autoWidth": true,
+                    "order": [[0, "desc"]],
+                    "language": {
+                        search: '',
+                        sLengthMenu: '_MENU_',
+                        searchPlaceholder: "Search",
+                        info: "_START_ - _END_ of _TOTAL_ items",
+                        "lengthMenu": "Show _MENU_ entries",
+                        paginate: {
+                        next: 'Next <i class="fa fa-angle-right"></i>',
+                        previous: '<i class="fa fa-angle-left"></i> Prev'
+                        },
+                    },
+                    initComplete: (settings, json) => {
+                        $('.dataTables_paginate').appendTo('.supplier_product_list_datatable_paginate');
+                        $('.dataTables_length').appendTo('.supplier_product_list_datatable_length');
+                    },
+                    ajax: {
+                        url: $('#supplier_product_list').data('url'),
+                        type: "GET",
+                        data: function (d) {
+                            d.supplier_id = @json($supplier->id);
+                        },
+                        dataSrc: function (json) {
+                            return json.data;
+                        }
+                    },
+                    columns: [
+                        { data: 'id', visible: false },
+                        { data: 'name' }, 
+                        { data: 'unit' }, 
+                        { data: 'base_cost' },
+                        { data: 'description' }, 
+                        {
+                        data: 'created_at',
+                            render: function (data, type, row) {
+                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                            }
+                        },
+                        {
+                        data: 'updated_at',
+                            render: function (data, type, row) {
+                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                            }
+                        },
+                    ],
+                    columnDefs: [
+                        {
+                            targets: [4],
+                            createdCell: function(td, cellData, rowData, row, col) {
+                                $(td).css('white-space', 'normal');
+                            }
+                        }
+                    ]
+                });
+            }
+        }); 
+    </script>
+@endpush

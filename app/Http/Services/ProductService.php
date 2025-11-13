@@ -25,8 +25,9 @@ class ProductService
             if (count($categoryIds) !== count($validCategoryIds)) {
                 throw new Exception("One or more categories are invalid");
             }
-
+            
             $data['code'] = Product::generateCode();
+            \Log::info($data);
             $product = Product::create($data);
 
             // bind categories

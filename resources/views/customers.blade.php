@@ -7,29 +7,16 @@
 
             <div class="row">
                 <div class="col-md-12">
-
-                    @component('components.breadcrumb')
-                    @slot('title')
-                    Customers
-                    @endslot
-                    @slot('item1')
-                    123
-                    @endslot
-                    @slot('item2')
-                    customers
-                    @endslot
-                    @endcomponent
-
                     <div class="card ">
                         <div class="card-header">
                             <!-- Search -->
                             <div class="row align-items-center">
-                                <div class="col-sm-4">
-                                    <div class="icon-form mb-3 mb-sm-0">
-                                        <span class="form-icon"><i class="ti ti-search"></i></span>
-                                        <input type="text" class="form-control" id="search_customer" placeholder="Search Customers">
-                                    </div>                            
-                                </div>      
+								<div class="col-sm-4">
+									<form class="icon-form mb-3 mb-sm-0" id="c_customer_list_search_form">
+										<span class="form-icon"><i class="ti ti-search"></i></span>
+										<input type="text" class="form-control" placeholder="Search Customer" id="c_customer_list_search_input">
+									</form>							
+								</div>      
                                 <div class="col-sm-8">                    
                                     <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
                                         <div class="dropdown me-2">
@@ -45,7 +32,7 @@
                                                 </ul>
                                             </div>
                                         </div>  
-                                        <a href="javascript:void(0);" id="c_customer_add" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Add New Customers</a>
+                                        <a href="javascript:void(0);" id="c_customer_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Add New Customers</a>
                                     </div>
                                 </div>
                             </div>
@@ -174,22 +161,28 @@
                                 <table class="table" id="customer_list" data-url="{{ route('customers.index') }}"> 
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>ID</th>
+                                            <th class="td-break no-sort">
+												<label class="checkboxs">
+													<input type="checkbox" id="select_all_customer_list">
+													<span class="checkmarks"></span>
+												</label>
+											</th>
                                             <th>Customer Code</th>
-                                            <th>Customer Name</th>
+                                            <th>Name</th>
+                                            <th>Address</th>
                                             <th>Contact Person</th>
                                             <th>Phone</th>
                                             <th>Email</th>
                                             <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Updated</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="customers_tbody">
-                                        <!-- Data will be loaded here -->
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
-                            <div class="row align-items-center" style="row-gap: 1em;">
+                            <div class="row align-items-center mt-2" style="row-gap: 1em;">
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center justify-content-center justify-content-md-start">
                                         <div class="datatable-info"></div>
@@ -209,46 +202,15 @@
     </div>
     <!-- /Page Wrapper -->
 
-
-    <!-- Add New Customer -->
-    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
-        <div class="offcanvas-header border-bottom">
-            <h4 id="customer_form_title">Create Customer</h4>
-            <button type="button" id="close_customer_form" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
-                <i class="ti ti-x"></i>
-            </button>
-        </div>
-        <div class="offcanvas-body">
-            <style>
-				#c_customer_form td { vertical-align: baseline; } 
-			</style>
-			<form id="c_customer_form" method="POST"></form>
-        </div>
-    </div>
-    <!-- /Add New Customer -->
-    
-	<!-- Delete Modal -->
-	<div class="modal fade" id="delete_customer_modal" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="deleteCustomerModalLabel">Confirm Delete</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					Are you sure you want to delete this item?
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-danger" id="confirm_delete_customer">Delete</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Delete Modal -->
-
+	@include('components.customers.create-modal')
+	@include('components.customers.modal')
 @endsection
 
 @push('scripts')
-  <script src="/build/js/customer_script.js"></script>
+    <script>
+        const HIDE_CUSTOMER_DATATABLE_CHECKBOX = true;
+    </script>
+    <script src="/build/js/customers/shared_var.js"></script>
+    <script src="/build/js/customers/datatables.js"></script>
+    <script src="/build/js/customers/events.js"></script>
 @endpush
