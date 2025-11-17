@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->string('description')->nullable();
+            $table->string('name', 100)->unique();
+            $table->string('slug', 150)->unique();
+            $table->string('description', 255)->nullable();
             $table->timestamps();
         });
     }

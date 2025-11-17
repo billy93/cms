@@ -11,21 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('menu_roles', function (Blueprint $table) {
+        Schema::create('role_menu', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('menu_id');
             $table->unsignedBigInteger('role_id');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->unsignedBigInteger('menu_id');
             
             // Add indexes
-            $table->index('menu_id', 'idx_menu_roles_menu_id');
-            $table->index('role_id', 'idx_menu_roles_role_id');
+            $table->index('role_id', 'idx_role_menu_role_id');
+            $table->index('menu_id', 'idx_role_menu_menu_id');
             
             // Add foreign key constraints
-            $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
-            $table->unique(['menu_id', 'role_id'], 'uq_menu_roles_menu_id_role_id');
+            $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
+            $table->timestamps();
+            
+            $table->unique(['role_id', 'menu_id'], 'uq_role_menu_role_id_menu_id');
         });
     }
 
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menu_roles');
+        Schema::dropIfExists('role_menu');
     }
 };

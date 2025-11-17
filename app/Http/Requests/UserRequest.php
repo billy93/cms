@@ -19,6 +19,9 @@ class UserRequest extends ApiFormRequest
             case 'api.users.create':
             case 'users.create':
                 return $this->createRules();
+            case 'api.users.changePassword':
+            case 'users.changePassword':
+                return $this->changePasswordRules();
             case 'api.users.update':
             case 'users.update':
                 return $this->updateRules();
@@ -35,7 +38,7 @@ class UserRequest extends ApiFormRequest
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive,suspended',
+            'status' => 'required|in:Active,Inactive,Suspended',
             'role_id' => 'nullable|exists:roles,id',
         ];
     }
@@ -46,11 +49,20 @@ class UserRequest extends ApiFormRequest
             'id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $this->route('user_id'),
-            'password' => 'nullable|string|min:6',
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive,suspended',
+            'status' => 'required|in:Active,Inactive,Suspended',
             'role_id' => 'nullable|exists:roles,id',
+        ];
+    }
+
+    protected function changePasswordRules()
+    {
+        return [
+            'id' => 'required|exists:users,id',
+            'password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+            'confirm_password' => 'required|string|min:6',
         ];
     }
 

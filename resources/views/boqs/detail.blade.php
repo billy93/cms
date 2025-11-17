@@ -26,7 +26,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">BoQ Information</h5>
                             <div class="d-flex gap-2">
-                                <a href="/proposals" class="btn btn-outline-secondary">
+                                <a href="/boqs" class="btn btn-outline-secondary">
                                     <i class="ti ti-arrow-left me-1"></i>Back to BoQs
                                 </a>
                             </div>

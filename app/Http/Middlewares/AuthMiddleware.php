@@ -3,6 +3,7 @@
 namespace App\Http\Middlewares;
 
 use Closure;
+use App\Services\MenuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,11 +18,10 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // \Log::info($request);
         if (!Auth::check()) {
             return redirect('/');
         }
-
+   
         return $next($request);
     }
 }

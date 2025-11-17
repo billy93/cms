@@ -8,8 +8,8 @@ class ProposalForm {
 
   constructor (formId) {
     this.form = document.getElementById(formId);
-    this.closeForm = document.getElementById("c_poposal_canvas_close_btn");
     this.dataTableUrl = document.getElementById('boq-route').dataset.url;
+    this.closeForm = document.getElementById("c_poposal_canvas_close_btn");
     this.initDataTable = this.initDataTable.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleDocumentChange = this.handleDocumentChange.bind(this);
@@ -375,6 +375,16 @@ class ProposalForm {
         },
         dataSrc: function (json) {
           return json.data;
+        },
+        error: function (xhr, status, error) {
+          if (xhr.status === 403) {
+            showToast("error", `Failed to fetch boqs: ${xhr.responseJSON?.message || "Unauthorized"}`);
+          } else {
+            showToast("error", `Failed to fetch boqs: ${xhr.responseJSON?.message}`);
+          }
+
+          self.resetForm();
+          self.closeForm.click();
         }
       },
       columns: [
@@ -714,8 +724,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (PROPOSAL_CANVAS_BS && PROPOSAL_FORM && !IS_FETCHING) {
         const title = PROPOSAL_CANVAS.querySelector("#c_proposal_canvas_title");
         title.textContent = "Create Proposal";
-        PROPOSAL_CANVAS_BS.show();
         PROPOSAL_FORM.resetForm();
+        PROPOSAL_CANVAS_BS.show();
         await PROPOSAL_FORM.init("create");
       }
     }
@@ -744,8 +754,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.ok && resJson.success) {
           const title = PROPOSAL_CANVAS.querySelector("#c_proposal_canvas_title");
           title.textContent = "Edit Proposal";
-          PROPOSAL_CANVAS_BS.show();
           PROPOSAL_FORM.resetForm();
+          PROPOSAL_CANVAS_BS.show();
           await PROPOSAL_FORM.init("edit", resJson.data);
         } else {
           showToast("error", resJson.message || "Failed to fetch proposal data for editing.");

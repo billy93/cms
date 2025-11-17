@@ -108,14 +108,10 @@ class ProductCategoryController extends Controller
     {
         if ($request->wantsJson() || $request->ajax()) {
             try {
-                $category = $this->categoryService->getCategoryById($category_id);
-                if ($request->wantsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => true,
-                        'data' => $category
-                    ], 200);
-                }
-                return view('product_categories.detail', compact('category'));
+                return response()->json([
+                    'success' => true,
+                    'data' => $category
+                ], 200);
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,

@@ -1308,11 +1308,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function resetSelectAll() {
-    const selectAllBtn = document.querySelector("#boq_list #select_all_boq_list");
-    selectAllBtn.checked = false;
-  }
-
   function updateBulkBtn() {
     console.log(SELECTED_BOQ_DATATABLES_ROWS);
 

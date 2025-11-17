@@ -2,72 +2,55 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class RoleRequest extends ApiFormRequest
 {
-  public function validationData()
-  {
-    return array_merge($this->all(), [
-      'id' => $this->route('role_id'),
-    ]);
-  }
-
-  public function rules()
-  {
-    $action = $this->route()->getName(); 
-
-    switch ($action) {
-      case 'api.roles.create':
-      case 'roles.create':
-        return $this->createRules(); 
-      case 'api.roles.update':
-      case 'roles.update':
-        return $this->updateRules(); 
-      default:
-        return [];
+    public function validationData()
+    {
+        return array_merge($this->all(), [
+            'id' => $this->route('role_id'),
+        ]);
     }
-  }
 
-  protected function createRules()
-  {
-    return [
-      'name' => 'required|string|max:255|unique:roles,name', 
-      'description' => 'nullable|string|max:255',
-    ];
-  }
+    public function rules()
+    {
+        $action = $this->route()->getName();
 
-  protected function updateRules()
-  {
-    return [
-      'id' => 'required|exists:roles,id',
-      'name' => 'required|string|max:255|unique:roles,name,' . $this->route('role_id'),
-      'description' => 'nullable|string|max:255',
-    ];
-  }
+        return match ($action) {
+            'roles.create', 'api.roles.create' => $this->createRules(),
+            'roles.update', 'api.roles.update' => $this->updateRules(),
+            default => [],
+        };
+    }
 
-  public function messages()
-  {
-    return [
-      'id.required' => 'The role ID is required.',
-      'id.exists' => 'The specified role does not exist.',
-      
-      'name.required' => 'The name field is required.',
-      'name.string' => 'The name must be a string.',
-      'name.max' => 'The name may not be greater than :max characters.',
-      'name.unique' => 'The name has already been taken.',
+    protected function createRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:100', 'unique:roles,name'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'permission_ids' => ['nullable', 'array'],
+            'permission_ids.*' => ['exists:permissions,id'],
+            'menu_ids' => ['nullable', 'array'],
+            'menu_ids.*' => ['exists:menus,id'],
+        ];
+    }
 
+    protected function updateRules(): array
+    {
+        $rules = array_merge($this->createRules(), [
+            'id' => ['required', 'exists:roles,id'],
+            'name' => [
+                'required', 'string', 'max:100',
+                Rule::unique('roles', 'name')->ignore($this->role_id),
+            ],
+        ]);
 
+        return $rules;
+    }
 
-      'description.string' => 'The description must be a string.',
-      'description.max' => 'The description may not be greater than :max characters.',
-      
-    
-    ];
-  }
-
-  public function authorize()
-  {
-    return true;
-  }
+    public function authorize(): bool
+    {
+        return true;
+    }
 }

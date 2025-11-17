@@ -583,11 +583,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const resJson = await resopnse.json();
 
         if (resopnse.ok && resJson.success) {
-          try {
-            // Used on project.detail page
-            loadProjectData(PROJECT_ID)
-          } catch (error) { }
-
           $('#product_list').DataTable().ajax.reload(null, false);
           showToast("success", resJson.message || "Product deleted successfully.");
           PRODUCT_MODAL_BS.hide();

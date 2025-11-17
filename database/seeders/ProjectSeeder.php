@@ -37,6 +37,6 @@ class ProjectSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Projects seeded successfully.');
+        // $this->command->info('Projects seeded successfully.');
     }
 }

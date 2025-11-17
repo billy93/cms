@@ -184,7 +184,7 @@
          'task-reports',
          'states',
          'sources',
-         'roles-permissions',
+         'roles',
          'roles.index',
          'categories.index',
          'products.index',
@@ -284,7 +284,7 @@
          'task-reports',
          'states',
          'sources',
-         'roles-permissions',
+         'roles',
          'roles.index',
          'categories.index',
          'products.index',
@@ -386,7 +386,7 @@
          'users.index',
          'pipeline',
          'permissions',
-         'roles-permissions',
+         'roles',
          'roles.index',
          'projects',
          'project-grid',
@@ -454,7 +454,7 @@
          'task-reports',
          'states',
          'sources',
-         'roles-permissions',
+         'roles',
          'roles.index',
          'projects',
          'project-reports',
@@ -502,11 +502,6 @@
  @if (Route::is(['video-call', 'chat']))
  <!-- Swiper CSS -->
  <link rel="stylesheet" href="{{ url('build/plugins/swiper/swiper.min.css') }}">
- @endif
-
- @if (Route::is(['ui-toasts', 'categories', 'products', 'roles.index', 'permission.index']))
- <!-- Toatr CSS -->
- <link rel="stylesheet" href="{{ url('build/plugins/toastr/toatr.css') }}">
  @endif
 
  @if (Route::is(['ui-rangeslider', 'ui-rating']))

@@ -19,7 +19,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="row" id="boq_info">
+                            <div class="row">
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Name</label>
@@ -61,7 +61,7 @@
                                             <tbody></tbody>
                                         </table>
                                     </div>
-                                    <div class="row align-items-center mt-2" style="row-gap: 1em; padding: 10px 15px;">
+                                    <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
                                                 <div class="category_product_list_datatable_length"></div>

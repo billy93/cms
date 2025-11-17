@@ -194,12 +194,10 @@
         @include('components.boqs.create-modal')
         @include('components.boqs.modal')
         @include('components.proposals.append-boq-modal')
-    @endif
-
-    @if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
+    @else
         @include('components.invoices.create-modal')
         @include('components.invoices.modal')
-    @endif 
+    @endif
 @endsection
 
 @push('scripts')
@@ -533,14 +531,12 @@
     <script src="/build/js/boqs/shared_var.js"></script>
     <script src="/build/js/boqs/datatables.js"></script>
 
-@if($proposal->status !== "Win")
-    <script src="/build/js/proposals/append_boqs.js"></script>
-    <script src="/build/js/boqs/events.js"></script>
-@endif
-
-@if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
-    <script src="/build/js/invoices/events.js"></script>
-@endif
+    @if($proposal->status !== "Win")
+        <script src="/build/js/proposals/append_boqs.js"></script>
+        <script src="/build/js/boqs/events.js"></script>
+    @else
+        <script src="/build/js/invoices/events.js"></script>
+    @endif
 @endpush
 
 

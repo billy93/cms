@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone')->nullable(); 
             $table->string('location')->nullable(); 
-            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
+            $table->enum('status', ['Active', 'Inactive', 'Suspended'])->default('Active');
             $table->foreignId('role_id')
                 ->nullable()
                 ->constrained('roles') 

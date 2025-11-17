@@ -2,124 +2,66 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Models\Menu;
 use App\Models\Role;
-use Illuminate\Database\Seeder;
+use App\Models\Permission;
 
 class MenuSeeder extends Seeder
 {
     public function run(): void
     {
-        // === Dashboard Group ===
-        $dashboard = Menu::create([
-            'label' => 'Dashboard',
-            'path'  => '#',
-            'icon'  => 'ti ti-layout-2',
-            'sort'  => 1,
-            'is_active' => true,
-        ]);
-
-        Menu::create([
-            'label' => 'Project Dashboard',
-            'path'  => '/project-dashboard',
-            'icon'  => null,
-            'sort'  => 1,
-            'is_active' => true,
-            'parent_id' => $dashboard->id,
-        ]);
-
-        // === Products Group ===
-        $products = Menu::create([
-            'label' => 'Products',
-            'path'  => '#',
-            'icon'  => 'ti ti-package',
-            'sort'  => 2,
-            'is_active' => true,
-        ]);
-
-        Menu::create([
-            'label' => 'Categories',
-            'path'  => '/categories',
-            'icon'  => 'ti ti-category',
-            'sort'  => 1,
-            'is_active' => true,
-            'parent_id' => $products->id,
-        ]);
-
-        Menu::create([
-            'label' => 'Products',
-            'path'  => '/products',
-            'icon'  => 'ti ti-package',
-            'sort'  => 2,
-            'is_active' => true,
-            'parent_id' => $products->id,
-        ]);
-
-        // === MAIN Group ===
-        $main = Menu::create([
-            'label' => 'MAIN',
-            'path'  => '#',
-            'icon'  => null,
-            'sort'  => 3,
-            'is_active' => true,
-        ]);
-
-        $mainItems = [
-            ['Bank Accounts', '/contacts', 'ti ti-user-up'],
-            ['Clients', '/companies', 'ti ti-building-community'],
-            ['Customers', '/customers', 'ti ti-users'],
-            ['Suppliers', '/suppliers', 'ti ti-truck'],
-            ['Projects', '/projects', 'ti ti-atom-2'],
-            ['Proposals', '/proposals', 'ti ti-file-star'],
-            ['Invoices', '/invoices', 'ti ti-file-invoice'],
-            ['BoQ', '/boqs', 'ti ti-file-invoice'],
-            ['Payments', '/payments', 'ti ti-report-money'],
+        $topMenus = [
+            'Manage Users' => ['prefix' => 'users', 'icon' => 'ti ti-user'],
+            'BOQs' => ['prefix' => 'boqs', 'icon' => 'ti ti-layout-list'],
+            'Categories' => ['prefix' => 'categories', 'icon' => 'ti ti-category'],
+            'Products' => ['prefix' => 'products', 'icon' => 'ti ti-box'],
+            'Suppliers' => ['prefix' => 'suppliers', 'icon' => 'ti ti-truck'],
+            'Roles' => ['prefix' => 'roles', 'icon' => 'ti ti-lock'],
+            'Menus' => ['prefix' => 'menus', 'icon' => 'ti ti-menu'],
+            'Permissions' => ['prefix' => 'permissions', 'icon' => 'ti ti-shield'],
+            'Customers' => ['prefix' => 'customers', 'icon' => 'ti ti-users'],
+            'Projects' => ['prefix' => 'projects', 'icon' => 'ti ti-briefcase'],
+            'Proposals' => ['prefix' => 'proposals', 'icon' => 'ti ti-file-text'],
+            'Invoices' => ['prefix' => 'invoices', 'icon' => 'ti ti-file-invoice'],
         ];
 
-        foreach ($mainItems as $i => [$label, $path, $icon]) {
-            Menu::create([
-                'label' => $label,
-                'path'  => $path,
-                'icon'  => $icon,
-                'sort'  => $i + 1,
-                'is_active' => true,
-                'parent_id' => $main->id,
-            ]);
+        $allMenuIds = [];
+        $userMenuIds = [];
+
+        foreach ($topMenus as $menuName => $data) {
+            // Buat menu top-level saja
+            $menu = Menu::firstOrCreate(
+                ['name' => $menuName],
+                [
+                    'icon' => $data['icon'],
+                ]
+            );
+
+            // Ambil permission prefix.index
+            $permission = Permission::where('route', "{$data['prefix']}.index")->first();
+            if ($permission) {
+                $menu->permission()->associate($permission);
+                $menu->save();
+            }
+
+            $allMenuIds[] = $menu->id;
+
+            if (in_array($data['prefix'], ['categories', 'products'])) {
+                $userMenuIds[] = $menu->id;
+            }
         }
 
-        // === User Management Group ===
-        $userMgmt = Menu::create([
-            'label' => 'User Management',
-            'path'  => '#',
-            'icon'  => null,
-            'sort'  => 4,
-            'is_active' => true,
-        ]);
-
-        $userMgmtItems = [
-            ['Manage Users', '/manage-users', 'ti ti-users'],
-            ['Roles & Permissions', '/roles-permissions', 'ti ti-navigation-cog'],
-            ['Menu Management', '/manage-menus', 'ti ti-menu-2'],
-            ['Permissions', '/permissions', 'ti ti-lock-cog'],
-            ['Delete Request', '/delete-request', 'ti ti-flag-question'],
-        ];
-
-        foreach ($userMgmtItems as $i => [$label, $path, $icon]) {
-            Menu::create([
-                'label' => $label,
-                'path'  => $path,
-                'icon'  => $icon,
-                'sort'  => $i + 1,
-                'is_active' => true,
-                'parent_id' => $userMgmt->id,
-            ]);
+        // Assign semua menu ke role Admin
+        $adminRole = Role::where('slug', 'admin')->first();
+        if ($adminRole) {
+            $adminRole->menus()->sync($allMenuIds);
         }
 
-        // === Assign to Admin role ===
-        $admin = Role::where('slug', 'admin')->first();
-        if ($admin) {
-            $menuIds = Menu::pluck('id');
-            $admin->menus()->sync($menuIds);
+        // Assign hanya categories & products ke role User
+        $userRole = Role::where('slug', 'user')->first();
+        if ($userRole) {
+            $userRole->menus()->sync($userMenuIds);
         }
     }
 }

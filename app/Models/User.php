@@ -79,7 +79,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function hasPermission(string $permissionName): bool
     {
-        return $this->role && $this->role->permissions->contains('name', $permissionName);
+        return $this->role
+            ? $this->role->permissions()->where('name', $permissionName)->exists()
+            : false;
     }
 
     public function assignRole(string $roleName)

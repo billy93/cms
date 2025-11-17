@@ -33,10 +33,6 @@ class ProposalRequest extends ApiFormRequest
     {
         return [
             'project_id' => ['required', 'exists:projects,id'],
-            'status' => [
-                'nullable',
-                Rule::in(['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled']),
-            ],
             'boq_ids' => ['nullable', 'array'],
             'boq_ids.*' => ['integer', 'exists:boqs,id'],
         ];
@@ -46,6 +42,10 @@ class ProposalRequest extends ApiFormRequest
     {
         $rules = array_merge($this->createRules(), [
             'id' => 'required|exists:proposals,id',
+            'status' => [
+                'nullable',
+                Rule::in(['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled']),
+            ],
             'note' => ['nullable', 'string', 'required_if:status,Lose'], 
         ]);
 

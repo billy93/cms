@@ -150,7 +150,7 @@ class CategoryForm {
       {
         field: "input_category_description",
         required: false,
-        message: "Address is required."
+        message: "Description is required."
       },
     ];
 
@@ -235,8 +235,6 @@ class CategoryForm {
           $('#category_list').DataTable().ajax.reload(null, false);
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
-          console.log(result);
-
         } else {
           showToast("error", result.message || result.errors);
         }
@@ -311,8 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("error", resJson.message || "Failed to fetch category data for editing.");
         }
       } catch (error) {
-        console.log(error);
-
         showToast("error", 'An error occurred while fetching the category data for editing.');
       } finally {
         IS_FETCHING = false;

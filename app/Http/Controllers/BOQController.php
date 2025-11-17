@@ -26,8 +26,6 @@ class BoqController extends Controller
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $boqs = Boq::with(['proposal', 'items']);
 
-            \Log::info($search);
-
             return DataTables::eloquent($boqs)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {

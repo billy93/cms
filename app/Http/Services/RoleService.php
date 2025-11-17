@@ -1,76 +1,125 @@
 <?php
- 
+
 namespace App\Http\Services;
 
 use App\Models\Role;
-use App\Http\Exceptions\CustomApiException;
+use App\Models\Permission;
+use App\Models\Menu;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class RoleService
 {
     public function createRole(array $data)
     {
-        $role = Role::create([
-            'name' => $data['name'],
-            'description' => $data['description']
-        ]);
+        return DB::transaction(function () use ($data) {
+            $permissionIds = $data['permission_ids'] ?? null;
+            $menuIds = $data['menu_ids'] ?? null;
+            $data['slug'] = Role::generateSlug($data['name'], 'roles');
 
-        if (isset($data['permission_ids'])) {
-            $role->permissions()->sync($data['permission_ids']);
-        }
+            unset($data['permission_ids']);
+            unset($data['menu_ids']);
 
-        return $role->load('permissions')->permissions->makeHidden('pivot');
-    }
+            $role = Role::create($data);
 
-    public function getAllRoles()
-    {
-        return Role::with('permissions')->get()->map(function ($role) {
-            $role->permissions->makeHidden('pivot');
+            if (!is_null($permissionIds)) {
+                $this->syncPermissions($role, $permissionIds);
+            }
+
+            if (!is_null($menuIds)) {
+                $this->syncMenus($role, $menuIds);
+            }
+            
             return $role;
         });
     }
 
+    public function getAllRoles()
+    {
+        return Role::all();
+    }
+
     public function getRoleById($id)
     {
-        $role = Role::with('permissions')->find($id);
-
+        $role = Role::with('permissions', 'menus')->find($id);
         if (!$role) {
-            throw new CustomApiException("Role with ID {$id} not found", 404);
+            throw new Exception("Role with ID {$id} not found");
         }
-        
-        $role->permissions->makeHidden('pivot');
         return $role;
     }
 
     public function updateRole($id, array $data)
     {
-        $role = Role::find($id);
+        return DB::transaction(function () use ($id, $data) {
+            $role = Role::find($id);
 
-        if (!$role) {
-            throw new CustomApiException("Role with ID {$id} not found", 404);
-        }
+            if (!$role) {
+                throw new Exception("Role with ID {$id} not found");
+            }
 
-        $role->update([
-            'name' => $data['name'],
-            'slug' => $data['slug'] ?? \Illuminate\Support\Str::slug($data['name']),
-            'description' => $data['description'],
-        ]);
+            $permissionIds = $data['permission_ids'] ?? null;
+            $menuIds = $data['menu_ids'] ?? null;
+            unset($data['permission_ids']);
+            unset($data['menu_ids']);
 
-        // if (isset($data['permission_ids'])) {
-        //     $role->permissions()->sync($data['permission_ids']);
-        // }
-        $role->permissions()->sync($data['permission_ids'] ?? []);
+            $role->update($data);
 
-        return $role->load('permissions')->permissions->makeHidden('pivot');
+            if (!is_null($permissionIds)) {
+                $this->syncPermissions($role, $permissionIds);
+            }
+
+            if (!is_null($menuIds)) {
+                $this->syncMenus($role, $menuIds);
+            }
+
+            return $role;
+        });
     }
 
     public function deleteRole($id)
     {
         $role = Role::find($id);
-
         if (!$role) {
-            throw new CustomApiException("Role with ID {$id} not found", 404);
+            throw new Exception("Role with ID {$id} not found");
         }
 
+        $role->permissions()->detach();
         $role->delete();
+    }
+
+    private function syncPermissions(Role $role, array $permissionIds): void
+    {
+        // Hapus semua relasi lama
+        $role->permissions()->detach();
+
+        // Jika tidak ada permission baru, stop di sini
+        if (empty($permissionIds)) {
+            return;
+        }
+
+        // Ambil ID berdasarkan id atau slug (biar fleksibel)
+        $ids = Permission::whereIn('id', $permissionIds)
+            ->pluck('id')
+            ->unique()
+            ->toArray();
+
+        // Tambahkan ulang seluruh permission baru
+        $role->permissions()->attach($ids);
+    }
+
+    private function syncMenus(Role $role, array $menuIds): void
+    {
+        $role->menus()->detach();
+
+        if (empty($menuIds)) {
+            return;
+        }
+
+        $ids = Menu::whereIn('id', $menuIds)
+            ->pluck('id')
+            ->unique()
+            ->toArray();
+
+        $role->menus()->attach($ids);
     }
 }

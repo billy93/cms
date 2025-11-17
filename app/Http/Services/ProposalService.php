@@ -16,6 +16,7 @@ class ProposalService
             unset($data['boq_ids']);
 
             $data['code'] = Proposal::generateCode();
+            $data['status'] = "Draft";
             $proposal = Proposal::create($data);
 
             $foundBoqs = Boq::whereIn('id', $boq_ids)->get();
@@ -54,6 +55,11 @@ class ProposalService
             // 🔒 Guard: Prevent proposal with status 'Win' from being updated
             if (strtolower($proposal->status) === 'win') {
                 throw new Exception("Proposal with status 'Win' cannot be modified.");
+            }
+
+            $targetStatus = strtolower($data['status'] ?? '');
+            if (in_array($targetStatus, ['submitted', 'win', 'lose'], true) && $proposal->boqs->isEmpty()) {
+                throw new Exception("Cannot change status to '{$data['status']}' because this proposal has no BOQs.");
             }
             
             $proposal->update($data);

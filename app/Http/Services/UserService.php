@@ -10,15 +10,13 @@ class UserService
 {
     public function createUser(array $data)
     {
-		\Log::debug("CALCULATED PARAMS: " . json_encode($data, JSON_PRETTY_PRINT));
-
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'phone' => $data['phone'],
             'location' => $data['location'],
-            'status' => $data['status'] ?? 'active',
+            'status' => $data['status'] ?? 'Active',
             'role_id' => $data['role_id'],
         ]);
 
@@ -58,13 +56,40 @@ class UserService
             'role_id' => $data['role_id'],
         ];
 
-        if (isset($data['password'])) {
-            $updateData['password'] = Hash::make($data['password']);
-        }
+        // if (isset($data['password'])) {
+        //     $updateData['password'] = Hash::make($data['password']);
+        // }
 
         $user->update($updateData);
 
         return $user->fresh('role');
+    }
+
+    public function changePasswordUser(array $data)
+    {
+        $user = User::find($data['id']);
+
+        if (!$user) {
+            throw new CustomApiException("User with ID {$data['id']} not found", 404);
+        }
+
+        // pastikan password lama cocok
+        if (!Hash::check($data['password'], $user->password)) {
+            throw new CustomApiException("Current password is incorrect", 400);
+        }
+
+        // pastikan new_password == confirm_password
+        if ($data['new_password'] !== $data['confirm_password']) {
+            throw new CustomApiException("New password and confirmation do not match", 400);
+        }
+
+        $user->password = Hash::make($data['new_password']);
+        $user->save();
+
+        return [
+            'message' => 'Password successfully updated.',
+            'user' => $user->fresh()
+        ];
     }
 
     public function deleteUser($id)

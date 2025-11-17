@@ -34,16 +34,18 @@
         gap: 6px; 
       }
       #proposal_canvas_boq_section .selected-tag {
-        padding: 4px 6px;  
-        border-radius: 3px;
-        background: #e41f07;
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: #aaa;
         color: #fff;
+        font-size: 12px;
       }
       #proposal_canvas_boq_section .no-selected-tag {
         text-align: center;
         flex-grow: 1;
-        padding: 4px 6px;  
+        padding: 2px 6px;
         color: #6f6f6f;
+        font-size: 12px;
       }
     </style>
     <form id="c_proposal_canvas_form" method="POST"></form>

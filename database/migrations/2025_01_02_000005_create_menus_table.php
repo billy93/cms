@@ -4,23 +4,22 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
-            $table->string('label');
-            $table->string('path');
-            $table->string('icon')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->integer('sort')->default(0);
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('parent_id')->nullable()->constrained('menus')->nullOnDelete();
+            $table->string('name', 100);
+            $table->string('icon', 100)->nullable();
+            // $table->string('route_name',  150)->nullable(); // ex: "projects.index"
+            $table->foreignId('permission_id')->nullable()->constrained('permissions')->nullOnDelete();
+            $table->integer('order_index')->default(0);
+            $table->boolean('is_visible')->default(true);
             $table->timestamps();
-            
-            $table->index('parent_id', 'idx_menus_parent_id');
-            $table->index('is_active', 'idx_menus_is_active');
-            $table->foreign('parent_id')->references('id')->on('menus')->onDelete('set null');
+
+            $table->index(['parent_id']);
+            // $table->index(['parent_id', 'route_name']);
         });
     }
 

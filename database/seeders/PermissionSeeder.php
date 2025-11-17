@@ -2,40 +2,113 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
-use App\Models\Permission;
 use Illuminate\Database\Seeder;
+use App\Models\Permission;
+use App\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $permissions = [
-            'manage-users' => 'User Management',
-            'deals' => 'Deals',
-            'deal-reports' => 'Deal Reports',
-            'deals-details' => 'Deal Details',
-            'deals-kanban' => 'Deals Kanban',
+        $routes = [
+            'users' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['changePassword', 'PATCH'], ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'boqs' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE'], ['bulkDelete', 'DELETE'],
+                ['replicate', 'PATCH'], ['unbindProposal', 'PATCH']
+            ],
+            'categories' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'products' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'suppliers' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'roles' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'menus' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'permissions' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'customers' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'projects' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'proposals' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['boqs', 'GET'], ['update', 'PUT'], ['delete', 'DELETE']
+            ],
+            'invoices' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
         ];
-        
-        foreach ($permissions as $key => $value) {
-            Permission::firstOrCreate(
-                ['module' => $key],
-                ['description' => $value]
-            );
+
+        $allPermissions = [];
+        $categoryProductPermissions = [];
+
+        foreach ($routes as $prefix => $actions) {
+            foreach ($actions as [$action, $method]) {
+                $route = "{$prefix}.{$action}";
+                $path = $this->buildPath($prefix, $action);
+
+                $permission = Permission::firstOrCreate(
+                    ['route' => $route],
+                    ['route' => $route, 'method' => $method, 'path' => $path, 'description' => ucfirst($action)]
+                );
+
+                $allPermissions[] = $permission->id;
+
+                // Kumpulin permission categories & products untuk role user
+                if (in_array($prefix, ['categories', 'products'])) {
+                    $categoryProductPermissions[] = $permission->id;
+                }
+            }
         }
 
-        $adminRole = Role::where('name', 'Admin')->first();
-        $userRole = Role::where('name', 'User')->first();
-
+        // Assign semua permission ke role Admin
+        $adminRole = Role::where('slug', 'admin')->first();
         if ($adminRole) {
-            $adminRole->permissions()->sync(Permission::all()->pluck('id')); 
+            $adminRole->permissions()->sync($allPermissions);
         }
 
+        // Assign hanya permission categories & products ke role User
+        $userRole = Role::where('slug', 'user')->first();
         if ($userRole) {
-            $userRole->permissions()->sync([
-                Permission::where('module', 'manage-users')->first()->id,
-            ]);
+            $userRole->permissions()->sync($categoryProductPermissions);
         }
+    }
+
+    private function buildPath(string $prefix, string $action): string
+    {
+        return match($action) {
+            'index', 'create' => "/{$prefix}",
+            'readAll' => "/{$prefix}/all",
+            'read', 'update', 'delete' => "/{$prefix}/{id}",
+            'bulkDelete' => "/{$prefix}",
+            'replicate' => "/{$prefix}/replicate/{proposal_id?}",
+            'changePassword' => "/{$prefix}/change-password/{user_id}",
+            'unbindProposal' => "/{$prefix}/unbind-proposal/{boq_id?}",
+            'boqs' => "/proposals/{proposal_id}/boqs",
+            default => "/{$prefix}/{$action}"
+        };
     }
 }

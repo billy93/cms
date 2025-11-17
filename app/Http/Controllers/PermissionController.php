@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Carbon;
 use Yajra\DataTables\Facades\DataTables;
-use App\Models\Permission;
 use App\Http\Requests\PermissionRequest;
 use App\Http\Services\PermissionService;
 
@@ -19,107 +18,152 @@ class PermissionController extends Controller
         $this->permissionService = $permissionService;
     }
 
-    
-	/**
-	 * Retrieve paginated users with ordering, excluding the password field,
-	 * and pass the data to the manage-users view.
-	 *
-	 * @param \Illuminate\Http\Request $request
-	 * @return \Illuminate\View\View
-	 */
     public function index(Request $request)
     {
-        if($request->ajax())
-        {
-            $permissions = Permission::query();
-            $result = DataTables::eloquent($permissions)
-            ->addColumn("created_at", function($permission) {
-                return Carbon::parse($permission->created_at)->format('d-M-Y');
-            }) 
-            ->addColumn('actions', function($permission) {
-                return '
-                    <div class="dropdown table-action">
-                        <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-ellipsis-v"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a 
-                                id="c_permission_edit" 
-                                class="dropdown-item" 
-                                href="#" 
-                                data-id="'.$permission->id.'" 
-                                data-url="'.route('permissions.read', ['permission_id' => $permission->id]).'"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#edit_permission">
-                                <i class="ti ti-edit text-blue"></i> Edit
+        if ($request->ajax()) {
+            $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
+            $permissions = Permission::with(['roles']);
+
+            if($request->role_id) {
+                $permissions->whereHas('roles', function($q) use ($request) {
+                    $q->where('roles.id', $request->role_id);
+                });
+            }
+
+            return DataTables::eloquent($permissions)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->whereRaw('LOWER(route) LIKE ?', ["%{$search}%"])
+                              ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
+                              ->orWhereRaw('LOWER(path) LIKE ?', ["%{$search}%"])
+                              ->orWhereRaw('LOWER(method) LIKE ?', ["%{$search}%"]);
+                    }
+                })
+                ->addColumn('actions', function ($p) {
+                    return '
+                        <div class="dropdown table-action">
+                            <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
                             </a>
-                            <a 
-                                id="c_permission_delete" 
-                                class="dropdown-item" 
-                                href="javascript:void(0);" 
-                                data-id="'.$permission->id.'" 
-                                data-url="'.route('permissions.delete', ['permission_id' => $permission->id]).'"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#delete_permission_modal">
-                                <i class="ti ti-trash text-danger"></i> Delete
-                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a  
+                                    class="dropdown-item" 
+                                    href="'.route('permissions.read', ['permission_id' => $p->id]).'">
+                                    <i class="ti ti-eye text-info"></i> View
+                                </a>
+                                <a  
+                                    class="dropdown-item c_permission_edit_btn" 
+                                    href="#" 
+                                    data-url="'.route('permissions.read', ['permission_id' => $p->id]).'">
+                                    <i class="ti ti-edit text-blue"></i> Edit
+                                </a>
+                                <a  
+                                    class="dropdown-item c_permission_delete_btn" 
+                                    href="javascript:void(0);" 
+                                    data-url="'.route('permissions.delete', ['permission_id' => $p->id]).'">
+                                    <i class="ti ti-trash text-danger"></i> Delete
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                ';
-                }
-            )
-            ->rawColumns(['actions'])
-            ->make(true);
-            \Log::info('Response (permissions.index): ' . json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            return $result; 
+                    ';
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
         }
 
-        return view('permission');
+        return view('permissions');
     }
-        
+
     public function create(PermissionRequest $request): JsonResponse
     {
-        $permission = $this->permissionService->createPermission($request->validated());            
-        return response()->json([
-            'status' => 'success',
-            'data' => $permission
-        ], 201);
+        try {
+            $permission = $this->permissionService->createPermission($request->validated());
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission created successfully',
+                'data' => $permission
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to create permission'
+            ], 500);
+        }
     }
 
-    public function readAll(): JsonResponse
+    public function readAll(Request $request): JsonResponse
     {
-        $permissions = $this->permissionService->getAllPermissions();
-        return response()->json([
-            'status' => 'success',
-            'data' => $permissions
-        ], 200);
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $permissions = $this->permissionService->getAllPermissions();
+                return response()->json([
+                    'success' => true,
+                    'data' => $permissions
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to fetch permissions'
+                ], 500);
+            }
+        }
+        abort(404);
     }
 
-    public function read($permission_id): JsonResponse
+    public function read(Request $request, $permission_id)
     {
+        if ($request->wantsJson() || $request->ajax()) {
+            try {
+                $permission = $this->permissionService->getPermissionById($permission_id);
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => $permission
+                    ], 200);
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Failed to load permission'
+                ], 500);
+            }
+        }
+
         $permission = $this->permissionService->getPermissionById($permission_id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $permission
-        ], 200);
+        return view('permissions.detail', compact('permission'));
     }
 
     public function update(PermissionRequest $request, $permission_id): JsonResponse
     {
-        $validatedData = $request->validated();
-        $permission = $this->permissionService->updatePermission($permission_id, $validatedData);
-        return response()->json([
-            'status' => 'success',
-            'data' => $permission
-        ], 200);
+        try {
+            $permission = $this->permissionService->updatePermission($permission_id, $request->validated());
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission updated successfully',
+                'data' => $permission
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to update permission'
+            ], 500);
+        }
     }
 
     public function delete($permission_id): JsonResponse
     {
-        $this->permissionService->deletePermission($permission_id);
-        return response()->json([
-            'status' => 'success',
-            'message' => "Permission with ID {$permission_id} deleted successfully"
-        ], 200);
+        try {
+            $this->permissionService->deletePermission($permission_id);
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to delete permission'
+            ], 500);
+        }
     }
 }

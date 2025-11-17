@@ -10,13 +10,13 @@
                     <div class="card ">
                         <div class="card-header">
                             <!-- Search -->
-                            <div class="row align-items-center">
+							<div class="row align-items-center">
 								<div class="col-sm-4">
 									<form class="icon-form mb-3 mb-sm-0" id="c_customer_list_search_form">
 										<span class="form-icon"><i class="ti ti-search"></i></span>
 										<input type="text" class="form-control" placeholder="Search Customer" id="c_customer_list_search_input">
 									</form>							
-								</div>      
+								</div>		
                                 <div class="col-sm-8">                    
                                     <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
                                         <div class="dropdown me-2">

@@ -22,9 +22,24 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            $searchValue = $request->search;
+            $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $customers = Customer::withCount('projects');
 
             return DataTables::eloquent($customers)
+                ->filter(function ($query) use ($search) {
+                    if ($search !== '') {
+                        $query->where(function ($q) use ($search) {
+                            $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(address) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(contact_person) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(phone) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(status) LIKE ?', ["%{$search}%"]);
+                        });
+                    }
+                })
                 ->addColumn('projects_count', fn($c) => $c->projects_count)
                 ->addColumn('actions', function ($c) {
                     return '

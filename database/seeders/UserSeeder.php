@@ -15,10 +15,17 @@ class UserSeeder extends Seeder
         });
 
         User::factory()->create([
+            'name' => 'User',
+            'email' => 'user@pcmi.com',
+            'password' => Hash::make('password'),
+            'status' => 'Active',
+        ])->assignRole('user');  
+
+        User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@pcmi.com',
             'password' => Hash::make('password'),
-            'status' => 'active',
+            'status' => 'Active',
         ])->assignRole('admin');  
     }
 }

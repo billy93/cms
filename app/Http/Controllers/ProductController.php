@@ -25,7 +25,6 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            \Log::info($request); 
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $products = Product::with(['supplier', 'categories']);

@@ -136,7 +136,7 @@
                                             <tbody></tbody>
                                         </table>
                                     </div>
-                                    <div class="row align-items-center mt-2" style="row-gap: 1em; padding: 10px 15px;">
+                                    <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
                                                 <div class="supplier_product_list_datatable_length"></div>
