@@ -52,7 +52,7 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
     });
 
     Route::prefix('boqs')->name('boqs.')
-    ->controller(BoQController::class)->group(function () {
+    ->controller(BoqController::class)->group(function () {
         Route::get('/', 'index')->name('index');    
         Route::post('/', 'create')->name('create');   
         Route::get('/all', 'readAll')->name('readAll');  
