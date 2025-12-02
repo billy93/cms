@@ -25,17 +25,17 @@ class BankService
     {
         $bank = Bank::find($id);
         if (!$bank) {
-            throw new Exception("Bank with ID {$id} not found");
+            throw new Exception("bank with ID {$id} not found");
         }
         return $bank;
     }
 
-    public function updateBank($id, array $data)
+    public function updatebank($id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
-            $bank = Bank::find($id);
+            $bank = bank::find($id);
             if (!$bank) {
-                throw new Exception("Bank with ID {$id} not found");
+                throw new Exception("bank with ID {$id} not found");
             }
 
             $bank->update($data);
@@ -43,11 +43,11 @@ class BankService
         });
     }
 
-    public function deleteBank($id)
+    public function deletebank($id)
     {
-        $bank = Bank::find($id);
+        $bank = bank::find($id);
         if (!$bank) {
-            throw new Exception("Bank with ID {$id} not found");
+            throw new Exception("bank with ID {$id} not found");
         }
         $bank->delete();
     }
