@@ -15,5 +15,6 @@ class Bank extends Model
         'bank_code',
         'bank_name',
         'bank_address',
+        'bank_brand'
     ];
 }
