@@ -405,6 +405,7 @@
         'pages',
         'pages-list',
         'notes',
+        'menus.index',
         'membership-transactions',
         'membership-addons',
         'membership-plans',

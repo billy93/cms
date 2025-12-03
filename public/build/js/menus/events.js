@@ -2,6 +2,7 @@ class MenuForm {
   isInit = true;
   mode = "create";
   menus = [];
+  permissions = [];
   data = {};
   errors = {};
 
@@ -53,6 +54,34 @@ class MenuForm {
       });
   }
 
+  async fetchPermissions() {
+    this.isFetching = true;
+    this.showLoading();
+    return fetch("/permissions/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        console.log(res.data);
+        this.permissions = res.data;
+      })
+      .catch(err => {
+        console.error("Fetch permissions error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        if (!this.isInit) this.hideLoading();
+      });
+  }
+
   // ---------------------------------------- INIT ----------------------------------------
   async init(mode = "create", data = {}) {
     this.resetForm();
@@ -61,6 +90,7 @@ class MenuForm {
     this.mode = mode;
 
     await this.fetchMenus();
+    await this.fetchPermissions();
 
     const formWrapper = document.createElement("div");
     formWrapper.id = "menu_form_wrapper";
@@ -78,7 +108,8 @@ class MenuForm {
       name: "",
       icon: "",
       is_visible: true,
-      order_index: 0
+      order_index: 0,
+      permission_id: ""
     }
 
     if (isEdit && this.data) {
@@ -88,7 +119,12 @@ class MenuForm {
         ? this.data.is_visible
         : true;
       value.order_index = typeof value.order_index === 'number' ? value.order_index : 0;
+      value.permission_id = this.data.permission_id || ""
     }
+
+    const selectPermissionOptions = this.permissions.map(p => {
+      return `<option value="${p.id}" ${value.permission_id === p.id ? "selected" : ""}>${p.route}</option>`;
+    });
 
     return `
       <div>
@@ -105,6 +141,18 @@ class MenuForm {
               <label class="col-form-label">Icon</label>
               <input type="text" id="input_menu_icon" class="form-control" value="${value.icon}">
               <small id="input_menu_icon_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <label class="col-form-label">Permission<span class="text-danger">*</span></label>
+              </div>
+              <select id="input_menu_permission_id" class="select form-control">
+                <option value="" ${!value.permission_id ? "selected" : ""}>-- Select Permission --</option>
+                ${selectPermissionOptions}
+              </select>
+              <small id="input_menu_permission_id_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
@@ -130,7 +178,20 @@ class MenuForm {
     `;
   }
 
-  initPlugins() { }
+  initPlugins() {
+    // SELECT2 (if using select with class="select", no need when using class="form-select")
+    if (window.$ && $.fn.select2) {
+      $('.select').select2({
+        width: '100%',
+        dropdownParent: $('#c_menu_canvas_form')
+      });
+
+      // bridge event agar change bisa dideteksi
+      $('.select').on('select2:select', function () {
+        this.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+  }
 
   showLoading() {
     if (!this.loadingEl) {
@@ -165,7 +226,8 @@ class MenuForm {
   resetForm() {
     this.isInit = true;
     this.mode = "create";
-    this.menus = []
+    this.menus = [];
+    this.permissions = [];
     this.data = {};
     this.form.innerHTML = "";
     this.errors = {};
@@ -203,6 +265,11 @@ class MenuForm {
         field: "input_menu_icon",
         required: false,
         message: "Icon is required."
+      },
+      {
+        field: "input_menu_permission_id",
+        required: true,
+        message: "Permission is required."
       },
       {
         field: "input_menu_order_index",

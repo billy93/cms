@@ -346,7 +346,8 @@
          'packages',
          'packages-grid',
          'domain',
-         'purchase-transaction'
+         'purchase-transaction',
+         'menus.index'
      ]))
  <!-- Select2 CSS -->
  <link rel="stylesheet" href="{{ url('build/plugins/select2/css/select2.min.css') }}">
