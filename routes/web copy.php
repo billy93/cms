@@ -166,15 +166,7 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::delete('/{invoice_id}', 'delete')->name('delete'); 
     });
     // This single line creates ALL 7 routes for you automatically
-    Route::prefix('banks')->name('banks.')
-    ->controller(BankController::class)->group(function() {
-        Route::get('/', 'index')->name('index'); 
-        Route::post('/', 'create')->name('create'); 
-        Route::get('/all', 'readAll')->name('readAll'); 
-        Route::get('/{bank_id}', 'read')->name('read'); 
-        Route::put('/{bank_id}', 'update')->name('update'); 
-        Route::delete('/{bank_id}', 'delete')->name('delete'); 
-    });
+    Route::resource('banks', BankController::class);
 
     // Route::get('/deals-dashboard', function () {
     //     return view('deals-dashboard');

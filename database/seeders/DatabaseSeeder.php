@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             ProposalSeeder::class,
             InvoiceSeeder::class,
-            BoqSeeder::class
+            BoqSeeder::class,
+            BankSeeder::class,
         ]);
     }
 }
