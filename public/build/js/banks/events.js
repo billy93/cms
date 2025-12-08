@@ -71,11 +71,10 @@ class BankForm {
     return `
       <div>
         <div class="row">
-          ${bankCodeField}
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Code<span class="text-danger">*</span></label>
-              <input type="text" id="input_bank_code" class="form-control" value="${value.bank_code}">
+              <input type="text" id="input_bank_code" class="form-control" value="${value.bank_code}" ${isEdit ? "disabled" : ""}>
               <small id="input_bank_code_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
@@ -224,7 +223,7 @@ class BankForm {
         value = moment(value, 'DD/MM/YY').format('YYYY-MM-DD')
       }
 
-      payload[id.field.replace("input_supp_", "")] = value;
+      payload[id.field.replace("input_", "")] = value;
 
       if (!value && id.required) {
         this.errors[id.field + "_error"] = id.message;

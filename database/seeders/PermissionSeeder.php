@@ -64,6 +64,10 @@ class PermissionSeeder extends Seeder
                 ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
                 ['update', 'PUT'], ['delete', 'DELETE'], ['preview', 'POST']
             ],
+            'banks' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE']
+            ],
         ];
 
         $allPermissions = [];
