@@ -466,6 +466,7 @@
         'boqs',
         'boqs.index',
         'customers.index',
+        'pdf-templates.index',
         'dashboard',
         'company',
         'subscription',

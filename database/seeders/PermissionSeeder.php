@@ -60,6 +60,10 @@ class PermissionSeeder extends Seeder
                 ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
                 ['update', 'PUT'], ['delete', 'DELETE']
             ],
+            'pdf-templates' => [
+                ['index', 'GET'], ['create', 'POST'], ['readAll', 'GET'], ['read', 'GET'],
+                ['update', 'PUT'], ['delete', 'DELETE'], ['preview', 'POST']
+            ],
         ];
 
         $allPermissions = [];
@@ -108,6 +112,7 @@ class PermissionSeeder extends Seeder
             'changePassword' => "/{$prefix}/change-password/{user_id}",
             'unbindProposal' => "/{$prefix}/unbind-proposal/{boq_id?}",
             'boqs' => "/proposals/{proposal_id}/boqs",
+            'preview' => "/{$prefix}/preview",
             default => "/{$prefix}/{$action}"
         };
     }

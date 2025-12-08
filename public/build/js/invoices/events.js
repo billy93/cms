@@ -212,7 +212,7 @@ class InvoiceForm {
             <small id="input_invoice_due_date_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
-        <div class="col-md-12" id="invoice_canvas_boq_section">
+        <div class="col-md-12 mb-3" id="invoice_canvas_boq_section">
           <div>
             <label class="col-form-label">BoQ(s)</label>
             <ul id="selected_invoice_canvas_boq" class="mt-2 mb-2">${selectedBoqEl}</ul>

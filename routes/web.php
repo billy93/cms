@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PdfTemplateController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProjectController;
@@ -154,6 +155,7 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::get('/{proposal_id}/boqs', 'boqs')->name('boqs'); 
         Route::put('/{proposal_id}', 'update')->name('update'); 
         Route::delete('/{proposal_id}', 'delete')->name('delete'); 
+        Route::get('/{proposal_id}/pdf', 'generatePdf')->name('pdf');
       });
 
     Route::prefix('invoices')->name('invoices.')
@@ -164,6 +166,7 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::get('/{invoice_id}', 'read')->name('read'); 
         Route::put('/{invoice_id}', 'update')->name('update'); 
         Route::delete('/{invoice_id}', 'delete')->name('delete'); 
+        Route::get('/{invoice_id}/pdf', 'generatePdf')->name('pdf'); 
     });
     // This single line creates ALL 7 routes for you automatically
     Route::prefix('banks')->name('banks.')
@@ -174,6 +177,17 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::get('/{bank_id}', 'read')->name('read'); 
         Route::put('/{bank_id}', 'update')->name('update'); 
         Route::delete('/{bank_id}', 'delete')->name('delete'); 
+    });
+
+    Route::prefix('pdf-templates')->name('pdf-templates.')
+    ->controller(PdfTemplateController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/all', 'readAll')->name('readAll'); 
+        Route::get('/{template_id}', 'read')->name('read'); 
+        Route::put('/{template_id}', 'update')->name('update'); 
+        Route::delete('/{template_id}', 'delete')->name('delete'); 
+        Route::post('/preview', 'preview')->name('preview'); 
     });
 
     // Route::get('/deals-dashboard', function () {

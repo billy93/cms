@@ -100,6 +100,7 @@ use App\Http\Services\MenuService;
 							'invoices.index',
 							'boqs.index',
 							'payments.index',
+							'pdf-templates.index',
 						],
 						'User Management' => [
 							'users.index', 

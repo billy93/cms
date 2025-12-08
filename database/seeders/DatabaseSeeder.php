@@ -28,7 +28,8 @@ class DatabaseSeeder extends Seeder
             ProposalSeeder::class,
             InvoiceSeeder::class,
             BoqSeeder::class,
-            BankSeeder::class,
+            // BankSeeder::class,
+            PdfTemplateSeeder::class
         ]);
     }
 }

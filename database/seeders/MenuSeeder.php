@@ -24,6 +24,7 @@ class MenuSeeder extends Seeder
             'Projects' => ['prefix' => 'projects', 'icon' => 'ti ti-briefcase'],
             'Proposals' => ['prefix' => 'proposals', 'icon' => 'ti ti-file-text'],
             'Invoices' => ['prefix' => 'invoices', 'icon' => 'ti ti-file-invoice'],
+            'PDF Templates' => ['prefix' => 'pdf-templates', 'icon' => 'ti ti-file-settings'],
         ];
 
         $allMenuIds = [];

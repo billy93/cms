@@ -27,6 +27,9 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Proposal Information</h5>
                             <div class="d-flex gap-2">
+                                <a href="/proposals/{{ $proposal->id }}/pdf" target="_blank" class="btn btn-outline-danger">
+                                    <i class="ti ti-file-type-pdf me-1"></i>Download PDF
+                                </a>
                                 <a href="/proposals" class="btn btn-outline-secondary">
                                     <i class="ti ti-arrow-left me-1"></i>Back to Proposals
                                 </a>
@@ -400,6 +403,14 @@
                             </div>
                         </div>
                         <div class="col-md-12 mt-3 d-flex justify-content-end">
+                            <a 
+                                href="/invoices/${invoice.id}/pdf"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-secondary me-2"
+                                title="Generate PDF"
+                            >
+                                <i class="ti ti-file-type-pdf" style="font-size: 1.25rem"></i>
+                            </a>
                             <a 
                                 href="/invoices/${invoice.id}"
                                 class="btn btn-sm btn-outline-info me-2"

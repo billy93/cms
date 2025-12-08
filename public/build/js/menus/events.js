@@ -317,7 +317,7 @@ class MenuForm {
 
     const payload = this.validateFields();
     const errKeys = Object.keys(this.errors);
-    console.log(payload);
+
     if (errKeys.length) {
       errKeys.forEach(v => {
         const el = document.getElementById(v);
