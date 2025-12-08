@@ -101,6 +101,7 @@ use App\Http\Services\MenuService;
 							'boqs.index',
 							'payments.index',
 							'pdf-templates.index',
+							'banks.index',
 						],
 						'User Management' => [
 							'users.index', 
