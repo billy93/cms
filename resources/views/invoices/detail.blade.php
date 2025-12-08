@@ -25,6 +25,14 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Invoice Information</h5>
                             <div class="d-flex gap-2">
+                                <a 
+                                    href="/invoices/{{ $invoice->id }}/pdf"
+                                    target="_blank"
+                                    class="btn btn-outline-danger"
+                                    title="Generate PDF"
+                                >
+                                    <i class="ti ti-file-type-pdf me-1"></i>Generate PDF
+                                </a>
                                 <a href="/invoices" class="btn btn-outline-secondary">
                                     <i class="ti ti-arrow-left me-1"></i>Back to Invoices
                                 </a>

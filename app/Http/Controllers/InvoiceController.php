@@ -71,6 +71,13 @@ class InvoiceController extends Controller
                                     <i class="ti ti-eye text-info"></i> View Detail
                                 </a>
                                 <a 
+                                    class="dropdown-item" 
+                                    href="'.route('invoices.pdf', ['invoice_id' => $invoice->id]).'" 
+                                    target="_blank"
+                                >
+                                    <i class="ti ti-file-type-pdf text-danger"></i> Generate PDF
+                                </a>
+                                <a 
                                     class="dropdown-item c_invoice_edit_btn" 
                                     href="javascript:void(0)" 
                                     data-url="'.route('invoices.read', ['invoice_id' => $invoice->id]).'"

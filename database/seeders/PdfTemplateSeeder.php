@@ -82,8 +82,11 @@ class PdfTemplateSeeder extends Seeder
         .header-table { width: 100%; margin-bottom: 40px; }
         .pdf-logo img { height: 50px; width: auto; }
         
-        .pdf-address-block { text-align: right; }
+        .pdf-header-right { display: flex; align-items: stretch; }
+        .pdf-address-block { text-align: right; padding-right: 15px; display: flex; flex-direction: column; align-items: flex-end; }
+        .pdf-building-icon { width: 24px; height: 24px; margin-bottom: 5px; fill: #4059C6; }
         .pdf-address-text { font-size: 9pt; color: #333333; line-height: 1.4; font-weight: 300; }
+        .pdf-vertical-line { width: 4px; background-color: #4059C6; border-radius: 2px; }
         
         /* Invoice Title & Info */
         .title-table { width: 100%; margin-bottom: 30px; }
@@ -132,7 +135,7 @@ class PdfTemplateSeeder extends Seeder
         <div class="pdf-header">
             <div class="pdf-header-wrapper">
                 <div class="pdf-logo">
-                    <img src="/build/img/ati-logo.png" alt="ATI Logo">
+                    <img src="/build/img/your-logo.png" alt="Your Logo">
                 </div>
                 <div class="pdf-header-right">
                     <div class="pdf-address-block">
@@ -142,9 +145,9 @@ class PdfTemplateSeeder extends Seeder
                             <path d="M7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zm4-8h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm4-8h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2z"/>
                         </svg>
                         <div class="pdf-address-text">
-                            Batu Tulis Raya 13C<br>
-                            Jakarta 10120<br>
-                            Indonesia
+                            123 Business Street<br>
+                            City 12345<br>
+                            Country
                         </div>
                     </div>
                     <div class="pdf-vertical-line"></div>
@@ -354,7 +357,7 @@ class PdfTemplateSeeder extends Seeder
         <div class="pdf-header">
             <div class="pdf-header-wrapper">
                 <div class="pdf-logo">
-                    <img src="/build/img/ati-logo.png" alt="ATI Logo">
+                    <img src="/build/img/your-logo.png" alt="Your Logo">
                 </div>
                 <div class="pdf-header-right">
                     <div class="pdf-address-block">
@@ -364,9 +367,9 @@ class PdfTemplateSeeder extends Seeder
                             <path d="M7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zm4-8h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm4-8h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2z"/>
                         </svg>
                         <div class="pdf-address-text">
-                            Batu Tulis Raya 13C<br>
-                            Jakarta 10120<br>
-                            Indonesia
+                            123 Business Street<br>
+                            City 12345<br>
+                            Country
                         </div>
                     </div>
                     <div class="pdf-vertical-line"></div>
