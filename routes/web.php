@@ -156,6 +156,12 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::put('/{proposal_id}', 'update')->name('update'); 
         Route::delete('/{proposal_id}', 'delete')->name('delete'); 
         Route::get('/{proposal_id}/pdf', 'generatePdf')->name('pdf');
+        
+        // Pricing Model routes
+        Route::get('/{proposal_id}/pricing-model', 'getPricingModel')->name('getPricingModel');
+        Route::put('/{proposal_id}/pricing-model', 'savePricingModel')->name('savePricingModel');
+        Route::get('/{proposal_id}/available-boqs', 'getAvailableBoqs')->name('getAvailableBoqs');
+        // Route::get('/{proposal_id}/get-boqs', 'getBoqs')->name('getBoqs');
       });
 
     Route::prefix('invoices')->name('invoices.')

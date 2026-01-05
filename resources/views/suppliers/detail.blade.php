@@ -102,13 +102,13 @@
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Created</label>
-                                        <p class="mb-0">{{ $supplier->created_at ? formatDate($supplier->created_at, 'j F Y') : "-" }}</p>
+                                        <p class="mb-0">{{ $supplier->created_at ? formatDate($supplier->created_at, 'd F Y') : "-" }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Updated</label>
-                                        <p class="mb-0">{{ $supplier->updated_at ? formatDate($supplier->updated_at, 'j F Y') : "-" }}</p>
+                                        <p class="mb-0">{{ $supplier->updated_at ? formatDate($supplier->updated_at, 'd F Y') : "-" }}</p>
                                     </div>
                                 </div>
                                 <div class="form-group mb-2">
@@ -127,10 +127,11 @@
                                                 <th class="td-break">ID</th>
                                                 <th class="td-break">Name</th>
                                                 <th class="td-break">Unit</th>
-                                                <th class="td-break">Base Cost</th>
+                                                <th class="td-break" style="text-align: right !important;">Price</th>
                                                 <th class="td-break">Description</th>
                                                 <th class="td-break">Created</th>
                                                 <th class="td-break">Updated</th>
+                                                <th class="td-break">Action</th>
                                             </tr>
                                             </thead>
                                             <tbody></tbody>
@@ -197,20 +198,36 @@
                         { data: 'id', visible: false },
                         { data: 'name' }, 
                         { data: 'unit' }, 
-                        { data: 'base_cost' },
+                        { 
+                            data: 'price',
+                            className: 'text-end',
+                            render: function(data, type, row) { 
+                                const price = row.active_price_version?.price || 0;
+                                return typeof formatRupiahDisplay === 'function' ? formatRupiahDisplay(price.toString().replace('.', ',')) : price;
+                            } 
+                        },
                         { data: 'description' }, 
                         {
                         data: 'created_at',
                             render: function (data, type, row) {
-                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                                return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
                             }
                         },
                         {
                         data: 'updated_at',
                             render: function (data, type, row) {
-                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                                return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
                             }
                         },
+                        { 
+                            data: 'id',
+                            name: 'view',
+                            orderable: false,
+                            searchable: false,
+                            render: function(data) {
+                                return `<a href="/products/${data}" class="btn btn-sm btn-outline-info"><i class="ti ti-eye" style="color: inherit;"></i></a>`;
+                            }
+                        }
                     ],
                     columnDefs: [
                         {

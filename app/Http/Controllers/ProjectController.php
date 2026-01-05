@@ -26,6 +26,10 @@ class ProjectController extends Controller
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $projects = Project::with(['proposals', 'customer']);
 
+            if ($request->customer_id) {
+                $projects->where('customer_id', $request->customer_id);
+            }
+
             return DataTables::eloquent($projects)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {

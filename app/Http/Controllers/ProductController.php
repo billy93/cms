@@ -27,7 +27,7 @@ class ProductController extends Controller
         if ($request->ajax()) {
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $products = Product::with(['supplier', 'categories']);
+            $products = Product::with(['supplier', 'categories', 'activePriceVersion']);
 
             if($request->supplier_id) {
                 $products->where('supplier_id', $request->supplier_id);
@@ -38,13 +38,16 @@ class ProductController extends Controller
                     $q->where('product_categories.id', $request->category_id);
                 });
             }
-            
+            // \Log::info($products);
             return DataTables::eloquent($products)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {
                         $query->where(function ($q) use ($search) {
-                            $q->whereRaw('LOWER(products.name) LIKE ?', ["%{$search}%"])
-                              ->orWhereRaw('LOWER(products.description) LIKE ?', ["%{$search}%"])
+                            $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                              ->orWhereRaw('LOWER(unit) LIKE ?', ["%{$search}%"])
+                              ->orWhereHas('activePriceVersion', fn($v) =>
+                                  $v->whereRaw('LOWER(price) LIKE ?', ["%{$search}%"])
+                              )
                               ->orWhereHas('supplier', fn($p) =>
                                   $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
                               )
@@ -54,6 +57,7 @@ class ProductController extends Controller
                         });
                     }
                 })
+                ->addColumn('price', fn($p) => formatRupiah($p->activePriceVersion?->price ?? 0))
                 ->addColumn('supplier_name', fn($p) => $p->supplier->name ?? '-')
                 ->addColumn('categories', function ($p) {
                     if ($p->categories->isEmpty()) {
@@ -84,16 +88,17 @@ class ProductController extends Controller
                                 >
                                     <i class="ti ti-edit text-blue"></i> Edit
                                 </a>
-                                <a  
-                                    class="dropdown-item c_product_delete_btn" 
-                                    href="javascript:void(0);" 
-                                    data-url="'.route('products.delete', ['product_id' => $p->id]).'"
-                                >
-                                    <i class="ti ti-trash text-danger"></i> Delete
-                                </a>
                             </div>
                         </div>
                     ';
+                    // Delete button commented out per user request
+                    // <a  
+                    //     class="dropdown-item c_product_delete_btn" 
+                    //     href="javascript:void(0);" 
+                    //     data-url="'.route('products.delete', ['product_id' => $p->id]).'"
+                    // >
+                    //     <i class="ti ti-trash text-danger"></i> Delete
+                    // </a>
                 })
                 ->rawColumns(['categories', 'actions'])
                 ->make(true);

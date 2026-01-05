@@ -414,12 +414,11 @@
 												</label>
 											</th>
                                             <th>Invoice Code</th>
-                                            <th>Created</th>
-                                            <th>Updated</th>
                                             <th>Proposal Code</th>
                                             <th>Sales Code</th>
                                             <th>Invoice Date</th>
                                             <th>Due Date</th>
+                                            <th class="text-end">Amount</th>
                                             <th>Type</th>
                                             <th>Status</th>
                                             <th class="no-sort fit text-end">Action</th>

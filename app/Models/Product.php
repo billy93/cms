@@ -5,6 +5,10 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
@@ -16,7 +20,6 @@ class Product extends Model
         'name',
         'description',
         'unit',
-        'base_cost',
         'supplier_id',
     ];
     
@@ -57,29 +60,27 @@ class Product extends Model
         return $this->hasMany(BoqItem::class, 'product_id');
     }
 
-    
-    public function setBaseCostAttribute($value)
+    /**
+     * Get all price versions of this product.
+     */
+    public function priceVersions(): HasMany
     {
-        if (is_null($value)) {
-            $this->attributes['base_cost'] = 0;
-            return;
-        }
-
-        // Bersihkan simbol dan separator ribuan
-        $clean = preg_replace('/[^0-9,]/', '', $value);
-
-        // Ubah koma ke titik, hapus titik ribuan
-        $clean = str_replace(',', '.', str_replace('.', '', $clean));
-
-        // Simpan sebagai float
-        $this->attributes['base_cost'] = (float) $clean;
+        return $this->hasMany(ProductPriceVersion::class);
     }
 
     /**
-     * Accessor: format numeric value ke format Rupiah saat dibaca
+     * Get the active price version of this product.
      */
-    public function getBaseCostAttribute($value)
+    public function activePriceVersion(): HasOne
     {
-        return number_format($value ?? 0, 2, ',', '.'); // contoh: 1.250.000,50
+        return $this->hasOne(ProductPriceVersion::class)->where('is_active', true);
+    }
+
+    /**
+     * Accessor: Get price from active version (for backward compatibility)
+     */
+    public function getActivePriceAttribute()
+    {
+        return $this->activePriceVersion?->price ?? 0;
     }
 }

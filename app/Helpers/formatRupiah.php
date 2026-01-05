@@ -9,8 +9,9 @@ if (!function_exists('formatRupiah')) {
             return '';
         }
 
-        $hasDecimal = (strpos((string)$number, '.') !== false || strpos((string)$number, ',') !== false);
+        $number = (float) $number;
+        $hasDecimal = floor($number) != $number;
 
-        return number_format((float)$number, $hasDecimal ? 2 : 0, ',', '.');
+        return number_format($number, $hasDecimal ? 2 : 0, ',', '.');
     }
 }

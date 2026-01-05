@@ -46,7 +46,12 @@ return new class extends Migration
             $table->string('ship_to')->nullable();
 
             // Financial summary
-            $table->decimal('total_amount', 15, 2)->default(0);
+            $table->decimal('total_amount', 15, 2);
+            $table->decimal('management_fee', 15, 2)->default(0);
+            $table->decimal('sales_amount', 15, 2)->default(0);
+            $table->decimal('vat_amount', 15, 2)->default(0);
+            $table->decimal('invoice_amount', 15, 2)->default(0);
+
 
             // Notes & terms
             $table->text('note')->nullable();

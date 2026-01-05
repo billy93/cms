@@ -450,6 +450,8 @@ document.addEventListener("DOMContentLoaded", () => {
           title.textContent = "Edit Customer";
           CUSTOMER_CANVAS_BS.show();
           CUSTOMER_FORM.resetForm();
+          console.log(resJson.data);
+
           await CUSTOMER_FORM.init("edit", resJson.data);
         } else {
           showToast("error", resJson.message || "Failed to fetch customer data for editing.");

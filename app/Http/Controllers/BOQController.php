@@ -24,53 +24,55 @@ class BoqController extends Controller
         if ($request->ajax()) {
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $boqs = Boq::with(['proposal', 'items']);
-
+            $boqs = Boq::with(['proposal', 'items.product.activePriceVersion'])->orderBy('id', 'desc');
+            
             return DataTables::eloquent($boqs)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {
                         $query->where(function ($q) use ($search) {
                             $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
-                            ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
-                            ->orWhereRaw('LOWER(form_type) LIKE ?', ["%{$search}%"])
                             ->orWhereHas('proposal', fn($p) =>
-                                $p->whereRaw('LOWER(sales_code) LIKE ?', ["%{$search}%"])
+                                $p->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                                  ->orWhereRaw('LOWER(sales_code) LIKE ?', ["%{$search}%"])
                             )
                             ->orWhereHas('items', fn($i) =>
-                                $i->whereRaw('LOWER(header) LIKE ?', ["%{$search}%"])
-                                    ->orWhereRaw('LOWER(subheader) LIKE ?', ["%{$search}%"])
+                                $i->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
+                                  ->orWhereHas('product', fn($prod) => 
+                                      $prod->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                                  )
                             );
                         });
                     }
                 })
                 ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
                 ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
-                ->addColumn('header', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->header}</li>")->toArray()).'</ul>')
-                ->addColumn('subheader', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->subheader}</li>")->toArray()).'</ul>')
-                // ->addColumn('item_product_name', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->snapshot_product_name}</li>")->toArray()).'</ul>')
+                ->addColumn('description', fn($boq) => '<ul style="margin-bottom: 0;">'.implode('', $boq->items->map(fn($i) => 
+                    "<li style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;' title='".e($i->description)."'>{$i->description}</li>"
+                )->toArray()).'</ul>')
+                ->addColumn('qty', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->qty} {$i->qty_unit}</li>")->toArray()).'</ul>')
+                ->addColumn('freq', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->freq} {$i->freq_unit}</li>")->toArray()).'</ul>')
                 ->addColumn('unit_price', fn($boq) => 
                     '<ul>' . implode('', 
                         $boq->items->map(fn($i) => 
-                            "<li>" . formatRupiah($i->unit_price) . "</li>"
+                            "<li>" . formatRupiah($i->product_active_price) . "</li>"
                         )->toArray()
                     ) . '</ul>'
                 )
-                ->addColumn('item_title1', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title1_value} {$i->title1_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title2', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title2_value} {$i->title2_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title3', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title3_value} {$i->title3_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title4', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title4_value} {$i->title4_key}</li>")->toArray()).'</ul>')
-                ->addColumn('multiplier_total', fn($boq) => 
+                ->addColumn('selling_price', fn($boq) => 
                     '<ul>' . implode('', 
                         $boq->items->map(fn($i) => 
-                            "<li>" . formatRupiah($i->multiplier_total) . "</li>"
+                            "<li>" . formatRupiah($i->selling_price) . "</li>"
                         )->toArray()
                     ) . '</ul>'
                 )
-                ->addColumn('management_fee', fn($boq) => 
-                    $boq->management_fee_type === 'percent' 
-                        ? ($boq->management_fee / 100) * $boq->total_amount_items 
-                        : $boq->management_fee
+                ->addColumn('total_price', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->total_price) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
                 )
+                ->addColumn('grand_total', fn($boq) => formatRupiah($boq->total_amount_items))
                 ->addColumn('actions', function ($boq) {
                     if ($boq->proposal && $boq->proposal->status === 'Win') {
                         return '
@@ -123,8 +125,7 @@ class BoqController extends Controller
                     ';
                 })
                 ->rawColumns([
-                    'checkbox', 'actions', 'header','subheader','item_product_name','unit_price',
-                    'item_title1','item_title2','item_title3','item_title4','multiplier_total'
+                    'checkbox', 'actions', 'description','qty', 'freq', 'unit_price', 'selling_price', 'total_price'
                 ])
                 ->make(true);
         }

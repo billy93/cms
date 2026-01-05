@@ -1,15 +1,36 @@
 class ProductForm {
   isInit = true;
+  isFetching = false;
   mode = "create";
   data = {};
   categories = [];
   suppliers = [];
   errors = {};
 
+  units = [
+    'Kg',
+    'Bag',
+    'Month',
+    'Night',
+    'Room',
+    'Hour',
+    'Day',
+    'Item',
+    'Participant',
+    'Unit',
+    'Package',
+    'Pcs',
+    'Person',
+    'Time',
+    'Event',
+    'Pairs'
+  ];
+
   constructor (formId) {
     this.form = document.getElementById(formId);
     this.closeForm = document.getElementById("close_product_form");
 
+    this.handleDocumentKeydown = this.handleDocumentKeydown.bind(this);
     this.handleDocumentInput = this.handleDocumentInput.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this)
 
@@ -18,17 +39,45 @@ class ProductForm {
       this.handleSubmit()
     });
 
+    document.addEventListener("keydown", this.handleDocumentKeydown);
     document.addEventListener("input", this.handleDocumentInput);
+  }
+
+  handleDocumentKeydown(e) {
+    const target = e.target;
+    if (target.matches(`.selling-price-input`)) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const k = e.key;
+
+      if (
+        k === "Backspace" ||
+        k === "Delete" ||
+        k === "ArrowLeft" ||
+        k === "ArrowRight" ||
+        k === "Home" ||
+        k === "End" ||
+        k === "Tab"
+      ) return;
+
+      if (!/[\d,]/.test(k)) e.preventDefault();
+    }
   }
 
   async handleDocumentInput(e) {
     const target = e.target;
 
     if (target.matches("input[data-type='currency']")) {
-      let value = e.target.value.replace(/[^\d,]/g, '');
-      let parts = value.split(',');
-      let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      target.value = parts[1] !== undefined ? `${integerPart},${parts[1]}` : integerPart;
+      const before = target.value;
+      const caret = target.selectionStart;
+
+      const norm = normalizeFormatRupiah(before);
+      const formatted = formatRupiahDisplay(norm);
+
+      target.value = formatted;
+
+      const delta = formatted.length - before.length;
+      target.setSelectionRange(caret + delta, caret + delta);
     }
   }
 
@@ -115,7 +164,7 @@ class ProductForm {
       name: "",
       description: "",
       unit: "",
-      base_cost: "",
+      price: "",
       supplier_id: "",
       category_ids: []
     }
@@ -125,7 +174,7 @@ class ProductForm {
       value.name = this.data.name || "";
       value.description = this.data.description || "";
       value.unit = this.data.unit || "";
-      value.base_cost = this.data.base_cost || "";
+      value.price = this.data.active_price_version?.price || "";
       value.supplier_id = this.data.supplier_id || "";
 
       if (this.data.categories && Array.isArray(this.data.categories)) {
@@ -138,7 +187,11 @@ class ProductForm {
     const selectSupplierOptions = this.suppliers.map(s => {
       return `<option value="${s.id}" ${value.supplier_id === s.id ? "selected" : ""}>${s.name}</option>`;
     });
-    console.log(selectSupplierOptions);
+
+
+    const selectUnitOptions = this.units.map(u => {
+      return `<option value="${u}" ${value.unit === u ? "selected" : ""}>${u}</option>`;
+    });
 
     // const selectCategoryOptions = this.categories.map(c => {
     //   const selected = value.category_ids.includes(c.id) ? "selected" : "";
@@ -181,16 +234,19 @@ class ProductForm {
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Unit<span class="text-danger">*</span></label>
-              <input type="text" id="input_product_unit" class="form-control" value="${value.unit}">
+              <select id="input_product_unit" class="form-select select">
+                <option value="" ${!value.unit ? "selected" : ""}>-- Select Unit --</option>
+                ${selectUnitOptions.join("")}
+              </select>
               <small id="input_product_unit_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
 
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Value<span class="text-danger">*</span></label>
-              <input type="text" id="input_product_base_cost" class="form-control" value="${value.base_cost}" data-type="currency">
-              <small id="input_product_base_cost_error" class="text-danger mt-1" style="display: none;"></small>
+              <label class="col-form-label">Price<span class="text-danger">*</span></label>
+              <input type="text" id="input_product_price" class="form-control" value="${value.price ? formatRupiahDisplay(value.price.replace('.', ',')) : 0}" data-type="currency">
+              <small id="input_product_price_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
 
@@ -198,7 +254,7 @@ class ProductForm {
             <div class="mb-3">
               <label class="col-form-label">Supplier<span class="text-danger">*</span></label>
               <select id="input_product_supplier_id" class="form-select select">
-                <option value="">-- Select Supplier --</option>
+                <option value="" ${!value.supplier_id ? "selected" : ""}>-- Select Supplier --</option>
                 ${selectSupplierOptions.join("")}
               </select>
               <small id="input_product_supplier_id_error" class="text-danger mt-1" style="display: none;"></small>
@@ -305,6 +361,7 @@ class ProductForm {
 
   resetForm() {
     this.isInit = true;
+    this.isFetching = false;
     this.mode = "create";
     this.data = {};
     this.categories = [];
@@ -329,6 +386,7 @@ class ProductForm {
     }
     this.errors = {};
   }
+
   validateFields() {
     this.resetErrorFields();
 
@@ -336,7 +394,7 @@ class ProductForm {
       code: "",
       name: "",
       unit: "",
-      base_cost: "",
+      price: "",
       supplier_id: null,
       category_ids: [],
       description: ""
@@ -354,13 +412,13 @@ class ProductForm {
         message: "Unit is required."
       },
       {
-        field: "input_product_base_cost",
+        field: "input_product_price",
         required: true,
         message: "Base Cost is required."
       },
       {
         field: "input_product_supplier_id",
-        required: false,
+        required: true,
         message: "Supplier is required."
       },
       {
@@ -374,6 +432,11 @@ class ProductForm {
     inputs.forEach(input => {
       const el = this.form.querySelector("#" + input.field);
       let value = el ? el.value.trim() : "";
+
+      // Strip trailing comma for price field to match backend regex
+      if (input.field === 'input_product_price' && value.endsWith(',')) {
+        value = value.slice(0, -1);
+      }
 
       payload[input.field.replace("input_product_", "")] = value;
 
@@ -416,8 +479,6 @@ class ProductForm {
       this.hideLoading()
       return;
     }
-    console.log(payload);
-
 
     if (this.mode === "create") {
       try {

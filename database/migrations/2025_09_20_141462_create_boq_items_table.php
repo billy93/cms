@@ -15,33 +15,26 @@ return new class extends Migration
                   ->constrained('boqs')
                   ->cascadeOnDelete();
                   
-            // Relasi ke produk (opsional) mengganti subheader
             $table->foreignId('product_id')
-                  ->nullable()
                   ->constrained('products')
+                  ->cascadeOnDelete();
+            
+            $table->foreignId('product_price_version_id')
+                  ->nullable()
+                  ->constrained('product_price_versions')
                   ->nullOnDelete();
+            
+            // Snapshot data
+            $table->text('description')->nullable();
+            $table->decimal('selling_price', 15, 2);
+            
+            $table->integer('qty')->default(1);
+            $table->string('qty_unit')->nullable(); // e.g., pckg, unit
 
-            $table->string('header')->nullable();
-            $table->string('subheader')->nullable(); // subheader is product name snapshot if it has relation to product 
+            $table->integer('freq')->default(1);
+            $table->string('freq_unit')->nullable(); // e.g., event, day
 
-            // Snapshot product (biar gak berubah kalau master berubah)
-            $table->decimal('unit_price', 15, 2);
-
-            // Title 1–4 (key = label, value = integer input)
-            $table->string('title1_key')->nullable();
-            $table->integer('title1_value')->nullable();
-
-            $table->string('title2_key')->nullable();
-            $table->integer('title2_value')->nullable();
-
-            $table->string('title3_key')->nullable();
-            $table->integer('title3_value')->nullable();
-
-            $table->string('title4_key')->nullable();
-            $table->integer('title4_value')->nullable();
-
-            // Detail perhitungan
-            $table->decimal('multiplier_total', 15, 2);
+            $table->decimal('total_price', 15, 2);
 
             $table->timestamps();
         });

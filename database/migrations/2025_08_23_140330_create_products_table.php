@@ -13,15 +13,14 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('name', 255);
             $table->text('description')->nullable();
-            $table->string('unit', 50)->default('Pcs');
-            $table->decimal('base_cost', 15, 2)->default(0);
+            $table->string('unit', 50);
 
             // Supplier (1:M)
             $table->foreignId('supplier_id')
                 ->nullable()
                 ->constrained('suppliers')
                 ->onUpdate('cascade')
-                ->onDelete('set null'); // kalau supplier dihapus, product tetap ada
+                ->onDelete('set null');
 
             $table->timestamps();
         });

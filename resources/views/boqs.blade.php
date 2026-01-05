@@ -59,7 +59,7 @@
 							<div class="table-responsive custom-table">
 								<table class="table" id="boq_list" data-url="{{ route('boqs.index') }}">
 									<style>
-                    #boq_list th, 
+                    /* #boq_list th, 
                     #boq_list td {
 											padding: 12px 30px;
                     } 
@@ -70,7 +70,7 @@
                     #boq_list th:nth-child(2), 
                     #boq_list td:nth-child(2) {
 											padding-left: 0;
-                    }
+                    } */
 										#boq_list tbody tr td {
 											vertical-align: baseline;
 										}
@@ -96,28 +96,17 @@
 											</th>
 											<th class="td-break" rowspan="2">BOQ Code</th>
 											<th class="td-break" rowspan="2">Sales Code</th>
-											<th class="td-break" rowspan="2">BOQ Type</th>
-											<th class="td-break" rowspan="2">Description</th>
-											<th class="td-break" rowspan="2">Created</th>
-											<th class="td-break" rowspan="2">Updated</th>
-											<th colspan="8">Items</th>
-											<th class="td-break" rowspan="2">Basic Price</th>
-											<th class="td-break" rowspan="2">Management Fee</th>
-											<th class="td-break" rowspan="2">Sales Amount</th>
-											<th class="td-break" rowspan="2">VAT Rate</th>
-											<th class="td-break" rowspan="2">VAT</th>
-											<th class="td-break" rowspan="2">Invoice Amount</th>
-											<th class="td-break" rowspan="2" class="no-sort">Action</th>
+											<th class="text-center bg-info-light" colspan="6">Items</th>
+											<th class="td-break" rowspan="2">Grand Total</th>
+											<th class="td-break no-sort" rowspan="2">Action</th>
 										</tr>
 										<tr>
-											<th>Header</th>
-											<th>Subheader</th>
-											<th>Unit Price</th>
-											<th>Title1</th>
-											<th>Title2</th>
-											<th>Title3</th>
-											<th>Title4</th>
-											<th>Total Amount</th>
+											<th class="td-break"style="min-width: 250px;">Description</th>
+											<th class="td-break">Qty</th>
+											<th class="td-break">Freq</th>
+											<th class="td-break">Unit Price</th>
+											<th class="td-break">Selling Price</th>
+											<th class="td-break">Total</th>
 										</tr>
 									</thead>
 									<tbody></tbody>

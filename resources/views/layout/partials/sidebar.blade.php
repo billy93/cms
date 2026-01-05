@@ -127,7 +127,7 @@ use App\Http\Services\MenuService;
 									<li>
 										<a 
 											href="{{ route($menu->permission->route) }}"
-											class="{{ Route::is($menu->permission->route) ? 'active' : '' }}"
+											class="{{ Route::is(explode('.', $menu->permission->route)[0] . '.*') ? 'active' : '' }}"
 										>
 											@if ($menu->icon)
 													<i class="{{ $menu->icon }}"></i>

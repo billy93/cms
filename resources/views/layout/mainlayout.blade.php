@@ -723,18 +723,29 @@
             $(toast).addClass(type === 'success' ? 'alert alert-success' : 'alert alert-danger');
         }
 
-        function formatRupiah(angka) {
-            if (angka === null || angka === undefined || angka === '') return '';
+        function normalizeFormatRupiah(raw) {
+            raw = raw.replace(/[^\d,]/g, "");
 
-            const num = Number(angka);
-            if (isNaN(num)) return '';
+            const comma = raw.indexOf(",");
+            if (comma !== -1) {
+                raw = raw.slice(0, comma + 1) + raw.slice(comma + 1).replace(/,/g, "");
+            }
 
-            // Cek apakah ada desimal
-            const hasDecimal = angka.toString().includes('.') || angka.toString().includes(',');
-            return num.toLocaleString('id-ID', {
-                minimumFractionDigits: hasDecimal ? 2 : 0,
-                maximumFractionDigits: hasDecimal ? 2 : 0
-            });
+            if (/^0\d/.test(raw)) raw = raw.replace(/^0+/, "");
+
+            if (raw.startsWith(",")) raw = "0" + raw;
+            if (raw === "" || raw === ",") raw = "0";
+
+            return raw;
+        }
+        
+        function formatRupiahDisplay(val) {
+            let [i, d] = val.toString().split(",");
+            
+            i = i.replace(/\D/g, "");
+            i = i.replace(/^0+(?=\d)/, "");
+            i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return d !== undefined ? `${i},${d.slice(0, 2)}` : i;
         }
 
         function formatDate(dateString) {

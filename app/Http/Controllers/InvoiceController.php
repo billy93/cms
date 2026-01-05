@@ -57,6 +57,7 @@ class InvoiceController extends Controller
                 })
                 ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
                 ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
+                ->addColumn('invoice_amount', fn($invoice) => formatRupiah($invoice->invoice_amount))
                 ->addColumn('actions', function($invoice) {
                     return '
                         <div class="dropdown table-action">
@@ -81,6 +82,7 @@ class InvoiceController extends Controller
                                     class="dropdown-item c_invoice_edit_btn" 
                                     href="javascript:void(0)" 
                                     data-url="'.route('invoices.read', ['invoice_id' => $invoice->id]).'"
+                                    data-proposal_id="'.$invoice->proposal?->id.'"
                                 >
                                     <i class="ti ti-edit text-blue"></i> Edit
                                 </a>
@@ -210,7 +212,6 @@ class InvoiceController extends Controller
                     ->where('is_active', true)
                     ->first();
             }
-
             if (!$template) {
                 return response()->json(['success' => false, 'message' => 'No active invoice template found'], 404);
             }
@@ -220,69 +221,169 @@ class InvoiceController extends Controller
             // For now, let's use the fields we have.
             // Note: In a real scenario, we'd iterate BOQs to get subtotal/tax details if stored there.
             
-            $subtotal = 0;
-            $taxAmount = 0;
             $invoiceItemsHtml = '';
-            
-            foreach($invoice->boqs as $boq) {
-                $subtotal += $boq->invoice_amount; 
-                
-                // Handle Type A (No Items, just Header Total)
-                if ($boq->form_type === 'A') {
-                    $invoiceItemsHtml .= '<tr>';
-                    $invoiceItemsHtml .= '<td>' . $boq->code . '</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-center"></td>'; // Empty Qty
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->total_amount_items) . '</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->total_amount_items) . '</td>';
-                    $invoiceItemsHtml .= '</tr>';
-                } else {
-                    // Type B, C, D (With Items)
-                    
-                    // BOQ Header (Code)
-                    $invoiceItemsHtml .= '<tr style="background-color: #f9f9f9;">';
-                    $invoiceItemsHtml .= '<td colspan="4" style="font-weight: bold; color: #4059C6;">' . $boq->code . '</td>';
-                    $invoiceItemsHtml .= '</tr>';
+            $invoiceItemsHtml = '';
 
-                    // BOQ Items
-                    foreach($boq->items as $item) {
-                        $invoiceItemsHtml .= '<tr>';
-                        $invoiceItemsHtml .= '<td style="padding-left: 20px;">' . ($item->subheader ?: $item->header) . '</td>';
-                        
-                        // Qty logic
-                        $qty = 1;
-                        if ($item->unit_price > 0) {
-                            $qty = round($item->multiplier_total / $item->unit_price, 2);
-                        }
-                        
-                        $invoiceItemsHtml .= '<td class="pdf-text-center">' . ($qty == 1 ? '1' : $qty) . '</td>';
-                        $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($item->unit_price) . '</td>';
-                        $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($item->multiplier_total) . '</td>';
+            $totalAmountItems = $invoice->boqs->sum('total_amount_items');
+            $pricingModel = $invoice->proposal->pricing_model; // Assuming "A" or "Type A" handled by switch or if
+
+            // Normalize pricing model check (just in case "Type A" or "A")
+            // The user previously changed it to strict 'A'.
+            
+            if ($pricingModel === 'A') {
+                // Type A (Summary Only)
+                $description = $invoice->proposal->pricing_model_description ?? 'Project Implementation';
+
+                $invoiceItemsHtml .= '<tr>';
+                $invoiceItemsHtml .= '<td class="pdf-text-center">1</td>';
+                $invoiceItemsHtml .= '<td>' . $description . '</td>';
+                $invoiceItemsHtml .= '<td class="nowrap">-</td>'; // QTY
+                $invoiceItemsHtml .= '<td class="nowrap">-</td>'; // FREQ
+                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $invoiceItemsHtml .= '</tr>';
+
+            } else {
+                // Type B / Default (Group by Header -> Subheader)
+                $groupedByHeader = $invoice->boqs->groupBy('header');
+                // Sort headers: Empty header comes first
+                $sortedHeaders = $groupedByHeader->sortBy(function ($boqs, $key) {
+                    return empty($key) ? 0 : 1;
+                }, SORT_NUMERIC);
+
+                $headerIndex = 0;
+                foreach ($sortedHeaders as $header => $boqsWithSameHeader) {
+                    
+                    // If Header exists
+                    if (!empty($header)) {
+                        $headerLabel = chr(65 + $headerIndex); // A, B, C...
+                        $headerTotal = $boqsWithSameHeader->sum('total_amount_items');
+                        $headerName = $header;
+
+                        // Header Row
+                        $invoiceItemsHtml .= '<tr class="boq-header">';
+                        $invoiceItemsHtml .= '<td class="pdf-text-center">' . $headerLabel . '</td>';
+                        $invoiceItemsHtml .= '<td colspan="4">' . strtoupper($headerName) . '</td>';
+                        $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($headerTotal) . '</td>';
                         $invoiceItemsHtml .= '</tr>';
+
+                        // Group by Subheader
+                        $groupedBySubheader = $boqsWithSameHeader->groupBy('subheader');
+                        
+                        // Sort subheaders: Empty subheader comes first
+                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($boqs, $key) {
+                            return empty($key) ? 0 : 1; 
+                        }, SORT_NUMERIC);
+                        
+                        $subheaderIndex = 1;
+                        foreach ($sortedSubheaders as $subheader => $boqsWithSameSubheader) {
+                            
+                            // Show Subheader Row if $subheader is not empty
+                            if (!empty($subheader)) {
+                                 $invoiceItemsHtml .= '<tr class="boq-subheader">';
+                                 $invoiceItemsHtml .= '<td class="pdf-text-center">'. $headerLabel . '.' . $subheaderIndex .'</td>';
+                                 $invoiceItemsHtml .= '<td colspan="5">' . $subheader . '</td>';
+                                 $invoiceItemsHtml .= '</tr>';
+                                 $subheaderIndex++;
+                            }
+
+                            $itemIndex = 1; 
+                            foreach ($boqsWithSameSubheader as $boq) {
+                                foreach ($boq->items as $item) {
+                                    $invoiceItemsHtml .= '<tr>';
+                                    $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                    $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                                    $invoiceItemsHtml .= '<td class="nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
+                                    $invoiceItemsHtml .= '<td class="nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
+                                    $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                    $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                    $invoiceItemsHtml .= '</tr>';
+                                    $itemIndex++;
+                                }
+                            }
+                        }
+                        $headerIndex++;
+                    
+                    } else {
+                        // Header is Unknown/Empty -> Just List Items (Flattened) at the TOP
+                        $itemIndex = 1;
+                        foreach ($boqsWithSameHeader as $boq) {
+                            foreach ($boq->items as $item) {
+                                $invoiceItemsHtml .= '<tr>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
+                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                $invoiceItemsHtml .= '</tr>';
+                                $itemIndex++;
+                            }
+                         }
                     }
                 }
 
-                // Management Fee
-                if ($boq->management_fee > 0) {
-                    $invoiceItemsHtml .= '<tr>';
-                    $invoiceItemsHtml .= '<td style="padding-left: 20px;">Management Fee</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-center"></td>'; // Empty Qty
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->management_fee) . '</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->management_fee) . '</td>';
-                    $invoiceItemsHtml .= '</tr>';
-                }
-
-                // VAT
-                if ($boq->vat > 0) {
-                    $invoiceItemsHtml .= '<tr>';
-                    $invoiceItemsHtml .= '<td style="padding-left: 20px;">VAT (' . ($boq->vat_rate ?? 11) . '%)</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-center"></td>'; // Empty Qty
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->vat) . '</td>';
-                    $invoiceItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->vat) . '</td>';
-                    $invoiceItemsHtml .= '</tr>';
+                if ($groupedByHeader->isEmpty()) {
+                   $invoiceItemsHtml .= '<tr><td colspan="6" class="pdf-text-center">No Items Found</td></tr>';
                 }
             }
             
-            $logoPath = public_path('build/img/ati-logo.png');
+            // Calculate totals from BOQs
+            $proposal = $invoice->proposal;
+            
+            // Management Fee
+            $managementFeeAmount = $invoice->management_fee;
+            
+            // Sales Amount
+            $salesAmount = $invoice->sales_amount;
+            
+            // VAT
+            $vatAmount = $invoice->vat_amount;
+            
+            // Grand Total
+            $grandTotal = $invoice->invoice_amount;
+
+            // Construct Totals Rows
+            $totalsRowsHtml = '';
+            
+            // 1. Basic Price Sum (Simulated Subtotal)
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Basic Price Sum</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($totalAmountItems) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 2. Management Fee
+            // if ($managementFeeAmount > 0) {
+            $feeLabel = "Management Fee";
+            if ($proposal->management_fee_type === 'percent') {
+                $feeLabel .= " ({$proposal->management_fee}%)";
+            }
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">' . $feeLabel . '</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($managementFeeAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            // }
+            
+            // 3. Sales Amount (Intermediate)
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Sales Amount</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($salesAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 4. VAT
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">VAT (' . $proposal->vat_rate . '%)</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($vatAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 5. Grand Total
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pdf-grand-total pr-80">Total Amount</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value pdf-grand-total">' . formatRupiah($grandTotal) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+
+            
+            $logoPath = public_path('build/img/your-logo.png');
             $logoData = '';
             if (file_exists($logoPath)) {
                 $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
@@ -296,10 +397,8 @@ class InvoiceController extends Controller
                 'bill_to' => $invoice->bill_to,
                 'due_date' => \Carbon\Carbon::parse($invoice->due_date)->format('d F Y'),
                 'payment_method' => $invoice->payment_method,
-                'subtotal' => formatRupiah($subtotal),
-                'tax_amount' => formatRupiah($taxAmount), // Placeholder if not explicitly stored
-                'total_amount' => formatRupiah($invoice->total_amount),
-                'notes' => $invoice->notes,
+                'totals_rows' => $totalsRowsHtml, // Pass the constructed rows
+                'notes' => $invoice->note,
                 'invoice_items' => $invoiceItemsHtml,
                 'logo_path' => $logoData,
             ];
@@ -379,10 +478,13 @@ class InvoiceController extends Controller
                                     // Top margin must account for the header image position and height
                                     filename: "' . $filename . '",
                                     image: { type: "jpeg", quality: 0.98 },
-                                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                                    html2canvas: { scale: 2, useCORS: true, scrollY: 0, letterRendering: true },
                                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                                     pagebreak: { mode: ["css", "legacy"] }
                                 };
+
+                                // Force font family before generation
+                                pageElement.style.fontFamily = "Arial, sans-serif";
 
                                 html2pdf()
                                     .set(opt)

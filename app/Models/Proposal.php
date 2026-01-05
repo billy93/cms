@@ -18,11 +18,20 @@ class Proposal extends Model
         'code',
         'sales_code',
         'note',
-        'status'
+        'status',
+        'pricing_model',
+        'management_fee_type',
+        'management_fee',
+        'vat_rate',
+        'pricing_model_description',
     ];
 
     protected $casts = [
         'status' => 'string',
+        'pricing_model' => 'string',
+        'management_fee_type' => 'string',
+        'management_fee' => 'decimal:2',
+        'vat_rate' => 'integer',
     ];
 
     /**
@@ -36,6 +45,18 @@ class Proposal extends Model
     public function boqs(): HasMany
     {
         return $this->hasMany(Boq::class);
+    }
+
+    /**
+     * Get BOQs grouped by header for Type C/D pricing
+     */
+    public function boqsGroupedByHeader()
+    {
+        return $this->boqs()
+            ->orderBy('header_order')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('header');
     }
 
     public function invoices(): HasMany

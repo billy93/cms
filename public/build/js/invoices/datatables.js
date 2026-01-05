@@ -66,18 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         { data: 'code', orderable: false },
-        {
-          data: 'created_at',
-          render: function (data, type, row) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
-        {
-          data: 'updated_at',
-          render: function (data, type, row) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
         { data: 'proposal_code', orderable: false },
         { data: 'sales_code', orderable: false },
         {
@@ -92,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
           }
         },
+        { data: 'invoice_amount', className: 'text-end' },
         {
           data: 'type',
           render: function (data, type, row) {

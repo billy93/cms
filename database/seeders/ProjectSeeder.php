@@ -27,7 +27,7 @@ class ProjectSeeder extends Seeder
                 'code'         => Project::generateCode(),
                 'name'         => "Project for {$customer->name}",
                 'ref_doc_no'   => 'REF-' . strtoupper(str()->random(6)),
-                'value'        => number_format(rand(1_000_000, 100_000_000), 2, ',', '.'), // otomatis diolah oleh mutator
+                'value'        => number_format(rand(100_000_000, 1_000_000_000), 2, ',', '.'),  
                 'start_date'   => $start,
                 'end_date'     => $end,
                 'due_date'     => $due,

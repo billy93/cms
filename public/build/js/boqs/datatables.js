@@ -12,13 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let showCheckbox = true;
 
   try {
-    if (HIDE_BOQ_DATATABLE_CHECKBOX) { // Put it on top of other script on the page (dynamic can bet set or unset)
+    if (HIDE_BOQ_DATATABLE_CHECKBOX) {
       showCheckbox = false;
     }
   } catch (err) { }
 
   try {
-    if (PROPOSAL_STATUS === "Win") { // Variable on the proposal.detail page 
+    if (PROPOSAL_STATUS === "Win") {
       showCheckbox = false;
     }
   } catch (err) { }
@@ -26,12 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($('#boq_list').length > 0) {
     $('#boq_list').DataTable({
       "serverSide": true,
-      // stateSave: true, 
       "bFilter": false,
       "bInfo": false,
       "ordering": true,
-      "autoWidth": true,
-      "order": [[0, "desc"]],
+      "autoWidth": false,
       "language": {
         search: '',
         sLengthMenu: '_MENU_',
@@ -62,9 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           data: 'id',
           visible: showCheckbox ? true : false,
-          orderable: showCheckbox ? false : true,
+          orderable: false,
           render: function (data, type, row) {
-            const checked = SELECTED_BOQ_DATATABLES_ROWS.some(obj => +obj.id === data);
+            const checked = SELECTED_BOQ_DATATABLES_ROWS.some(obj => obj.id == data);
             return `
 							<label class="checkboxs">
 								<input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-code="${row.code}">
@@ -75,85 +73,18 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'code' },
         { data: 'sales_code', orderable: false },
-        { data: 'form_type' },
-        { data: 'description', className: 'desc-col' },
-        {
-          data: 'created_at',
-          render: function (data, type) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
-        {
-          data: 'updated_at',
-          render: function (data, type) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
-        { data: 'header', orderable: false },
-        { data: 'subheader', orderable: false },
-        {
-          data: 'unit_price',
-          orderable: false,
-          render: function (data) {
-            return data;
-          }
-        },
-        { data: 'item_title1', orderable: false },
-        { data: 'item_title2', orderable: false },
-        { data: 'item_title3', orderable: false },
-        { data: 'item_title4', orderable: false },
-        {
-          data: 'multiplier_total',
-          orderable: false,
-          render: function (data) {
-            return data;
-          }
-        },
-        {
-          data: 'total_amount_items',
-          render: function (data) {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'management_fee',
-          orderable: false,
-          render: function (data) {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'sales_amount',
-          render: function (data) {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'vat_rate',
-          render: function (data, type) {
-            return type === 'display' ? data + "%" : data;
-          }
-        },
-        {
-          data: 'vat',
-          render: function (data) {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'invoice_amount',
-          render: function (data) {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'actions',
-          orderable: false
-        }
+        { data: 'description', orderable: false },
+        { data: 'qty', orderable: false },
+        { data: 'freq', orderable: false },
+        { data: 'unit_price', orderable: false },
+        { data: 'selling_price', orderable: false },
+        { data: 'total_price', orderable: false },
+        { data: 'grand_total', orderable: false },
+        { data: 'actions', name: 'actions', orderable: false, searchable: false }
       ],
       columnDefs: [
         {
-          targets: 0, // kolom pertama
+          targets: 0,
           createdCell: function (td, cellData, rowData, row, col) {
             $(td).css({
               position: 'sticky',

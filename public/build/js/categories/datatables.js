@@ -68,18 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { data: 'name' },
         { data: 'description' },
         {
-          data: 'created_at',
-          render: function (data, type) {
-            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
-          }
-        },
-        {
-          data: 'updated_at',
-          render: function (data, type) {
-            return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
-          }
-        },
-        {
           data: 'actions',
           orderable: false,
           searchable: false

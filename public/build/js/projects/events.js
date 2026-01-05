@@ -20,14 +20,42 @@ class ProjectForm {
     document.addEventListener("input", this.handleDocumentInput);
   }
 
+  handleDocumentKeydown(e) {
+    const target = e.target;
+    if (target.matches(".project-input-number[data-type='currency']")) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const k = e.key;
+
+      if (
+        k === "Backspace" ||
+        k === "Delete" ||
+        k === "ArrowLeft" ||
+        k === "ArrowRight" ||
+        k === "Home" ||
+        k === "End" ||
+        k === "Tab"
+      ) return;
+
+      if (!/[\d,]/.test(k)) e.preventDefault();
+    }
+  }
+
   async handleDocumentInput(e) {
     const target = e.target;
 
-    if (target.matches("input[data-type='currency']")) {
-      let value = e.target.value.replace(/[^\d,]/g, '');
-      let parts = value.split(',');
-      let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      target.value = parts[1] !== undefined ? `${integerPart},${parts[1]}` : integerPart;
+    if (target.matches(".project-input-number[data-type='currency']")) {
+
+      const before = target.value;
+      const caret = target.selectionStart;
+
+      const norm = normalizeFormatRupiah(before);
+      const formatted = formatRupiahDisplay(norm);
+
+      target.value = formatted;
+
+      const delta = formatted.length - before.length;
+      target.setSelectionRange(caret + delta, caret + delta);
     }
   }
 
@@ -202,7 +230,7 @@ class ProjectForm {
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Value<span class="text-danger">*</span></label>
-              <input type="text" id="input_value" class="form-control" value="${value.value}" data-type="currency">
+              <input type="text" id="input_value" class="form-control project-input-number" value="${value.value}" data-type="currency">
               <small id="input_value_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
@@ -407,6 +435,11 @@ class ProjectForm {
 
       if (value && id.date) {
         value = moment(value, 'DD/MM/YY').format('YYYY-MM-DD')
+      }
+
+      // Strip trailing comma for number/currency fields to match backend regex
+      if (id.field === 'input_value' && value.endsWith(',')) {
+        value = value.slice(0, -1);
       }
 
       payload[id.field.replace("input_", "")] = value;

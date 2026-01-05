@@ -242,27 +242,19 @@ class ProposalForm {
                         <span class="checkmarks"></span>
                       </label>
                     </th>
-                    <th class="td-break" rowspan="2">Proposal Code</th>
                     <th class="td-break" rowspan="2">BOQ Code</th>
-                    <th class="td-break" rowspan="2">BOQ Type</th>
-                    <th class="td-break" rowspan="2">Description</th>
-                    <th colspan="8">Items</th>
-                    <th class="td-break" rowspan="2">Basic Price</th>
-                    <th class="td-break" rowspan="2">Management Fee</th>
-                    <th class="td-break" rowspan="2">Sales Amount</th>
-                    <th class="td-break" rowspan="2">VAT Rate</th>
-                    <th class="td-break" rowspan="2">VAT</th>
-                    <th class="td-break" rowspan="2">Invoice Amount</th>
+                    <th class="td-break" rowspan="2">Proposal Code</th>
+                    <th class="td-break" rowspan="2">Sales Code</th>
+                    <th colspan="6" class="text-center">Items</th>
+                    <th class="text-end" rowspan="2">Grand Total</th>
                   </tr>
                   <tr>
-                    <th>Header</th>
-                    <th>Subheader</th>
-                    <th>Unit Price</th>
-                    <th>Title1</th>
-                    <th>Title2</th>
-                    <th>Title3</th>
-                    <th>Title4</th>
-                    <th>Multiplier</th>
+                    <th class="td-break">Description</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-center">Freq</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Selling Price</th>
+                    <th class="text-end">Total Price</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -350,7 +342,7 @@ class ProposalForm {
       "bInfo": false,
       "ordering": true,
       "autoWidth": true,
-      "order": [[0, "desc"]],
+      "order": [[0, "desc"]], // BOQ Code
       "language": {
         search: '',
         sLengthMenu: '_MENU_',
@@ -401,67 +393,16 @@ class ProposalForm {
 						`;
           }
         },
-        { data: 'proposal_code' },
         { data: 'code' },
-        { data: 'form_type' },
-        { data: 'description', className: 'desc-col' },
-        { data: 'header', orderable: false },
-        { data: 'subheader', orderable: false },
-        {
-          data: 'unit_price',
-          orderable: false,
-          render: function (data) {
-            return data;
-          }
-        },
-        { data: 'item_title1', orderable: false },
-        { data: 'item_title2', orderable: false },
-        { data: 'item_title3', orderable: false },
-        { data: 'item_title4', orderable: false },
-        {
-          data: 'multiplier_total',
-          orderable: false,
-          render: function (data) {
-            return data;
-          }
-        },
-        {
-          data: 'total_amount_items',
-          render: function (data) {
-            return data;
-          }
-        },
-        {
-          data: 'management_fee',
-          orderable: false,
-          render: (data) => {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'sales_amount',
-          render: (data) => {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'vat_rate',
-          render: function (data, type) {
-            return type === 'display' ? data + "%" : data;
-          }
-        },
-        {
-          data: 'vat',
-          render: (data) => {
-            return formatRupiah(data);
-          }
-        },
-        {
-          data: 'invoice_amount',
-          render: (data) => {
-            return formatRupiah(data);
-          }
-        },
+        { data: 'proposal_code' },
+        { data: 'sales_code' },
+        { data: 'description', orderable: false },
+        { data: 'qty', orderable: false, className: 'text-center' },
+        { data: 'freq', orderable: false, className: 'text-center' },
+        { data: 'unit_price', orderable: false, className: 'text-end' },
+        { data: 'selling_price', orderable: false, className: 'text-end' },
+        { data: 'total_price', orderable: false, className: 'text-end' },
+        { data: 'grand_total', orderable: false, className: 'text-end' }
       ]
     });
   }

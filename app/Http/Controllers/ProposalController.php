@@ -7,6 +7,7 @@ use App\Models\Boq;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\ProposalRequest;
 use App\Http\Services\ProposalService;
@@ -27,7 +28,7 @@ class ProposalController extends Controller
         if ($request->ajax()) {
                 $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $proposals = Proposal::with('project', 'boqs', 'invoices');
+            $proposals = Proposal::with('project', 'boqs', 'invoices')->orderBy('id', 'desc');
 
             return DataTables::eloquent($proposals)
                 ->filter(function ($query) use ($search) {
@@ -141,39 +142,39 @@ class ProposalController extends Controller
     public function boqs(Request $request, $proposal_id)
     {
         if($request->wantsJson() || $request->ajax()) {
-            $boqs = Boq::with(['proposal', 'items'])
-                ->where('proposal_id', $proposal_id);
+            $boqs = Boq::with(['proposal', 'items.product.activePriceVersion'])
+                ->where('proposal_id', $proposal_id)
+                ->orderBy('id', 'desc');
                  
             return DataTables::eloquent($boqs)
                 ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: '-')
-                ->addColumn('header', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->header}</li>")->toArray()).'</ul>')
-                ->addColumn('subheader', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->subheader}</li>")->toArray()).'</ul>')
-                // ->addColumn('item_product_name', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->snapshot_product_name}</li>")->toArray()).'</ul>')
+                ->addColumn('description', fn($boq) => '<ul style="margin-bottom: 0;">'.implode('', $boq->items->map(fn($i) => 
+                     "<li style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;' title='".e($i->description)."'>{$i->description}</li>"
+                )->toArray()).'</ul>')
+                ->addColumn('qty', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->qty} {$i->qty_unit}</li>")->toArray()).'</ul>')
+                ->addColumn('freq', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->freq} {$i->freq_unit}</li>")->toArray()).'</ul>')
                 ->addColumn('unit_price', fn($boq) => 
                     '<ul>' . implode('', 
                         $boq->items->map(fn($i) => 
-                            "<li>" . formatRupiah($i->unit_price) . "</li>"
+                            "<li>" . formatRupiah($i->product_active_price) . "</li>"
                         )->toArray()
                     ) . '</ul>'
                 )
-                ->addColumn('item_title1', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title1_value} {$i->title1_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title2', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title2_value} {$i->title2_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title3', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title3_value} {$i->title3_key}</li>")->toArray()).'</ul>')
-                ->addColumn('item_title4', fn($boq) => '<ul>'.implode('', $boq->items->map(fn($i) => "<li>{$i->title4_value} {$i->title4_key}</li>")->toArray()).'</ul>')
-                ->addColumn('multiplier_total', fn($boq) => 
-                    '<ul>' 
-                    . implode('', 
+                ->addColumn('selling_price', fn($boq) => 
+                    '<ul>' . implode('', 
                         $boq->items->map(fn($i) => 
-                            "<li>" . formatRupiah($i->multiplier_total) . "</li>"
+                            "<li>" . formatRupiah($i->selling_price) . "</li>"
                         )->toArray()
-                    ) 
-                    . '</ul>'
+                    ) . '</ul>'
                 )
-                ->addColumn('management_fee', fn($boq) => 
-                    $boq->management_fee_type === 'percent' 
-                        ? ($boq->management_fee / 100) * $boq->total_amount_items 
-                        : $boq->management_fee
+                ->addColumn('total_price', fn($boq) => 
+                    '<ul>' . implode('', 
+                        $boq->items->map(fn($i) => 
+                            "<li>" . formatRupiah($i->total_price) . "</li>"
+                        )->toArray()
+                    ) . '</ul>'
                 )
+                ->addColumn('grand_total', fn($boq) => formatRupiah($boq->total_amount_items))
                 ->addColumn('actions', function ($boq) {
                     if ($boq->proposal && $boq->proposal->status === 'Win') {
                         return '
@@ -233,8 +234,7 @@ class ProposalController extends Controller
                     ';
                 })
                 ->rawColumns([
-                    'actions', 'header','subheader','item_product_name','unit_price',
-                    'item_title1','item_title2','item_title3','item_title4','multiplier_total'
+                    'actions', 'description', 'qty', 'freq', 'unit_price', 'selling_price', 'total_price'
                 ])
                 ->make(true);
         }
@@ -337,6 +337,14 @@ class ProposalController extends Controller
             // Eager load project.customer instead of customer
             $proposal = Proposal::with(['project.customer', 'boqs.items'])->findOrFail($proposal_id);
             
+            // Check if pricing model is set
+            if (empty($proposal->pricing_model)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Pricing Model has not been selected for this proposal. Please configure it explicitly before generating the PDF.'
+                ], 400);
+            }
+
             // Get Default Proposal Template
             $template = \App\Models\PdfTemplate::where('type', 'proposal')
                 ->where('is_active', true)
@@ -349,65 +357,195 @@ class ProposalController extends Controller
                     ->where('is_active', true)
                     ->first();
             }
-
             if (!$template) {
                 return response()->json(['success' => false, 'message' => 'No active proposal template found'], 404);
             }
 
-            // Calculate total amount from BOQs and generate HTML
-            $totalAmount = 0;
+            // Start PDF Generation Logic
             $boqItemsHtml = '';
+            $totalsRowsHtml = '';
+            
+            // Calculate basic totals
+            $totalAmountItems = $proposal->boqs->sum('total_amount_items');
+            $pricingModel = $proposal->pricing_model; // A, B, C, D
 
-            foreach($proposal->boqs as $boq) {
-                 $totalAmount += $boq->invoice_amount;
+            // Logic for Item Listing
+            if ($pricingModel === 'A') {
+                // Type A: Summary Only
+                $description = $proposal->pricing_model_description ?? 'Project Implementation';
 
-                 // BOQ Header (Code)
-                 $boqItemsHtml .= '<tr style="background-color: #f9f9f9;">';
-                 $boqItemsHtml .= '<td colspan="4" style="font-weight: bold; color: #4059C6;">' . $boq->code . '</td>';
-                 $boqItemsHtml .= '</tr>';
+                $boqItemsHtml .= '<tr>';
+                $boqItemsHtml .= '<td class="pdf-text-center">1</td>';
+                $boqItemsHtml .= '<td>' . $description . '</td>';
+                $boqItemsHtml .= '<td class="nowrap">-</td>';
+                $boqItemsHtml .= '<td class="nowrap">-</td>';
+                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $boqItemsHtml .= '</tr>';
 
-                 // BOQ Items
-                 foreach($boq->items as $item) {
-                     $boqItemsHtml .= '<tr>';
-                     $boqItemsHtml .= '<td style="padding-left: 20px;">' . ($item->subheader ?: $item->header) . '</td>';
-                     
-                     // Qty logic
-                     $qty = 1;
-                     if ($item->unit_price > 0) {
-                         $qty = round($item->multiplier_total / $item->unit_price, 2);
-                     }
-                     
-                     $boqItemsHtml .= '<td class="pdf-text-center">' . ($qty == 1 ? '1' : $qty) . '</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($item->unit_price) . '</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($item->multiplier_total) . '</td>';
-                     $boqItemsHtml .= '</tr>';
-                 }
+            } else {
+                // Type B/Other: Detailed Listing with Grouping
+                $groupedByHeader = $proposal->boqs->groupBy('header');
+                
+                // Sort headers: Empty header comes first
+                $sortedHeaders = $groupedByHeader->sortBy(function ($boqs, $key) {
+                    return empty($key) ? 0 : 1;
+                }, SORT_NUMERIC);
 
-                 // Management Fee
-                 if ($boq->management_fee > 0) {
-                     $boqItemsHtml .= '<tr>';
-                     $boqItemsHtml .= '<td style="padding-left: 20px;">Management Fee</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-center"></td>'; // Empty Qty
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->management_fee) . '</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->management_fee) . '</td>';
-                     $boqItemsHtml .= '</tr>';
-                 }
+                $headerIndex = 0;
+                foreach ($sortedHeaders as $header => $boqsWithSameHeader) {
+                    
+                    // IF Header exists
+                    if (!empty($header)) {
+                        $headerLabel = chr(65 + $headerIndex); // A, B, C...
+                        $headerTotal = $boqsWithSameHeader->sum('total_amount_items');
+                        $headerName = $header;
 
-                 // VAT
-                 if ($boq->vat > 0) {
-                     $boqItemsHtml .= '<tr>';
-                     $boqItemsHtml .= '<td style="padding-left: 20px;">VAT (' . ($boq->vat_rate ?? 11) . '%)</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-center"></td>'; // Empty Qty
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->vat) . '</td>';
-                     $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($boq->vat) . '</td>';
-                     $boqItemsHtml .= '</tr>';
-                 }
+                        // Header Row
+                        $boqItemsHtml .= '<tr class="boq-header">';
+                        $boqItemsHtml .= '<td class="pdf-text-center">' . $headerLabel . '</td>';
+                        $boqItemsHtml .= '<td colspan="4">' . strtoupper($headerName) . '</td>';
+                        $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($headerTotal) . '</td>';
+                        $boqItemsHtml .= '</tr>';
+
+                        // Group by Subheader
+                        $groupedBySubheader = $boqsWithSameHeader->groupBy('subheader');
+                        
+                        // Sort subheaders: Empty subheader comes first
+                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($boqs, $key) {
+                            return empty($key) ? 0 : 1; 
+                        }, SORT_NUMERIC);
+                        
+                        $subheaderIndex = 1;
+                        foreach ($sortedSubheaders as $subheader => $boqsWithSameSubheader) {
+                            
+                            // Show Subheader Row if $subheader is not empty
+                            if (!empty($subheader)) {
+                                 $boqItemsHtml .= '<tr class="boq-subheader">';
+                                 $boqItemsHtml .= '<td class="pdf-text-center">'. $headerLabel . '.' . $subheaderIndex .'</td>';
+                                 $boqItemsHtml .= '<td colspan="5">' . $subheader . '</td>';
+                                 $boqItemsHtml .= '</tr>';
+                                 $subheaderIndex++;
+                            }
+
+                            $itemIndex = 1; 
+                            foreach ($boqsWithSameSubheader as $boq) {
+                                foreach ($boq->items as $item) {
+                                    $boqItemsHtml .= '<tr>';
+                                    $boqItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                    $boqItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                                    $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
+                                    $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
+                                    $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                    $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                    $boqItemsHtml .= '</tr>';
+                                    $itemIndex++;
+                                }
+                            }
+                        }
+                        $headerIndex++;
+                    
+                    } else {
+                        // NO Header (Empty) -> List Items Directly at TOP
+                        $itemIndex = 1;
+                        foreach ($boqsWithSameHeader as $boq) {
+                            foreach ($boq->items as $item) {
+                                $boqItemsHtml .= '<tr>';
+                                $boqItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                $boqItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                                $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
+                                $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
+                                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                $boqItemsHtml .= '</tr>';
+                                $itemIndex++;
+                            }
+                         }
+                    }
+                }
+
+                if ($groupedByHeader->isEmpty()) {
+                   $boqItemsHtml .= '<tr><td colspan="6" class="pdf-text-center">No Items Found</td></tr>';
+                }
             }
 
-            $logoPath = public_path('build/img/ati-logo.png');
+
+            // --- TOTALS CALCULATION ---
+            
+            // Management Fee
+            $managementFeeAmount = 0;
+            if ($proposal->management_fee_type === 'percent') {
+                $managementFeeAmount = ($totalAmountItems * $proposal->management_fee) / 100;
+            } else {
+                // Should correspond to nominal fee logic if proposal stores total nominal fee. 
+                // Proposal model has 'management_fee' which is either percent or amount.
+                $managementFeeAmount = $proposal->management_fee;
+            }
+            // If total items is 0, avoid weirdness? Usually proposal fee is fixed or percent.
+            $managementFeeAmount = round($managementFeeAmount, 2);
+
+            // Sales Amount
+            $salesAmount = round($totalAmountItems + $managementFeeAmount, 2);
+
+            // VAT
+            $vatAmount = round(($salesAmount * $proposal->vat_rate) / 100, 2);
+
+            // Grand Total
+            $grandTotal = round($salesAmount + $vatAmount, 2);
+
+
+            // --- TOTALS HTML GENERATION ---
+            
+            // 1. Basic Price Sum
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Basic Price Sum</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($totalAmountItems) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 2. Management Fee
+            $feeLabel = "Management Fee";
+            if ($proposal->management_fee_type === 'percent') {
+                $feeLabel .= " ({$proposal->management_fee}%)";
+            }
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">' . $feeLabel . '</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($managementFeeAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 3. Sales Amount
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Sales Amount</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($salesAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 4. VAT
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">VAT (' . $proposal->vat_rate . '%)</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($vatAmount) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+            
+            // 5. Grand Total
+            $totalsRowsHtml .= '<tr>';
+            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pdf-grand-total pr-80">Total Amount</td>';
+            $totalsRowsHtml .= '<td class="pdf-totals-value pdf-grand-total">' . formatRupiah($grandTotal) . '</td>';
+            $totalsRowsHtml .= '</tr>';
+
+
+            $logoPath = public_path('build/img/your-logo.png'); 
             $logoData = '';
             if (file_exists($logoPath)) {
                 $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+
+            // Format Date Range
+            $startDate = $proposal->project->start_date ? \Carbon\Carbon::parse($proposal->project->start_date)->format('d F Y') : null;
+            $endDate = $proposal->project->end_date ? \Carbon\Carbon::parse($proposal->project->end_date)->format('d F Y') : null;
+            
+            $dateRange = '-';
+            if ($startDate && $endDate) {
+                $dateRange = "{$startDate} - {$endDate}";
+            } elseif ($startDate) {
+                $dateRange = $startDate;
             }
 
             // Map data
@@ -415,14 +553,12 @@ class ProposalController extends Controller
                 'proposal_code' => $proposal->code,
                 'project_name' => $proposal->project->name ?? '-',
                 'customer_name' => $proposal->project->customer->name ?? '-', // Access via project
-                'proposal_date' => \Carbon\Carbon::parse($proposal->created_at)->format('d F Y'),
+                'proposal_date' => $dateRange,
                 'valid_until' => $proposal->valid_until ? \Carbon\Carbon::parse($proposal->valid_until)->format('d F Y') : '-',
                 'sales_code' => $proposal->sales_code ?? '-',
-                'description' => $proposal->description ?? '-',
-                'scope_of_work' => $proposal->scope_of_work ?? '-',
                 'terms_and_conditions' => $proposal->terms_and_conditions ?? '-',
-                'total_amount' => formatRupiah($totalAmount),
                 'boq_items' => $boqItemsHtml,
+                'totals_rows' => $totalsRowsHtml,
                 'logo_path' => $logoData,
             ];
 
@@ -506,6 +642,9 @@ class ProposalController extends Controller
                                     pagebreak: { mode: ["css", "legacy"] }
                                 };
 
+                                // Force font family before generation
+                                pageElement.style.fontFamily = "Arial, sans-serif";
+
                                 html2pdf()
                                     .set(opt)
                                     .from(pageElement) // Generate from .pdf-page only
@@ -559,4 +698,157 @@ class ProposalController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get pricing model configuration for a proposal
+     */
+    public function getPricingModel($proposal_id): JsonResponse
+    {
+        try {
+            $proposal = Proposal::with(['boqs.items'])->findOrFail($proposal_id);
+
+            // Group BOQs by header for Type C/D
+            $groupedBoqs = $proposal->boqs
+                ->sortBy('header_order')
+                ->groupBy('header')
+                ->map(function ($boqs, $header) {
+                    return [
+                        'header' => $header ?: 'Ungrouped',
+                        'header_order' => $boqs->first()->header_order ?? 0,
+                        'boqs' => $boqs->map(function ($boq) {
+                            return [
+                                'id' => $boq->id,
+                                'code' => $boq->code,
+                                'header' => $boq->header,
+                                'total_amount' => $boq->total_amount_items,
+                            ];
+                        })->values(),
+                        'subtotal' => $boqs->sum('total_amount_items'),
+                    ];
+                })->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'pricing_model' => $proposal->pricing_model,
+                    'management_fee_type' => $proposal->management_fee_type,
+                    'management_fee' => $proposal->management_fee,
+                    'vat_rate' => $proposal->vat_rate,
+                    'grouped_boqs' => $groupedBoqs,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to get pricing model'
+            ], 500);
+        }
+    }
+
+    /**
+     * Save pricing model configuration (pricing_model, fees, vat)
+     */
+    public function savePricingModel(ProposalRequest $request): JsonResponse
+    {
+        try {
+            $proposal = $this->proposalService->savePricingModel($request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pricing model saved successfully',
+                'data' => $proposal
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to save pricing model'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update BOQ header assignment
+     */
+    public function updateBoqHeader(Request $request, $boq_id): JsonResponse
+    {
+        $request->validate([
+            'header' => 'nullable|string|max:255',
+            'header_order' => 'nullable|integer|min:0',
+        ]);
+
+        try {
+            $boq = Boq::findOrFail($boq_id);
+
+            $boq->update([
+                'header' => $request->header,
+                'header_order' => $request->header_order ?? 0,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'BOQ header updated successfully',
+                'data' => $boq->fresh()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to update BOQ header'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available BOQs for pricing model (BOQs belonging to this proposal)
+     */
+    public function getAvailableBoqs($proposal_id): JsonResponse
+    {
+        try {
+            $proposal = Proposal::findOrFail($proposal_id);
+
+            $boqs = Boq::with('items')
+                ->where('proposal_id', $proposal_id)
+                ->orderBy('header_order')
+                ->get()
+                ->map(function ($boq) {
+                    return [
+                        'id' => $boq->id,
+                        'code' => $boq->code,
+                        'header' => $boq->header,
+                        'header_order' => $boq->header_order,
+                        'total_amount' => $boq->total_amount_items,
+                        'items_count' => $boq->items->count(),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $boqs
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to get available BOQs'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all BOQs for a proposal
+     */
+    // public function getBoqs($proposal_id): JsonResponse
+    // {
+    //     try {
+    //         $boqs = $this->proposalService->getBoqsByProposalId($proposal_id);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $boqs
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage() ?: 'Failed to get BOQs'
+    //         ], 500);
+    //     }
+    // }
 }

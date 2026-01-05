@@ -38,6 +38,14 @@ return new class extends Migration
             // $table->date('date_to');
             $table->text('note')->nullable();
             $table->enum('status', ['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled'])->default('Draft');
+            
+            // Pricing Model fields
+            $table->enum('pricing_model', ['A', 'B', 'C'])->nullable();
+            $table->enum('management_fee_type', ['nominal', 'percent'])->default('percent');
+            $table->decimal('management_fee', 15, 2)->default(0);
+            $table->integer('vat_rate')->default(11);
+            $table->text('pricing_model_description')->nullable();
+            
             $table->timestamps();
             $table->softDeletes();
         });

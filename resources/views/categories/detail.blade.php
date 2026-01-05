@@ -28,6 +28,12 @@
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
+                                        <label class="fw-semibold">Description</label>
+                                        <p class="mb-0">{{ $category->description }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
                                         <label class="fw-semibold">Created</label>
                                         <p class="mb-0">{{ $category->created_at ? formatDate($category->created_at, 'j F Y') : "-" }}</p>
                                     </div>
@@ -123,15 +129,15 @@
                         { data: 'name' }, 
                         { data: 'description' }, 
                         {
-                        data: 'created_at',
+                            data: 'created_at',
                             render: function (data, type, row) {
-                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                                return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
                             }
                         },
                         {
-                        data: 'updated_at',
+                            data: 'updated_at',
                             render: function (data, type, row) {
-                                return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+                                return type === 'display' ? moment(data).format('DD MMM YYYY') : data;
                             }
                         },
                     ],

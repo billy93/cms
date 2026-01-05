@@ -22,7 +22,11 @@ class Invoice extends Model
         'bill_to',
         'ship_to',
         'total_amount',
-        'notes',
+        'management_fee',
+        'sales_amount',
+        'vat_amount',
+        'invoice_amount',
+        'note',
         'terms_and_conditions',
         'signature_name',
         'signature_image',
@@ -84,6 +88,6 @@ class Invoice extends Model
      */
     public function calculateTotalAmount()
     {
-        return $this->boqs()->sum('invoice_amount'); // asumsi BOQ punya invoice_amount
+        return $this->total_amount_items;
     }
 }

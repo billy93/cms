@@ -67,8 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'name' },
         { data: 'unit' },
-        { data: 'base_cost' },
-        { data: 'description' },
+        { data: 'price' },
+        {
+          data: 'description',
+          render: function (data, type, row) {
+            return type === 'display' && data ? `<div style="width: 280px; white-space: wrap;">${data}</div>` : "-";
+          }
+        },
         {
           data: 'categories',
           render: function (data, type, row) {
@@ -76,18 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         { data: 'supplier_name' },
-        {
-          data: 'created_at',
-          render: function (data, type, row) {
-            return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
-          }
-        },
-        {
-          data: 'updated_at',
-          render: function (data, type, row) {
-            return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
-          }
-        },
         {
           data: 'actions',
           orderable: false,

@@ -11,19 +11,15 @@ class BoqItem extends Model
     use HasFactory;
     protected $fillable = [
         'boq_id',
-        'header',
-        'subheader',
         'product_id',
-        'unit_price',
-        'title1_key',
-        'title1_value',
-        'title2_key',
-        'title2_value',
-        'title3_key',
-        'title3_value',
-        'title4_key',
-        'title4_value',
-        'multiplier_total',
+        'product_price_version_id',
+        'description',
+        'selling_price',
+        'qty',
+        'qty_unit',
+        'freq',
+        'freq_unit',
+        'total_price',
     ];
 
     /**
@@ -40,5 +36,21 @@ class BoqItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    /**
+     * Get the active price version of this product.
+     */
+    public function getProductActivePriceAttribute()
+    {
+        return $this->product->activePriceVersion->price ?? 0;
+    }
+    
+    /**
+     * Relasi ke ProductPriceVersion (snapshot reference).
+     */
+    public function productPriceVersion(): BelongsTo
+    {
+        return $this->belongsTo(ProductPriceVersion::class, 'product_price_version_id');
     }
 }

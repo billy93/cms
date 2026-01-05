@@ -35,7 +35,7 @@ class ProductRequest extends ApiFormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'unit' => ['required', 'string', 'max:32'],
-            'base_cost' => [
+            'price' => [
                 'required',
                 'regex:/^\d{1,3}(\.\d{3})*(,\d{1,2})?$/',
             ],

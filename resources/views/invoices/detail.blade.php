@@ -42,8 +42,20 @@
                             <div class="row" id="boq_info">
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
+                                        <label class="fw-semibold">Proposal Code</label>
+                                        <p class="mb-0">{{ $invoice->proposal?->code }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
                                         <label class="fw-semibold">Invoice No.</label>
                                         <p class="mb-0">{{ $invoice->code }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Customer</label>
+                                        <p class="mb-0">{{ $invoice->customer?->name }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
@@ -78,32 +90,20 @@
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Proposal Code</label>
-                                        <p class="mb-0">{{ $invoice->proposal?->code }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Customer</label>
-                                        <p class="mb-0">{{ $invoice->customer?->name }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
                                         <label class="fw-semibold">Created</label>
                                         <p class="mb-0">{{ $invoice->created_at ? formatDate($invoice->created_at, 'j F Y') : "-" }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Due Date</label>
-                                        <p class="mb-0">{{ $invoice->due_date ? formatDate($invoice->due_date, 'j F Y') : "-" }}</p>
+                                        <label class="fw-semibold">Updated</label>
+                                        <p class="mb-0">{{ $invoice->updated_at ? formatDate($invoice->updated_at, 'j F Y') : "-" }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Payment Method</label>
-                                        <p class="mb-0">{{ $invoice->payment_method ?: "-" }}</p>
+                                        <label class="fw-semibold">Due Date</label>
+                                        <p class="mb-0">{{ $invoice->due_date ? formatDate($invoice->due_date, 'j F Y') : "-" }}</p>
                                     </div>
                                 </div>
                                 <!-- <div class="col-md-6 col-xxl-4">
@@ -120,8 +120,46 @@
                                 </div> -->
                                 <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Total Amount</label>
+                                        <label class="fw-semibold">Basic Price Sum</label>
                                         <p class="mb-0">{{ $invoice->total_amount ? formatRupiah($invoice->total_amount) : "-" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Management Fee</label>
+                                        <p class="mb-0">
+                                            {{ formatRupiah($invoice->management_fee) }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Sales Amount</label>
+                                        <p class="mb-0">{{ $invoice->sales_amount ? formatRupiah($invoice->sales_amount) : "-" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">VAT Amount</label>
+                                        <p class="mb-0">{{ $invoice->vat_amount ? formatRupiah($invoice->vat_amount) : "-" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Total Amount</label>
+                                        <p class="mb-0 fw-bold">{{ $invoice->invoice_amount ? formatRupiah($invoice->invoice_amount) : "-" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Note</label>
+                                        <p class="mb-0 fw-bold">{{ $invoice->note ?? "-" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Payment Method</label>
+                                        <p class="mb-0">{{ $invoice->payment_method ?: "-" }}</p>
                                     </div>
                                 </div>
                                 <div class="form-group mb-2">
@@ -131,17 +169,33 @@
                                     <div class="table-responsive custom-table">
                                         <table class="table" id="invoice_items_list">
                                             <thead class="thead-light">
-                                            <tr>
                                                 <th class="td-break">BOQ Code</th>
-                                                <th class="td-break">Basic Price</th>
-                                                <th class="td-break">Management Fee</th>
-                                                <th class="td-break">Sales Amount</th>
-                                                <th class="td-break">VAT Rate</th>
-                                                <th class="td-break">VAT</th>
-                                                <th class="td-break">Amount</th>
+                                                <th class="td-break text-end">Basic Price</th>
                                             </tr>
                                             </thead>
                                             <tbody></tbody>
+                                            <tfoot>
+                                                <tr style="border-top: 2px solid #dee2e6; font-weight: bold;">
+                                                    <td class="text-end" style="color: inherit;">Basic Price Sum</td>
+                                                    <td class="text-end" style="color: inherit;">{{ formatRupiah($invoice->total_amount) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-end" style="color: inherit;">Management Fee</td>
+                                                    <td class="text-end" style="color: inherit;">{{ formatRupiah($invoice->management_fee) }}</td>
+                                                </tr>
+                                                <tr style="font-weight: bold;">
+                                                    <td class="text-end" style="color: inherit;">Sales Amount</td>
+                                                    <td class="text-end" style="color: inherit;">{{ formatRupiah($invoice->sales_amount) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-end" style="color: inherit;">VAT Amount</td>
+                                                    <td class="text-end" style="color: inherit;">{{ formatRupiah($invoice->vat_amount) }}</td>
+                                                </tr>
+                                                <tr style="font-weight: bold; border-top: 2px solid #dee2e6;">
+                                                    <td class="text-end" style="color: inherit;">Total Amount</td>
+                                                    <td class="text-end" style="color: inherit;">{{ formatRupiah($invoice->invoice_amount) }}</td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                     <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
@@ -171,6 +225,7 @@
            function initInvoicesDataTable(data) {
                 const self = this;
                 const $table = $(`#invoice_items_list`);
+                const proposal = @json($invoice->proposal);
 
                 // 🔹 Kalau DataTable sudah ada → cuma update data-nya
                 if ($.fn.DataTable.isDataTable($table)) {
@@ -211,37 +266,8 @@
                         { data: 'code' },
                         {
                             data: 'total_amount_items',
-                            render: data => formatRupiah(data)
-                        },
-                        {
-                            data: 'management_fee',
-                            orderable: false,
-                            render: (data, type, row) => {
-                                if (type === 'display') {
-                                let amount = data;
-                                if (row.management_fee_type === 'percent') {
-                                    amount = (row.total_amount_items * data) / 100;
-                                }
-                                return formatRupiah(amount);
-                                }
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'sales_amount',
-                            render: data => formatRupiah(data)
-                        },
-                        {
-                            data: 'vat_rate',
-                            render: (data, type) => (type === 'display' ? data + "%" : data)
-                        },
-                        {
-                            data: 'vat',
-                            render: data => formatRupiah(data)
-                        },
-                        {
-                            data: 'invoice_amount',
-                            render: data => formatRupiah(data)
+                            className: 'text-end',
+                            render: data => formatRupiahDisplay(data.toString().replace(".", ","))
                         },
                     ]
                 });

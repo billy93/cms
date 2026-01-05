@@ -24,6 +24,8 @@ class ProposalRequest extends ApiFormRequest
             case 'api.proposals.update':
             case 'proposals.update':
                 return $this->updateRules();
+            case 'proposals.savePricingModel':
+                return $this->savePricingModelRules();
             default:
                 return [];
         }
@@ -53,6 +55,23 @@ class ProposalRequest extends ApiFormRequest
         unset($rules['boq_ids'], $rules['boq_ids.*']);
 
         return $rules;
+    }
+
+    protected function savePricingModelRules()
+    {
+        return [
+            'id' => 'required|exists:proposals,id',
+            'pricing_model' => 'required|in:A,B,C',
+            'management_fee_type' => 'required|in:nominal,percent',
+            'management_fee' => 'required|regex:/^\d{1,3}(\.\d{3})*(,\d{1,2})?$/',
+            'vat_rate' => 'required|integer|in:1,11',
+            'pricing_model_description' => 'nullable|string',
+            'boqs' => 'nullable|array',
+            'boqs.*.boq_id' => 'required|exists:boqs,id',
+            'boqs.*.header' => 'nullable|string',
+            'boqs.*.subheader' => 'nullable|string',
+            'boqs.*.header_order' => 'nullable|integer|min:0',
+        ];
     }
 
     public function authorize()

@@ -23,29 +23,15 @@ return new class extends Migration
                 ->constrained('invoices')
                 ->nullOnDelete();
                   
-            // Jenis form
-            $table->enum('form_type', ['A', 'B', 'C', 'D'])
-                  ->default('A');
-
-            // Deskripsi umum BOQ
-            $table->text('description')->nullable();
             $table->decimal('total_amount_items', 15, 2)->nullable();
 
-            // Summary pricing
-            $table->decimal('management_fee', 15, 2)->nullable();
-            $table->enum('management_fee_type', ['percent', 'nominal'])->default('percent');
-
-            $table->decimal('sales_amount', 15, 2)->nullable();
-
-            $table->decimal('vat', 15, 2)->nullable();
-            $table->tinyInteger('vat_rate')->nullable();
-             
-            $table->decimal('invoice_amount', 15, 2)->nullable();
+            // Header grouping for Type B pricing model
+            $table->string('header')->nullable();
+            $table->string('subheader')->nullable();
+            $table->integer('header_order')->default(0);
 
             $table->timestamps();
         });
-
-        DB::statement('ALTER TABLE boqs ADD CONSTRAINT chk_vat_rate CHECK (vat_rate IN (1, 11))');
     }
 
 

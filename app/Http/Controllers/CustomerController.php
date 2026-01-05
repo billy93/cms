@@ -49,21 +49,25 @@ class CustomerController extends Controller
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
                                 <a  
-                                    class="dropdown-item c_customer_edit" 
+                                    class="dropdown-item" 
+                                    href="'.route('customers.read', ['customer_id' => $c->id]).'"
+                                >
+                                    <i class="ti ti-eye text-info"></i> View Detail
+                                </a>
+                                <a  
+                                    class="dropdown-item c_customer_edit_btn" 
                                     href="#" 
                                     data-id="'.$c->id.'" 
                                     data-url="'.route('customers.read', ['customer_id' => $c->id]).'"
-                                    data-bs-toggle="offcanvas"
-                                    data-bs-target="#offcanvas_add">
+                                >
                                     <i class="ti ti-edit text-blue"></i> Edit
                                 </a>
                                 <a  
-                                    class="dropdown-item c_customer_delete" 
+                                    class="dropdown-item c_customer_delete_btn" 
                                     href="javascript:void(0);" 
                                     data-id="'.$c->id.'" 
                                     data-url="'.route('customers.delete', ['customer_id' => $c->id]).'"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#delete_customer_modal">
+                                >
                                     <i class="ti ti-trash text-danger"></i> Delete
                                 </a>
                             </div>
@@ -114,7 +118,7 @@ class CustomerController extends Controller
         abort(404);
     }
 
-    public function read(Request $request, $customer_id): JsonResponse
+    public function read(Request $request, $customer_id)
     {
         if ($request->wantsJson() || $request->ajax()) {
             try {

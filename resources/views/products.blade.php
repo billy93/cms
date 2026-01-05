@@ -109,8 +109,6 @@
                                             <th>Description</th>
                                             <th>Categories</th>
                                             <th>Supplier</th>
-                                            <th>Created</th>
-                                            <th>Updated</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>

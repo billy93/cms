@@ -435,6 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
         const resJson = await response.json();
+        console.log("XXXXXXXXXXXXXXXXXX");
 
         if (response.ok && resJson.success) {
           templateDataTable.ajax.reload(null, false);

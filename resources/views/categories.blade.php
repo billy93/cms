@@ -87,8 +87,6 @@
 											</th>
                                             <th>Name</th>
                                             <th>Description</th>
-                                            <th>Created</th>
-                                            <th>Updated</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>

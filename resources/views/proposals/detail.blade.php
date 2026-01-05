@@ -27,9 +27,9 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Proposal Information</h5>
                             <div class="d-flex gap-2">
-                                <a href="/proposals/{{ $proposal->id }}/pdf" target="_blank" class="btn btn-outline-danger">
+                                <button onclick="downloadPdf({{ $proposal->id }})" class="btn btn-outline-danger">
                                     <i class="ti ti-file-type-pdf me-1"></i>Download PDF
-                                </a>
+                                </button>
                                 <a href="/proposals" class="btn btn-outline-secondary">
                                     <i class="ti ti-arrow-left me-1"></i>Back to Proposals
                                 </a>
@@ -38,6 +38,47 @@
                         <div class="card-body">
                             <div class="row" id="proposal_info">
                                 <!-- Project info will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Model Configuration Section -->
+                    <div id="pricing_model_section" class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Pricing Model</h5>
+                            @if($proposal->status !== "Win")
+                                <div class="d-flex gap-2">
+                                    <a 
+                                        href="javascript:void(0);" 
+                                        id="c_pricing_model_configure_btn" 
+                                        class="btn btn-primary"
+                                        data-url="{{ route('proposals.read', ['proposal_id' => $proposal->id]) }}"
+                                    >
+                                        <i class="ti ti-settings me-2"></i>Configure
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="card-body" id="pricing_model_info">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Pricing Model</strong>
+                                    <p class="mb-0">{{ $proposal->pricing_model ? 'Type ' . $proposal->pricing_model : 'Not configured' }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Management Fee</strong>
+                                    <p class="mb-0">
+                                        @if($proposal->management_fee_type === 'percent')
+                                            {{ formatRupiah($proposal->management_fee) }}%
+                                        @else
+                                            Rp. {{ formatRupiah($proposal->management_fee) }}
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>VAT Rate</strong>
+                                    <p class="mb-0">{{ $proposal->vat_rate ?? 11 }}%</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -70,14 +111,14 @@
                                         id="c_append_boq_btn" 
                                         class="btn btn-outline-primary" 
                                     >
-                                        <i class="ti ti-square-rounded-plus me-2"></i>Add Existing BOQ
+                                        <i class="ti ti-square-rounded-plus me-2"></i>Add Existing BoQ
                                     </a>
                                     <a 
                                         href="javascript:void(0);" 
                                         id="c_boq_create_btn" 
                                         class="btn btn-primary" 
                                     >
-                                        <i class="ti ti-square-rounded-plus me-2"></i>Create BOQ
+                                        <i class="ti ti-square-rounded-plus me-2"></i>Add New BoQ
                                     </a>
                                 </div>
                             @endif
@@ -124,28 +165,17 @@
                                             </th>
                                             <th class="td-break" rowspan="2">BOQ Code</th>
                                             <th class="td-break" rowspan="2">Sales Code</th>
-                                            <th class="td-break" rowspan="2">BOQ Type</th>
-                                            <th class="td-break" rowspan="2">Description</th>
-                                            <th class="td-break" rowspan="2">Created</th>
-                                            <th class="td-break" rowspan="2">Updated</th>
-                                            <th colspan="8">Items</th>
-                                            <th class="td-break" rowspan="2">Basic Price</th>
-                                            <th class="td-break" rowspan="2">Management Fee</th>
-                                            <th class="td-break" rowspan="2">Sales Amount</th>
-                                            <th class="td-break" rowspan="2">VAT Rate</th>
-                                            <th class="td-break" rowspan="2">VAT</th>
-                                            <th class="td-break" rowspan="2">Invoice Amount</th>
+                                            <th colspan="6" class="text-center">Items</th>
+                                            <th class="td-break" rowspan="2">Grand Total</th>
                                             <th class="td-break" rowspan="2" class="no-sort">Action</th>
                                         </tr>
                                         <tr>
-                                            <th>Header</th>
-                                            <th>Subheader</th>
-                                            <th>Unit Price</th>
-                                            <th>Title1</th>
-                                            <th>Title2</th>
-                                            <th>Title3</th>
-                                            <th>Title4</th>
-                                            <th>Total</th> 
+                                            <th>Description</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-center">Freq</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Selling Price</th>
+                                            <th class="text-end">Total Price</th> 
                                         </tr>
 									</thead>
 									<tbody>
@@ -167,6 +197,7 @@
 						</div>
                     </div>
 
+
                     <!-- Invoices Info Card -->
                     <div id="invoices_section" class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -183,6 +214,11 @@
                                 </div>
                             @endif
                         </div>
+                        <style>
+                            #invoice_info tfoot td {
+                                color: #6f6f6f;
+                            }
+                        </style>
                         <div class="card-body" id="invoice_info">
                             <!-- Project info will be loaded here -->
                         </div>
@@ -197,6 +233,7 @@
         @include('components.boqs.create-modal')
         @include('components.boqs.modal')
         @include('components.proposals.append-boq-modal')
+        @include('components.proposals.pricing-config-modal')
     @else
         @include('components.invoices.create-modal')
         @include('components.invoices.modal')
@@ -216,6 +253,7 @@
                 success: function(response) {
                     if(response.success) {
                         PROPOSAL = response.data;
+                        
                         renderProposalInfo(response.data);
                         renderInvoicesInfo(response.data);
                     } else {
@@ -303,6 +341,7 @@
                     <button 
                         class="btn btn-sm btn-secondary me-2 c_invoice_edit_btn"
                         data-url="/invoices/${invoice.id}"
+                        data-proposal_id="${proposal.id}"
                     >
                         <i class="ti ti-edit" style="font-size: 1.25rem"></i>
                     </button>
@@ -355,8 +394,26 @@
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
+                                <label class="fw-semibold">Basic Price Sum</label>
+                                <p class="mb-0">${formatRupiahDisplay(invoice.total_amount?.toString().replace(".", ",") ?? 0) || "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
+                                <label class="fw-semibold">Management Fee</label>
+                                <p class="mb-0">${formatRupiahDisplay(invoice.management_fee?.toString().replace(".", ",") ?? 0) || "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
+                                <label class="fw-semibold">Sales Amount</label>
+                                <p class="mb-0">${formatRupiahDisplay(invoice.sales_amount?.toString().replace(".", ",") ?? 0) || "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
                                 <label class="fw-semibold">Total Amount</label>
-                                <p class="mb-0">${formatRupiah(invoice.total_amount) || "-"}</p>
+                                <p class="mb-0">${formatRupiahDisplay(invoice.invoice_amount?.toString().replace(".", ",") ?? 0) || "-"}</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
@@ -368,7 +425,7 @@
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Note</label>
-                                <p class="mb-0">${formatRupiah(invoice.note) || "-"}</p>
+                                <p class="mb-0">${invoice.note || "-"}</p>
                             </div>
                         </div>
                         <div class="form-group mb-2">
@@ -380,15 +437,32 @@
                                     <thead class="thead-light">
                                     <tr>
                                         <th class="td-break">BOQ Code</th>
-                                        <th class="td-break">Basic Price</th>
-                                        <th class="td-break">Management Fee</th>
-                                        <th class="td-break">Sales Amount</th>
-                                        <th class="td-break">VAT Rate</th>
-                                        <th class="td-break">VAT</th>
-                                        <th class="td-break">Amount</th>
+                                        <th class="td-break text-end">Basic Price</th>
                                     </tr>
                                     </thead>
                                     <tbody></tbody>
+                                    <tfoot>
+                                        <tr style="border-top: 2px solid #dee2e6; font-weight: bold;">
+                                            <td class="text-end">Basic Price Sum</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.total_amount?.toString().replace(".", ",") ?? 0)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-end">Management Fee</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.management_fee?.toString().replace(".", ",") ?? 0)}</td>
+                                        </tr>
+                                        <tr style="font-weight: bold;">
+                                            <td class="text-end">Sales Amount</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.sales_amount?.toString().replace(".", ",") ?? 0)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-end">VAT Amount</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.vat_amount?.toString().replace(".", ",") ?? 0)}</td>
+                                        </tr>
+                                        <tr style="font-weight: bold; border-top: 2px solid #dee2e6;">
+                                            <td class="text-end">Total Amount</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.invoice_amount?.toString().replace(".", ",") ?? 0)}</td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                             <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
@@ -498,37 +572,8 @@
                     { data: 'code' },
                     {
                         data: 'total_amount_items',
-                        render: data => formatRupiah(data)
-                    },
-                    {
-                        data: 'management_fee',
-                        orderable: false,
-                        render: (data, type, row) => {
-                            if (type === 'display') {
-                            let amount = data;
-                            if (row.management_fee_type === 'percent') {
-                                amount = (row.total_amount_items * data) / 100;
-                            }
-                            return formatRupiah(amount);
-                            }
-                            return data;
-                        }
-                    },
-                    {
-                        data: 'sales_amount',
-                        render: data => formatRupiah(data)
-                    },
-                    {
-                        data: 'vat_rate',
-                        render: (data, type) => (type === 'display' ? data + "%" : data)
-                    },
-                    {
-                        data: 'vat',
-                        render: data => formatRupiah(data)
-                    },
-                    {
-                        data: 'invoice_amount',
-                        render: data => formatRupiah(data)
+                        render: data => formatRupiahDisplay(data?.toString().replace(".", ",") ?? 0),
+                        className: 'text-end'
                     },
                 ]
             });
@@ -538,9 +583,42 @@
             let selectedBoqRow = [];
             loadProposalData(PROPOSAL_ID);
         });
+
+        function downloadPdf(id) {
+            // Show loading Toast
+            showToast("info", "Generating PDF...");
+            
+            fetch(`/proposals/${id}/pdf`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/pdf, application/json' // Accept both
+                }
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    // Expect JSON error
+                    const data = await response.json();
+                    throw new Error(data.message || "Failed to generate PDF");
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create object URL and open in new tab
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                
+                // Cleanup after a delay
+                setTimeout(() => window.URL.revokeObjectURL(url), 1000); // 1s delay
+            })
+            .catch(error => {
+                showToast("error", error.message);
+            });
+        }
     </script>
     <script src="/build/js/boqs/shared_var.js"></script>
     <script src="/build/js/boqs/datatables.js"></script>
+    <script src="/build/js/proposals/pricing_config.js"></script>
 
     @if($proposal->status !== "Win")
         <script src="/build/js/proposals/append_boqs.js"></script>

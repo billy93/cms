@@ -25,6 +25,11 @@ class InvoiceForm {
   async handleDocumentChange(e) {
     const target = e.target;
 
+    // Watch invoice type change
+    if (target.matches("#input_invoice_type")) {
+      this.handleInvoiceTypeChange(target.value);
+    }
+
     if (target.matches("#invoice_canvas_boq_list #select_all_invoice_boq")) {
       const checked = target.checked;
 
@@ -46,6 +51,7 @@ class InvoiceForm {
       const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
       this.selectedBoqs = Array.from(unique.values());
       this.updateSelectedEl();
+      this.checkAndAutoChangeType();
     } else if (target.matches("#invoice_canvas_boq_list input.row-check")) {
       const checked = target.checked;
 
@@ -62,6 +68,117 @@ class InvoiceForm {
       const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
       this.selectedBoqs = Array.from(unique.values());
       this.updateSelectedEl();
+      this.checkAndAutoChangeType();
+    }
+  }
+
+  checkAndAutoChangeType() {
+    let isAllSelected = true;
+
+    if (this.proposal?.boqs.length) {
+      const currentBoqs = this.selectedBoqs.map(v => +v.id)
+      const proposalBoqs = this.proposal.boqs.map(v => v.id)
+      proposalBoqs.forEach(b => {
+        if (!currentBoqs.includes(b)) {
+          isAllSelected = false
+        }
+      })
+    }
+
+    const typeSelect = this.form.querySelector("#input_invoice_type");
+
+    if (typeSelect && isAllSelected) {
+      $(typeSelect).val("Full").trigger('change.select2');
+      this.handleInvoiceTypeChange("Full");
+    }
+  }
+
+  getBoqTableHTML() {
+    if (this.data && this.mode === "edit" && this.data.boqs?.length) {
+      this.selectedBoqs = this.data.boqs.map(boq => ({
+        id: boq.id.toString(),
+        code: boq.code
+      }));
+    }
+
+    let selectedBoqEl = "<li class='no-selected-tag'>No Selected BoQ</li>";
+
+    if (this.selectedBoqs.length) {
+      selectedBoqEl = this.selectedBoqs
+        .map(obj => `<li class="selected-tag">${obj.code}</li>`)
+        .join("");
+    }
+
+    return `
+      <div>
+        <label class="col-form-label">BoQ(s)</label>
+        <ul id="selected_invoice_canvas_boq" class="mt-2 mb-2">${selectedBoqEl}</ul>
+      </div>
+      <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
+        <div class="table-responsive custom-table">
+          <table class="table" id="invoice_canvas_boq_list">
+            <thead class="thead-light">
+              <tr>
+                <th class="td-break no-sort" style="position: sticky; z-index: 1;">
+                  <label class="checkboxs">
+                    <input type="checkbox" id="select_all_invoice_boq">
+                    <span class="checkmarks"></span>
+                  </label>
+                </th>
+                <th class="td-break" style="width: 100%;">BOQ Code</th>
+                <th class="td-break">Basic Price</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
+          <div class="col-md-6">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+              <div class="datatable-info"></div>
+              <div class="invoice-canvas-table-boq-length"></div>
+            </div>
+          </div>
+          <div class="col-md-6 flex-grow-1">
+            <div class="invoice-canvas-table-boq-paginate"></div>
+          </div>
+        </div>
+      </div>
+      <small id="invoice_boq_error" class="text-danger mt-1" style="display: none;"></small>
+    `;
+  }
+
+  handleInvoiceTypeChange(type) {
+    const boqSection = document.getElementById("invoice_canvas_boq_section");
+    const alertInfo = document.getElementById("invoice_type_alert_container");
+
+    // Update alert info
+    if (alertInfo) {
+      if (type === "Full") {
+        alertInfo.innerHTML = `
+          <div class="alert alert-info">
+            <i class="ti ti-info-circle me-2"></i>
+            Full Invoice: All available BOQs will be automatically included.
+          </div>`;
+      } else {
+        alertInfo.innerHTML = `
+          <div class="alert alert-info">
+            <i class="ti ti-info-circle me-2"></i>
+            Partial Invoice: Please select specific BOQs to include in this invoice.
+          </div>`;
+      }
+    }
+
+    // Clear boq section first to prevent duplicates
+    $(boqSection).empty();
+
+    if (type === "Full") {
+      // Clear selected BOQs
+      this.selectedBoqs = [];
+    } else {
+      $(boqSection).append(this.getBoqTableHTML());
+      // Initialize DataTable for Partial
+      this.initDataTable();
     }
   }
 
@@ -76,15 +193,19 @@ class InvoiceForm {
     const formWrapper = document.createElement("div");
     formWrapper.innerHTML = this.generateForm();
     this.form.appendChild(formWrapper);
-    this.initDataTable();
     this.initPlugins();
     this.isInit = false;
     this.hideLoading();
+
+    // Trigger initial invoice type change to set correct visibility
+    const typeSelect = this.form.querySelector("#input_invoice_type");
+    if (typeSelect) {
+      this.handleInvoiceTypeChange(typeSelect.value);
+    }
   }
 
   // ---------------------------------------- DOM ----------------------------------------
   generateForm() {
-
     let value = {
       project_name: "",
       customer_name: "",
@@ -118,24 +239,32 @@ class InvoiceForm {
       value.ship_to = this.data?.ship_to || "";
       value.payment_method = this.data?.payment_method || "";
       value.note = this.data?.note || "";
+    }
 
-      if (this.data.boqs && this.data.boqs.length) {
-        this.selectedBoqs = this.data.boqs.map(boq => ({
-          id: boq.id.toString(),
-          code: boq.code
-        }));
+    // Check if 'Full' type allowed
+    // Full is allowed only if there are NO other active invoices.
+    let isFullAllowed = true;
+    const allInvoices = this.proposal?.invoices || [];
+    const currentInvoiceId = this.mode === 'edit' ? this.data?.id : null;
+
+    const otherActiveInvoices = allInvoices.filter(inv => {
+      // Ignore current invoice
+      if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
+      // Ignore cancelled invoices (optional, but typical)
+      if (inv.status === 'Cancelled') return false;
+      return true;
+    });
+
+    if (otherActiveInvoices.length > 0) {
+      isFullAllowed = false;
+      // Force type to Partial if Full was selected/defaulted but not allowed
+      if (value.type === 'Full') {
+        value.type = 'Partial';
       }
     }
 
-    let selectedBoqEl = "<li class='no-selected-tag'>No Selected BoQ</li>";
-
-    if (this.selectedBoqs.length) {
-      selectedBoqEl = this.selectedBoqs
-        .map(obj => `<li class="selected-tag">${obj.code}</li>`)
-        .join("");
-    }
-
-    const selectTypeOptions = ["Full", "Partial"].map(t => {
+    const typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
+    const selectTypeOptions = typeOptions.map(t => {
       return `<option value="${t}" ${t === value.type ? "selected" : ""}>${t}</option>`;
     });
 
@@ -147,30 +276,21 @@ class InvoiceForm {
       <div class="row">
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label">Project Name</label>
-            <div class="icon-form">
-              <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
-              <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${value.project_name}" disabled>
-            </div>
+            <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
+            <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${value.project_name}" disabled>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Customer<span class="text-danger">*</span></label>
-            <div class="icon-form">
-              <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
-              <input type="text" id="input_invoice_customer" class="form-control btn-disabled" value="${value.customer_name}" disabled>
-            </div>
+            <input type="text" id="input_invoice_customer" class="form-control btn-disabled" value="${value.customer_name}" disabled>
             <small id="input_invoice_customer_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Proposal Code<span class="text-danger">*</span></label>
-            <div class="icon-form">
-              <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
-              <input type="text" id="input_invoice_proposal_code" class="form-control btn-disabled" value="${value.proposal_code}" disabled>
-            </div>
+            <input type="text" id="input_invoice_proposal_code" class="form-control btn-disabled" value="${value.proposal_code}" disabled>
             <small id="input_invoice_proposal_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
@@ -212,47 +332,9 @@ class InvoiceForm {
             <small id="input_invoice_due_date_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
+        <div class="col-md-12 mb-3" id="invoice_type_alert_container"></div>
         <div class="col-md-12 mb-3" id="invoice_canvas_boq_section">
-          <div>
-            <label class="col-form-label">BoQ(s)</label>
-            <ul id="selected_invoice_canvas_boq" class="mt-2 mb-2">${selectedBoqEl}</ul>
-          </div>
-          <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
-            <div class="table-responsive custom-table">
-              <table class="table" id="invoice_canvas_boq_list">
-                <thead class="thead-light">
-                  <tr>
-                    <th class="td-break no-sort" style="position: sticky; z-index: 1;">
-                      <label class="checkboxs">
-                        <input type="checkbox" id="select_all_invoice_boq">
-                        <span class="checkmarks"></span>
-                      </label>
-                    </th>
-                    <th class="td-break">BOQ Code</th>
-                    <th class="td-break">Basic Price</th>
-                    <th class="td-break">Management Fee</th>
-                    <th class="td-break">Sales Amount</th>
-                    <th class="td-break">VAT Rate</th>
-                    <th class="td-break">VAT</th>
-                    <th class="td-break">Invoice Amount</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-            <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
-              <div class="col-md-6">
-                <div class="d-flex align-items-center justify-content-center justify-content-md-start">
-                  <div class="datatable-info"></div>
-                  <div class="invoice-canvas-table-boq-length"></div>
-                </div>
-              </div>
-              <div class="col-md-6 flex-grow-1">
-                <div class="invoice-canvas-table-boq-paginate"></div>
-              </div>
-            </div>
-          </div>
-          <small id="invoice_boq_error" class="text-danger mt-1" style="display: none;"></small>
+          ${value.type === "Full" ? "" : this.getBoqTableHTML()}
         </div>
         <div class="col-md-6">
           <div class="mb-3">
@@ -366,37 +448,7 @@ class InvoiceForm {
         { data: 'code' },
         {
           data: 'total_amount_items',
-          render: data => formatRupiah(data)
-        },
-        {
-          data: 'management_fee',
-          orderable: false,
-          render: (data, type, row) => {
-            if (type === 'display') {
-              let amount = data;
-              if (row.management_fee_type === 'percent') {
-                amount = (row.total_amount_items * data) / 100;
-              }
-              return formatRupiah(amount);
-            }
-            return data;
-          }
-        },
-        {
-          data: 'sales_amount',
-          render: data => formatRupiah(data)
-        },
-        {
-          data: 'vat_rate',
-          render: (data, type) => (type === 'display' ? data + "%" : data)
-        },
-        {
-          data: 'vat',
-          render: data => formatRupiah(data)
-        },
-        {
-          data: 'invoice_amount',
-          render: data => formatRupiah(data)
+          render: data => formatRupiahDisplay(data.toString().replace(".", ","))
         },
       ]
     });
@@ -408,6 +460,11 @@ class InvoiceForm {
       $('.select').select2({
         width: '100%',
         dropdownParent: $('#c_invoice_canvas_form')
+      });
+
+      // bridge event agar change bisa dideteksi
+      $('.select').on('select2:select', function () {
+        this.dispatchEvent(new Event('change', { bubbles: true }));
       });
     }
 
@@ -493,7 +550,7 @@ class InvoiceForm {
 
     payload.proposal_id = this.proposal?.id || null;
     payload.customer_id = this.proposal?.project?.customer?.id || null;
-    payload.boq_ids = this.selectedBoqs.map(obj => obj.id);
+
 
     if (this.mode === "edit") {
       payload.proposal_id = this.data?.proposal_id || null;
@@ -506,10 +563,6 @@ class InvoiceForm {
 
     if (!payload.customer_id) {
       this.errors["input_invoice_customer_error"] = "Customer ID is required.";
-    }
-
-    if (!payload.boq_ids.length) {
-      this.errors["invoice_boq_error"] = "Please select at least one BOQ.";
     }
 
     const inputs = [
@@ -564,6 +617,17 @@ class InvoiceForm {
       }
     });
 
+    // Only send boq_ids for Partial invoice type
+    if (payload.type === "Partial") {
+      payload.boq_ids = this.selectedBoqs.map(obj => obj.id);
+
+      // Validate BOQ selection for Partial type
+      if (!payload.boq_ids.length) {
+        this.errors["invoice_boq_error"] = "Please select at least one BOQ for partial invoice.";
+      }
+    }
+    // For Full type, don't send boq_ids - backend will auto-select all
+
     return payload;
   }
 
@@ -574,6 +638,7 @@ class InvoiceForm {
 
     const payload = this.validateFields();
     const errKeys = Object.keys(this.errors);
+    console.log("IF", payload);
 
     if (errKeys.length) {
       errKeys.forEach(v => {
@@ -712,23 +777,59 @@ document.addEventListener("DOMContentLoaded", () => {
         IS_FETCHING = true;
 
         try {
-          const url = target.dataset.url;
-          const resopnse = await fetch(url, {
-            headers: {
-              "Accept": "application/json",
-            }
-          });
-          const resJson = await resopnse.json();
+          const proposal_id = target.dataset.proposal_id
+          const invoiceUrl = target.dataset.url;
 
-          if (resopnse.ok && resJson.success) {
-            const invoice = resJson.data;
+          try {
+            proposal_id = PROPOSAL_ID;
+          } catch (error) { }
+
+
+          const [invoiceRes, proposalRes] = await Promise.all([
+            fetch(invoiceUrl, {
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+              },
+            }),
+            fetch(`/proposals/${proposal_id}`, {
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+              },
+            })
+          ]);
+
+          const [invoiceJson, proposalJson] = await Promise.all([
+            invoiceRes.json(),
+            proposalRes.json()
+          ]);
+
+          if (
+            invoiceRes.ok && invoiceJson.success &&
+            proposalRes.ok && proposalJson.success
+          ) {
+            const invoice = invoiceJson.data;
+            const proposal = proposalJson.data;
+
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
-            await INVOICE_FORM.init("edit", {}, invoice);
+            await INVOICE_FORM.init("edit", proposal, invoice);
+
           } else {
-            showToast("error", resJson.message || "Failed to fetch invoice data for editing.");
+            if (!invoiceRes.ok || !invoiceJson.success) {
+              showToast("error", invoiceJson?.message || "Failed to fetch invoice data.");
+            } else if (!proposalRes.ok || !proposalJson.success) {
+              showToast("error", proposalJson?.message || "Failed to fetch proposal data.");
+            } else {
+              showToast("error", "Failed to fetch required data.");
+            }
           }
         } catch (error) {
+          console.log(error);
+
           showToast("error", "An error occurred while retrieving invoice data for invoice creation.");
         } finally {
           IS_FETCHING = false;

@@ -99,27 +99,36 @@ class PdfTemplateSeeder extends Seeder
         .pdf-bill-to { background: #F4F4F4; padding: 15px; border-radius: 4px; }
         
         /* Table */
-        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .pdf-table { width: 100%; border-collapse: collapse; }
         .pdf-table thead { display: table-header-group; }
         .pdf-table tr { page-break-inside: avoid; }
         @media print {
             .pdf-table thead { display: table-header-group; }
             .pdf-table tfoot { display: table-footer-group; }
         }
-        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 12px 15px; font-size: 9pt; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        .pdf-table td { padding: 12px 15px; border-bottom: 1px solid #E6E6E6; font-size: 10pt; font-weight: 300; }
+        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 8px 10px; font-size: 10pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pdf-table td { padding: 10px 10px; border-bottom: 1px solid #E6E6E6; font-size: 10pt; font-weight: 300; vertical-align: top; }
         .pdf-table tr { page-break-inside: avoid; }
-        .pdf-table tr:last-child td { border-bottom: 2px solid #4059C6; }
-        .pdf-text-right { text-align: right; }
+        /* Last row of tbody (item list) gets blue border */
+        .pdf-table tbody:not(.no-break) tr:last-child td { border-bottom: 2px solid #4059C6; }
+
+        .pdf-text-right { text-align: right !important; }
         .pdf-text-center { text-align: center; }
+        .pdf-text-left { text-align: left !important; }
         
+        /* Utility Classes for Controller Usage */
+        .boq-code-row { background-color: #f9f9f9; }
+        .boq-code-text { font-weight: bold; color: #4059C6; }
+        .boq-header { background-color: #f0f0f0; font-weight: bold; }
+        .boq-subheader { background-color: #fafafa; }
+        .indent-20 { padding-left: 20px; }
+        .nowrap { white-space: nowrap; }
+        .pr-80 { padding-right: 80px; }
+
         /* Totals */
-        .totals-table-container { width: 100%; }
-        .pdf-totals-table { width: 300px; border-collapse: collapse; margin-left: auto; }
-        .pdf-totals-table td { padding: 8px 0; border-bottom: 1px solid #eee; }
-        .pdf-totals-label { font-weight: 500; color: #666; font-size: 10pt; }
-        .pdf-totals-value { text-align: right; font-weight: 500; color: #333; font-size: 10pt; }
-        .pdf-grand-total { font-size: 14pt; color: #4059C6; border-bottom: none !important; padding-top: 15px !important; font-weight: 600; }
+        .pdf-totals-label { font-weight: 500; color: #333; font-size: 10pt; font-weight: medium !important; }
+        .pdf-totals-value { text-align: right; font-weight: medium !important; color: #333; font-size: 10pt; }
+        .pdf-grand-total { font-size: 14pt; color: #4059C6; border-bottom: none !important; font-weight: bold !important; padding-top: 15px !important; }
         
         /* Footer & Notes */
         .pdf-notes { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E6E6E6; }
@@ -135,7 +144,7 @@ class PdfTemplateSeeder extends Seeder
         <div class="pdf-header">
             <div class="pdf-header-wrapper">
                 <div class="pdf-logo">
-                    <img src="/build/img/your-logo.png" alt="Your Logo">
+                    <img src="{{logo_path}}" alt="Logo" style="max-height: 50px; width: auto;">
                 </div>
                 <div class="pdf-header-right">
                     <div class="pdf-address-block">
@@ -193,40 +202,21 @@ class PdfTemplateSeeder extends Seeder
             <table class="pdf-table">
                 <thead>
                     <tr>
-                        <th>Description</th>
-                        <th class="pdf-text-center" style="width: 80px;">Qty</th>
-                        <th class="pdf-text-right" style="width: 120px;">Price</th>
-                        <th class="pdf-text-right" style="width: 120px;">Total</th>
+                        <th class="pdf-text-center" style="width: 30px;">NO</th>
+                        <th>DESCRIPTION</th>
+                        <th class="pdf-text-center" style="width: 60px;">QTY</th>
+                        <th class="pdf-text-center" style="width: 60px;">FREQ</th>
+                        <th class="pdf-text-right" style="width: 100px;">UNIT PRICE</th>
+                        <th class="pdf-text-right" style="width: 100px;">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{invoice_items}}
                 </tbody>
+                <tfoot>
+                    {{totals_rows}}
+                </tfoot>
             </table>
-
-            <!-- Totals -->
-            <div class="totals-table-container">
-                <table class="pdf-totals-table">
-                    <tr>
-                        <td class="pdf-totals-label">Subtotal</td>
-                        <td class="pdf-totals-value">{{subtotal}}</td>
-                    </tr>
-                    <tr>
-                        <td class="pdf-totals-label">Tax</td>
-                        <td class="pdf-totals-value">{{tax_amount}}</td>
-                    </tr>
-                    <tr>
-                        <td class="pdf-totals-label pdf-grand-total">Total</td>
-                        <td class="pdf-totals-value pdf-grand-total">{{total_amount}}</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Notes -->
-            <div class="pdf-notes">
-                <div class="pdf-notes-title">Notes / Payment Instructions</div>
-                <div class="pdf-notes-text">{{notes}}</div>
-            </div>
         </div>
     </div>
 </body>
@@ -238,11 +228,10 @@ class PdfTemplateSeeder extends Seeder
                 ['name' => 'bill_to', 'label' => 'Billing Address'],
                 ['name' => 'due_date', 'label' => 'Due Date'],
                 ['name' => 'payment_method', 'label' => 'Payment Method'],
-                ['name' => 'subtotal', 'label' => 'Subtotal'],
-                ['name' => 'tax_amount', 'label' => 'Tax Amount'],
-                ['name' => 'total_amount', 'label' => 'Total Amount'],
+                ['name' => 'totals_rows', 'label' => 'Totals Section Rows'],
                 ['name' => 'notes', 'label' => 'Notes'],
                 ['name' => 'invoice_items', 'label' => 'Invoice Items (Table Rows)'],
+                ['name' => 'logo_path', 'label' => 'Logo Path'],
             ],
             'is_active' => true,
         ]);
@@ -304,8 +293,14 @@ class PdfTemplateSeeder extends Seeder
             box-shadow: 0 0 4px rgba(0,0,0,0.3); 
         }
         
+        /* Layout Helpers */
+        .w-100 { width: 100%; }
+        .w-50 { width: 50%; }
+        .valign-top { vertical-align: top; }
+        .text-right { text-align: right; }
+
         /* Header */
-        .pdf-header { margin-bottom: 50px; padding-bottom: 10px; }
+        .header-table { width: 100%; margin-bottom: 40px; }
         .pdf-logo img { height: 50px; width: auto; }
         
         .pdf-header-right { display: flex; align-items: stretch; }
@@ -314,39 +309,49 @@ class PdfTemplateSeeder extends Seeder
         .pdf-address-text { font-size: 9pt; color: #333333; line-height: 1.4; font-weight: 300; }
         .pdf-vertical-line { width: 4px; background-color: #4059C6; border-radius: 2px; }
         
-        /* Cover Content */
+        /* Cover Content (Proposal Specific) */
         .pdf-cover-content { text-align: center; margin-top: 60px; margin-bottom: 80px; }
         .pdf-proposal-label { font-size: 12pt; letter-spacing: 3px; color: #888; text-transform: uppercase; margin-bottom: 20px; font-weight: 300; }
         .pdf-project-title { font-size: 28pt; font-weight: 600; color: #4059C6; line-height: 1.2; margin-bottom: 10px; }
         .pdf-proposal-code { font-size: 12pt; color: #666; background: #F4F4F4; display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: 300; }
         
-        /* Prepared For/By */
-        .pdf-people-grid { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px; }
-        .pdf-person-col { text-align: center; }
-        .pdf-person-label { font-size: 9pt; text-transform: uppercase; color: #888; margin-bottom: 10px; letter-spacing: 1px; font-weight: 500; }
-        .pdf-person-name { font-size: 12pt; font-weight: 600; color: #333; margin-bottom: 5px; }
-        .pdf-person-detail { font-size: 10pt; color: #666; font-weight: 300; }
-        
         /* Sections */
-        .pdf-section { margin-bottom: 40px; page-break-inside: avoid; }
-        .pdf-section-title { font-size: 14pt; font-weight: 600; color: #4059C6; border-bottom: 2px solid #E6E6E6; padding-bottom: 10px; margin-bottom: 20px; }
-        .pdf-section-content { color: #333; text-align: justify; font-weight: 300; }
+        .pdf-section { margin-bottom: 0px; }
         
-        /* Pricing */
-        .pdf-pricing-box { background: #F9F9F9; border-left: 4px solid #4059C6; padding: 20px; margin-top: 20px; }
-        .pdf-total-label { font-size: 10pt; text-transform: uppercase; color: #666; font-weight: 500; }
-        .pdf-total-amount { font-size: 24pt; font-weight: 600; color: #4059C6; margin-top: 5px; }
-        
-        /* Table (Copied from Invoice) */
-        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        /* Table */
+        .pdf-table { width: 100%; border-collapse: collapse; }
         .pdf-table thead { display: table-header-group; }
         .pdf-table tr { page-break-inside: avoid; }
-        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 12px 15px; font-size: 9pt; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        .pdf-table td { padding: 12px 15px; border-bottom: 1px solid #E6E6E6; font-size: 10pt; font-weight: 300; }
-        .pdf-table tr:last-child td { border-bottom: 2px solid #4059C6; }
-        .pdf-text-right { text-align: right; }
+        @media print {
+            .pdf-table thead { display: table-header-group; }
+            .pdf-table tfoot { display: table-footer-group; }
+        }
+        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 8px 10px; font-size: 10pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pdf-table td { padding: 10px 10px; border-bottom: 1px solid #E6E6E6; font-size: 10pt; font-weight: 300; vertical-align: top; }
+        .pdf-table tr { page-break-inside: avoid; }
+        /* Last row of tbody (item list) gets blue border */
+        .pdf-table tbody:not(.no-break) tr:last-child td { border-bottom: 2px solid #4059C6; }
+        
+        /* Utility Classes */
+        .pdf-text-right { text-align: right !important; }
         .pdf-text-center { text-align: center; }
-
+        .pdf-text-left { text-align: left !important; }
+        
+        /* Utility Classes for Controller Usage */
+        .boq-code-row { background-color: #f9f9f9; }
+        .boq-code-text { font-weight: bold; color: #4059C6; }
+        .boq-header { background-color: #f0f0f0; font-weight: bold; }
+        .boq-subheader { background-color: #fafafa; }
+        .indent-20 { padding-left: 20px; }
+        .nowrap { white-space: nowrap; }
+        .pr-80 { padding-right: 80px; }
+        .no-break { page-break-inside: avoid; }
+         
+        /* Totals */
+        .pdf-totals-label { font-weight: 500; color: #333; font-size: 10pt; font-weight: medium !important; }
+        .pdf-totals-value { text-align: right; font-weight: medium !important; color: #333; font-size: 10pt; }
+        .pdf-grand-total { font-size: 14pt; color: #4059C6; border-bottom: none !important; font-weight: bold !important; padding-top: 15px !important; }
+       
         /* Footer */
         .pdf-footer-bottom { position: absolute; bottom: 15mm; left: 0; right: 0; text-align: center; font-size: 8pt; color: #999; font-weight: 300; }
     </style>
@@ -357,7 +362,7 @@ class PdfTemplateSeeder extends Seeder
         <div class="pdf-header">
             <div class="pdf-header-wrapper">
                 <div class="pdf-logo">
-                    <img src="/build/img/your-logo.png" alt="Your Logo">
+                    <img src="{{logo_path}}" alt="Logo" style="max-height: 50px; width: auto;">
                 </div>
                 <div class="pdf-header-right">
                     <div class="pdf-address-block">
@@ -379,69 +384,33 @@ class PdfTemplateSeeder extends Seeder
 
         <div class="pdf-page-wrapper">
             <!-- Cover Page Content -->
-            <div class="pdf-cover-content">
-                <div class="pdf-proposal-label">PROPOSAL FOR</div>
-                <div class="pdf-project-title">{{project_name}}</div>
-                <div class="pdf-proposal-code">{{proposal_code}}</div>
-            </div>
-
-            <div class="pdf-people-grid">
-                <div class="pdf-person-col">
-                    <div class="pdf-person-label">Prepared For</div>
-                    <div class="pdf-person-name">{{customer_name}}</div>
-                    <div class="pdf-person-detail">{{proposal_date}}</div>
-                </div>
-                <div class="pdf-person-col">
-                    <div class="pdf-person-label">Valid Until</div>
-                    <div class="pdf-person-name">{{valid_until}}</div>
-                    <div class="pdf-person-detail">Sales Code: {{sales_code}}</div>
-                </div>
+            <div class="pdf-cover-content" style="text-align: center; margin-bottom: 30px;">
+                <div class="pdf-proposal-label" style="font-size: 18pt; font-weight: bold; color: #333; margin-bottom: 5px;">BILL OF QUANTITY</div>
+                <div class="pdf-project-title" style="font-size: 14pt; font-weight: 600; color: #333; margin-bottom: 5px;">{{project_name}}</div>
+                <div class="pdf-proposal-code" style="font-size: 11pt; color: #666;">{{proposal_date}}</div>
             </div>
             
             <div style="margin-top: 60px;">
                 <div class="pdf-section">
-                    <div class="pdf-section-title">Executive Summary</div>
-                    <div class="pdf-section-content">
-                        <p>{{description}}</p>
-                    </div>
-                </div>
-                
-                <div class="pdf-section">
-                    <div class="pdf-section-title">Scope of Work</div>
-                    <div class="pdf-section-content">
-                        <p>{{scope_of_work}}</p>
-                    </div>
-                </div>
-                
-                <div class="pdf-section">
-                    <div class="pdf-section-title">Investment</div>
-                    
                     <!-- BOQ Items Table -->
-                    <table class="pdf-table" style="margin-top: 20px;">
+                    <table class="pdf-table">
                         <thead>
                             <tr>
-                                <th>Description</th>
-                                <th class="pdf-text-center" style="width: 80px;">Qty</th>
-                                <th class="pdf-text-right" style="width: 120px;">Price</th>
-                                <th class="pdf-text-right" style="width: 120px;">Total</th>
+                                <th style="width: 5%; text-align: center;">No</th>
+                                <th style="width: 35%;">Description</th>
+                                <th class="pdf-text-center" style="width: 15%;">Qty</th>
+                                <th class="pdf-text-center" style="width: 15%;">Freq</th>
+                                <th class="pdf-text-right" style="width: 15%;">Unit Price</th>
+                                <th class="pdf-text-right" style="width: 15%;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {{boq_items}}
                         </tbody>
+                        <tbody class="no-break">
+                            {{totals_rows}}
+                        </tbody>
                     </table>
-
-                    <div class="pdf-pricing-box">
-                        <div class="pdf-total-label">Total Project Investment</div>
-                        <div class="pdf-total-amount">{{total_amount}}</div>
-                    </div>
-                </div>
-                
-                <div class="pdf-section">
-                    <div class="pdf-section-title">Terms & Conditions</div>
-                    <div class="pdf-section-content">
-                        <p>{{terms_and_conditions}}</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -455,11 +424,10 @@ class PdfTemplateSeeder extends Seeder
                 ['name' => 'proposal_date', 'label' => 'Proposal Date'],
                 ['name' => 'valid_until', 'label' => 'Valid Until Date'],
                 ['name' => 'sales_code', 'label' => 'Sales Code'],
-                ['name' => 'description', 'label' => 'Description'],
-                ['name' => 'scope_of_work', 'label' => 'Scope of Work'],
                 ['name' => 'terms_and_conditions', 'label' => 'Terms & Conditions'],
                 ['name' => 'boq_items', 'label' => 'BOQ Items (Table Rows)'],
-                ['name' => 'total_amount', 'label' => 'Total Amount'],
+                ['name' => 'totals_rows', 'label' => 'Totals Section Rows'],
+                ['name' => 'logo_path', 'label' => 'Logo Path'],
             ],
             'is_active' => true,
         ]); 

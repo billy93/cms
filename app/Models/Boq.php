@@ -14,16 +14,13 @@ class Boq extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'proposal_id',
+        'invoice_id',
         'code',
-        'form_type',
-        'description',
         'total_amount_items',
-        'management_fee',
-        'management_fee_type',
-        'sales_amount',
-        'vat',
-        'vat_rate',
-        'invoice_amount',
+        'header',
+        'subheader',
+        'header_order',
     ];
 
     
