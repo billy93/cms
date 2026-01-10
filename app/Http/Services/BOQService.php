@@ -26,8 +26,8 @@ class BoqService
             if (!empty($data['proposal_id'])) {
                 $proposal = Proposal::find($data['proposal_id']);
 
-                if ($proposal && strtolower($proposal->status) === 'win') {
-                   throw new Exception("Cannot associate a BOQ with a proposal that has been marked as 'Win'.");
+                if ($proposal && strtolower($proposal->status) !== 'win') {
+                   throw new Exception("Cannot associate a BOQ with a proposal that has not been marked as 'Win'.");
                 }
 
                 $boq->proposal()->associate($proposal);
@@ -104,9 +104,8 @@ class BoqService
                 throw new Exception("BOQ with ID {$id} not found");
             }
 
-            // 🔒 Guard: Prevent BOQ with proposal status 'Win' from being updated
-            if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
-                throw new Exception("BOQ cannot be modified because the associated proposal has already been marked as 'Win'.");
+            if ($boq->proposal && strtolower($boq->proposal->status) !== 'win') {
+                throw new Exception("BOQ cannot be modified because the associated proposal is not 'Win'.");
             }
 
             $items = $data['items'] ?? [];
@@ -176,8 +175,8 @@ class BoqService
                     throw new Exception("Proposal with ID {$proposal_id} not found.");
                 }
 
-                if (strtolower($proposal->status) === 'win') {
-                    throw new Exception("Cannot bind BOQs to a 'Win' proposal.");
+                if (strtolower($proposal->status) !== 'win') {
+                    throw new Exception("Cannot bind BOQs to a proposal that is not 'Win'.");
                 }
             }
 
@@ -235,10 +234,6 @@ class BoqService
                     throw new \Exception("BOQ with ID {$boq->id} is not associated with any proposal.");
                 }
 
-                if (strtolower($boq->proposal->status) === 'win') {
-                    throw new \Exception("Cannot unbind BOQ ID {$boq->id} because its proposal is 'Win'.");
-                }
-
                 $boq->proposal()->dissociate();
                 
                 // Clear pricing model fields
@@ -262,11 +257,6 @@ class BoqService
             throw new Exception("BOQ with ID {$id} not found");
         }
 
-        // 🔒 Guard: Prevent BOQ with proposal status 'Win' from being deleted
-        if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
-            throw new Exception("BOQ cannot be deleted because the associated proposal has already been marked as 'Win'.");
-        }
-
         $boq->delete();
     }
 
@@ -283,10 +273,6 @@ class BoqService
             }
 
             $boqs->each(function ($boq) {
-                if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
-                    throw new \Exception("BOQ with ID {$boq->id} cannot be deleted because its proposal is 'Win'.");
-                }
-
                 $boq->delete();
             });
 

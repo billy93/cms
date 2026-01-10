@@ -15,7 +15,6 @@ class Boq extends Model
     use HasFactory;
     protected $fillable = [
         'proposal_id',
-        'invoice_id',
         'code',
         'total_amount_items',
         'header',

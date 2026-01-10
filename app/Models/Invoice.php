@@ -63,9 +63,9 @@ class Invoice extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function boqs()
+    public function items()
     {
-        return $this->hasMany(Boq::class);
+        return $this->hasMany(ProposalItem::class);
     }
 
     /**

@@ -18,18 +18,7 @@ return new class extends Migration
                   ->constrained('proposals')
                   ->cascadeOnDelete();
 
-            $table->foreignId('invoice_id')
-                ->nullable()
-                ->constrained('invoices')
-                ->nullOnDelete();
-                  
             $table->decimal('total_amount_items', 15, 2)->nullable();
-
-            // Header grouping for Type B pricing model
-            $table->string('header')->nullable();
-            $table->string('subheader')->nullable();
-            $table->integer('header_order')->default(0);
-
             $table->timestamps();
         });
     }

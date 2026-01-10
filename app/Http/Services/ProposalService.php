@@ -3,7 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\Proposal;
-use App\Models\Boq;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -12,24 +12,249 @@ class ProposalService
     public function createProposal(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $boq_ids = null;
-            if (array_key_exists('boq_ids', $data)) {
-                $boq_ids = $data['boq_ids'];
-                unset($data['boq_ids']);
-            }
+            $items = $data['items'] ?? [];
+            unset($data['items']);
 
             $data['code'] = Proposal::generateCode();
-            $data['status'] = "Draft";
+            
+            $totalAmountItems = 0;
+            
+            // Normalize inputs
+            if (isset($data['management_fee'])) {
+                $data['management_fee'] = $this->normalizePrice($data['management_fee']);
+            }
+            // For Type A, total_amount_items is direct input
+            if (($data['pricing_model'] ?? '') === 'A' && isset($data['total_amount_items'])) {
+                $data['total_amount_items'] = $this->normalizePrice($data['total_amount_items']);
+                $totalAmountItems = $data['total_amount_items'];
+            }
             $proposal = Proposal::create($data);
 
-            if (is_array($boq_ids)) {
-                $foundBoqs = Boq::whereIn('id', $boq_ids)->get();
-                foreach ($foundBoqs as $boq) {
-                    $boq->replicateWithItems($proposal->id);
+            if ($data['pricing_model'] === 'A') {
+                // Type A: Create a single item for the total amount to allow invoicing
+                $proposal->items()->create([
+                    'proposal_id' => $proposal->id,
+                    'description' => $proposal->pricing_model_description,
+                    'selling_price' => $totalAmountItems,
+                    'total_price' => $totalAmountItems,
+                    'title1_key' => 'Qty',
+                    'title1_value' => 1,
+                    // No validation on fields as Type A is summary
+                ]);
+            } else {
+                foreach ($items as $itemData) {
+                    $multiplier = 0;
+                    $sellingPrice = 0;
+
+                    if (isset($itemData['selling_price'])) {
+                        $itemData['selling_price'] = $this->normalizePrice($itemData['selling_price']);
+                    }
+
+                    switch ($data['pricing_model']) {
+                        case 'B':
+                            // Type B: selling_price is the input. Qty is multiplier.
+                            $sellingPrice = $itemData['selling_price']; 
+                            
+                            $itemData['title1_key'] = 'Qty';
+                            $itemData['title1_value'] = $itemData['qty'];
+                            
+                            $multiplier = $itemData['qty'] * $sellingPrice;
+                            break;
+
+                        case 'C':
+                        case 'D':
+                            // Type C/D: Use selling_price from payload
+                            // Type C sends selling_price. Type D might need flexible handling but user said "ga ada amount".
+                            
+                            if (!empty($itemData['product_id'])) {
+                                $product = Product::find($itemData['product_id']);
+                                if ($product) {
+                                     $itemData['subheader'] = $itemData['subheader'] ?? $product->name;
+                                     if (!$itemData['subheader']) $itemData['subheader'] = $product->name;
+                                }
+                            }
+                            
+                            $sellingPrice = $itemData['selling_price'] ?? 0;
+                            $multiplier = $sellingPrice;
+
+                            for ($i = 1; $i <= 4; $i++) {
+                                $valKey = "title{$i}_value";
+                                if (!empty($itemData[$valKey])) {
+                                    $multiplier *= $itemData[$valKey];
+                                }
+                            }
+                            break;
+                            
+                        default:
+                            $multiplier = 0;
+                    }
+
+                    // Prepare DB Data
+                    $dbItem = [
+                        'proposal_id' => $proposal->id,
+                        'product_id' => $itemData['product_id'] ?? null,
+                        'header' => $itemData['header'] ?? null,
+                        'subheader' => $itemData['subheader'] ?? ($itemData['description'] ?? null),
+                        'selling_price' => $sellingPrice,
+                        'total_price' => $multiplier,
+                        'description' => $itemData['description'] ?? null,
+                        'title1_key' => $itemData['title1_key'] ?? null,
+                        'title1_value' => $itemData['title1_value'] ?? null,
+                        'title2_key' => $itemData['title2_key'] ?? null,
+                        'title2_value' => $itemData['title2_value'] ?? null,
+                        'title3_key' => $itemData['title3_key'] ?? null,
+                        'title3_value' => $itemData['title3_value'] ?? null,
+                        'title4_key' => $itemData['title4_key'] ?? null,
+                        'title4_value' => $itemData['title4_value'] ?? null,
+                    ];
+                    
+                    $proposal->items()->create($dbItem);
+
+                    $totalAmountItems += $multiplier;
                 }
             }
 
-            return $proposal->fresh(['project']);
+            $proposal->update([
+                'total_amount_items' => $totalAmountItems,
+            ]);
+
+            return $proposal->fresh(['project.customer', 'items.product']);
+        });
+    }
+
+    public function updateProposal($id, array $data)
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $proposal = Proposal::with('items')->find($id);
+            if (!$proposal) {
+                throw new Exception("Proposal with ID {$id} not found");
+            }
+
+            if (strtolower($proposal->status) === 'win') {
+                throw new Exception("Proposal with status 'Win' cannot be modified.");
+            }
+
+            $items = $data['items'] ?? [];
+            unset($data['items']);
+            
+            $totalAmountItems = 0;
+            
+             // Normalize inputs
+            if (isset($data['management_fee'])) {
+                $data['management_fee'] = $this->normalizePrice($data['management_fee']);
+            }
+            // For Type A, total_amount_items is direct input
+            if (($data['pricing_model'] ?? '') === 'A' && isset($data['total_amount_items'])) {
+                $data['total_amount_items'] = $this->normalizePrice($data['total_amount_items']);
+                $totalAmountItems = $data['total_amount_items'];
+            }
+
+            // Update Proposal fields
+            $proposal->update($data);
+            
+            // Delete existing items
+            $proposal->items()->delete();
+
+            if ($data['pricing_model'] === 'A') {
+                // Type A: Create a single item for the total amount
+                 $proposal->items()->create([
+                    'proposal_id' => $proposal->id,
+                    'description' => $proposal->pricing_model_description,
+                    'selling_price' => $totalAmountItems,
+                    'total_price' => $totalAmountItems,
+                    'title1_key' => 'Qty',
+                    'title1_value' => 1,
+                ]);
+            } else {
+                foreach ($items as $itemData) {
+                    $multiplier = 0;
+                    $sellingPrice = 0;
+
+                    if (isset($itemData['selling_price'])) {
+                        $itemData['selling_price'] = $this->normalizePrice($itemData['selling_price']);
+                    }
+
+                    switch ($data['pricing_model']) {
+                        case 'B':
+                            // Type B: selling_price is the input. Qty is multiplier.
+                            $sellingPrice = $itemData['selling_price']; 
+                            
+                            $itemData['title1_key'] = 'Person';
+                            $itemData['title1_value'] = $itemData['qty'];
+                            
+                            $multiplier = $itemData['qty'] * $sellingPrice;
+                            break;
+
+                        case 'C':
+                        case 'D':
+                            // Type C/D: Use selling_price from payload
+                            // Type C sends selling_price. Type D might need flexible handling but user said "ga ada amount".
+                            
+                            if (!empty($itemData['product_id'])) {
+                                $product = Product::find($itemData['product_id']);
+                                if ($product) {
+                                     $itemData['subheader'] = $itemData['subheader'] ?? $product->name;
+                                     if (!$itemData['subheader']) $itemData['subheader'] = $product->name;
+                                }
+                            }
+                            
+                            $sellingPrice = $itemData['selling_price'] ?? 0;
+                            $multiplier = $sellingPrice;
+
+                            for ($i = 1; $i <= 4; $i++) {
+                                $valKey = "title{$i}_value";
+                                if (!empty($itemData[$valKey])) {
+                                    $multiplier *= $itemData[$valKey];
+                                }
+                            }
+                            break;
+                            
+                        default:
+                            $multiplier = 0;
+                    }
+
+                    // Prepare DB Data
+                    $dbItem = [
+                        'proposal_id' => $proposal->id,
+                        'product_id' => $itemData['product_id'] ?? null,
+                        'header' => $itemData['header'] ?? null,
+                        'subheader' => $itemData['subheader'] ?? ($itemData['description'] ?? null),
+                        'selling_price' => $sellingPrice,
+                        'total_price' => $multiplier,
+                        'description' => $itemData['description'] ?? null,
+                        'title1_key' => $itemData['title1_key'] ?? null,
+                        'title1_value' => $itemData['title1_value'] ?? null,
+                        'title2_key' => $itemData['title2_key'] ?? null,
+                        'title2_value' => $itemData['title2_value'] ?? null,
+                        'title3_key' => $itemData['title3_key'] ?? null,
+                        'title3_value' => $itemData['title3_value'] ?? null,
+                        'title4_key' => $itemData['title4_key'] ?? null,
+                        'title4_value' => $itemData['title4_value'] ?? null,
+                    ];
+                    
+                    $proposal->items()->create($dbItem);
+
+                    $totalAmountItems += $multiplier;
+                }
+            }
+
+            $proposal->update([
+                'total_amount_items' => $totalAmountItems,
+            ]);
+            
+            // Check for Win status to generate sales code
+             if (($data['status'] ?? null) === 'Win') {
+                 if (!$proposal->sales_code) {
+                    $proposal->update([
+                        'sales_code' => Proposal::generateSalesCode(
+                            $proposal->project_id,
+                            $proposal->id 
+                        ),
+                    ]);
+                 }
+            }
+
+            return $proposal->fresh(['project.customer', 'items.product']);
         });
     }
 
@@ -40,44 +265,21 @@ class ProposalService
 
     public function getProposalById($id)
     {
-        $proposal = Proposal::with(['project.customer', 'boqs', 'invoices.boqs'] )->find($id);
+        $proposal = Proposal::with([
+            'project.customer',
+            'items.product' => function ($q) {
+                $q->with([
+                    'activePriceVersion',
+                    'priceVersions',
+                ]);
+            },
+            'invoices.items',
+        ])->find($id);
+
         if (!$proposal) {
             throw new Exception("Proposal with ID {$id} not found");
         }
         return $proposal;
-    }
-
-    public function updateProposal($id, array $data)
-    {
-        return DB::transaction(function () use ($id, $data) {
-            $proposal = Proposal::find($id);
-            if (!$proposal) {
-                throw new Exception("Proposal with ID {$id} not found");
-            }
-
-            // 🔒 Guard: Prevent proposal with status 'Win' from being updated
-            if (strtolower($proposal->status) === 'win') {
-                throw new Exception("Proposal with status 'Win' cannot be modified.");
-            }
-
-            $targetStatus = strtolower($data['status'] ?? '');
-            if (in_array($targetStatus, ['submitted', 'win', 'lose'], true) && $proposal->boqs->isEmpty()) {
-                throw new Exception("Cannot change status to '{$data['status']}' because this proposal has no BOQs.");
-            }
-            
-            $proposal->update($data);
-
-            if (($data['status'] ?? null) === 'Win') {
-                $proposal->update([
-                    'sales_code' => Proposal::generateSalesCode(
-                        $proposal->project_id,
-                        $proposal->id 
-                    ),
-                ]);
-            }
-
-            return $proposal->fresh(['project']);
-        });
     }
 
     public function deleteProposal($id)
@@ -94,60 +296,11 @@ class ProposalService
 
         $proposal->delete();
     }
-
-    // public function getBoqsByProposalId($id)
-    // {
-    //     $proposal = Proposal::find($id);
-    //     if (!$proposal) {
-    //         throw new Exception("Proposal with ID {$id} not found");
-    //     }
-
-    //     return Boq::with('items')
-    //         ->where('proposal_id', $id)
-    //         ->orderBy('header_order', 'asc')
-    //         ->orderBy('id', 'asc')
-    //         ->get();
-    // }
-
+    
     public function savePricingModel(array $data)
     {
-        return DB::transaction(function () use ($data) {
-            $id = $data['id'];
-            $proposal = Proposal::find($id);
-            
-            // 🔒 Guard: Prevent proposal with status 'Win' from being updated
-            if (strtolower($proposal->status) === 'win') {
-                throw new Exception("Proposal with status 'Win' cannot be modified.");
-            }
-            
-            // Normalize management fee
-            $data['management_fee'] = $this->normalizePrice($data['management_fee']);
-            
-            // Extract BOQ data before updating proposal
-            $boqData = $data['boqs'] ?? [];
-            unset($data['boqs'], $data['id']);
-            
-            // Update proposal
-            $proposal->update($data);
-
-            // Handle BOQ updates
-            if ($data['pricing_model'] === 'A') {
-                // Type A: Clear all headers/subheaders
-                $proposal->boqs()->update(['header' => null, 'subheader' => null, 'header_order' => 0]);
-            } elseif ($data['pricing_model'] === 'B' && !empty($boqData)) {
-                // Type B: Update each BOQ with provided data
-                foreach ($boqData as $boq) {
-                    Boq::where('id', $boq['boq_id'])
-                        ->update([
-                            'header' => $boq['header'] ?? null,
-                            'subheader' => $boq['subheader'] ?? null,
-                            'header_order' => $boq['header_order'] ?? 0,
-                        ]);
-                }
-            }
-
-            return $proposal->fresh();
-        });
+         // Can be removed as it's likely unused now, but keeping as placeholder if needed or redirecting to updateProposal
+         return $this->updateProposal($data['id'], $data);
     }
 
     private function normalizePrice(string|int|float|null $value): float

@@ -184,6 +184,8 @@
         }
         
         initPriceVersionDataTable(@json($product->priceVersions));
+        console.log(@json($product));
+        
     });
 </script>
 @endpush

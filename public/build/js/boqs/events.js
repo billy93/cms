@@ -259,7 +259,7 @@ class BoqForm {
           <label class="form-label">Proposal</label>
           <select class="select form-select" id="input_boq_proposal_id" ${isDisableProposalField ? "disabled" : ""}>
             <option value="" ${!value.proposal_id ? "selected" : ""}>-- Select Proposal --</option>
-            ${this.proposals.map(p => `<option value="${p.id}" ${value.proposal_id == p.id ? "selected" : ""}>${p.code}</option>`).join("")}
+            ${this.proposals.filter(p => p.status.toLowerCase() === "win").map(p => `<option value="${p.id}" ${value.proposal_id == p.id ? "selected" : ""}>${p.code}</option>`).join("")}
           </select>
           <small id="input_boq_proposal_id_error" class="text-danger mt-1" style="display: none;"></small>
         </div>
@@ -378,12 +378,12 @@ class BoqForm {
   recalculate() {
     let grandTotal = 0;
     this.rowArr.forEach(id => {
-      const qty = parseFloat(this.form.querySelector(`#input_boq_item_qty_${id}`)?.value) || "";
-      const freq = parseFloat(this.form.querySelector(`#input_boq_item_freq_${id}`)?.value) || "";
+      const qty = parseFloat(this.form.querySelector(`#input_boq_item_qty_${id}`)?.value) || 0;
+      const freq = parseFloat(this.form.querySelector(`#input_boq_item_freq_${id}`)?.value) || 0;
       const sellingPriceStr = this.form.querySelector(`#input_boq_item_selling_price_${id}`)?.value || "";
-      const sellingPrice = parseFloat(normalizeFormatRupiah(sellingPriceStr).replace(/[^0-9,-]+/g, "").replace(",", ".")) || "";
+      const sellingPrice = parseFloat(normalizeFormatRupiah(sellingPriceStr).replace(/[^0-9,-]+/g, "").replace(",", ".")) || 0;
 
-      const total = (qty || 1) * (freq || 1) * sellingPrice;
+      const total = (qty) * (freq) * sellingPrice;
       grandTotal += total;
 
       const totalEl = this.form.querySelector(`#boq_item_total_${id}`);
@@ -577,7 +577,7 @@ class BoqForm {
         if (this.closeForm) this.closeForm.click();
         this.resetForm();
       } else {
-        showToast("error", res.message || res.errors);
+        showToast("error", res.errors?.proposal_id?.[0] || res.errors || res.message);
       }
     } catch (e) {
       showToast("error", "An error occurred");

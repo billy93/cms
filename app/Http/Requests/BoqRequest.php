@@ -70,7 +70,18 @@ class BoqRequest extends ApiFormRequest
     protected function createRules()
     {
         $rules = [  
-            'proposal_id' => 'nullable|exists:proposals,id',
+            'proposal_id' => [
+                'nullable',
+                'exists:proposals,id',
+                function ($attribute, $value, $fail) {
+                    if ($value) {
+                        $proposal = \App\Models\Proposal::find($value);
+                        if ($proposal && strtolower($proposal->status) !== 'win') {
+                            $fail("The selected proposal must have a 'Win' status.");
+                        }
+                    }
+                }
+            ],
             'items' => ['required','array','min:1']
         ];
         
@@ -95,7 +106,19 @@ class BoqRequest extends ApiFormRequest
     protected function replicateRules()
     {
         return [
-        'proposal_id' => 'nullable|integer|exists:proposals,id',
+        'proposal_id' => [
+            'nullable',
+            'integer',
+            'exists:proposals,id',
+            function ($attribute, $value, $fail) {
+                if ($value) {
+                    $proposal = \App\Models\Proposal::find($value);
+                    if ($proposal && strtolower($proposal->status) !== 'win') {
+                        $fail("The selected proposal must have a 'Win' status.");
+                    }
+                }
+            }
+        ],
         'boq_ids' => 'required|array|min:1',
         'boq_ids.*' => 'exists:boqs,id',
         ];

@@ -38,8 +38,8 @@ class InvoiceRequest extends ApiFormRequest
         return [
             'proposal_id' => ['required', 'exists:proposals,id'],
             'customer_id' => ['required', 'exists:customers,id'],
-            'boq_ids' => ['required_if:type,Partial', 'array'],
-            'boq_ids.*' => ['integer', 'exists:boqs,id'],
+            'item_ids' => ['required_if:type,Partial', 'array'],
+            'item_ids.*' => ['integer', 'exists:proposal_items,id'],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
             'status' => ['required', Rule::in(['Unpaid','Paid','Cancelled'])],

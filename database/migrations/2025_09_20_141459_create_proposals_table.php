@@ -16,31 +16,12 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
             $table->string('code')->unique();
             $table->string('sales_code')->unique()->nullable();
-            // $table->enum('type_of_sales_code', ['FIT', 'Non FIT']);
-            // $table->year('year_of_sales')->nullable();
-            // $table->enum('destination', ['Indonesia', 'Overseas']);
-            // $table->string('city');
-            // $table->enum('activity', [
-            //     'Awarding', 
-            //     'Conference and Seminar', 
-            //     'Exhibitions', 
-            //     'Gala Dinner', 
-            //     'Gathering', 
-            //     'Holidays', 
-            //     'Incentive Trip', 
-            //     'Meeting', 
-            //     'Product Launching', 
-            //     'Shareholders Meeting (RUPS)', 
-            //     'Workshop', 
-            //     'Others'
-            // ]);
-            // $table->date('date_from');
-            // $table->date('date_to');
             $table->text('note')->nullable();
             $table->enum('status', ['Draft', 'Submitted', 'Win', 'Lose', 'Cancelled'])->default('Draft');
+            $table->decimal('total_amount_items', 15, 2)->nullable();
             
             // Pricing Model fields
-            $table->enum('pricing_model', ['A', 'B', 'C'])->nullable();
+            $table->enum('pricing_model', ['A', 'B', 'C', 'D'])->nullable();
             $table->enum('management_fee_type', ['nominal', 'percent'])->default('percent');
             $table->decimal('management_fee', 15, 2)->default(0);
             $table->integer('vat_rate')->default(11);

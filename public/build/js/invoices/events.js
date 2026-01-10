@@ -1,6 +1,6 @@
 class InvoiceForm {
   isInit = true;
-  selectedBoqs = [];
+  selectedItems = [];
   isSubmitting = false;
   mode = "create";
   proposal = {};
@@ -30,43 +30,43 @@ class InvoiceForm {
       this.handleInvoiceTypeChange(target.value);
     }
 
-    if (target.matches("#invoice_canvas_boq_list #select_all_invoice_boq")) {
+    if (target.matches("#invoice_canvas_proposal_item_list #select_all_invoice_proposal_item")) {
       const checked = target.checked;
 
       if (!checked) {
-        this.selectedBoqs = [];
+        this.selectedItems = [];
       }
 
-      document.querySelectorAll('#invoice_canvas_boq_list input.row-check').forEach(el => {
+      document.querySelectorAll('#invoice_canvas_proposal_item_list input.row-check').forEach(el => {
         el.checked = checked;
 
         if (checked) {
-          this.selectedBoqs.push({
+          this.selectedItems.push({
             id: el.value,
-            code: el.dataset.code
+            description: el.dataset.description
           });
         }
       });
 
-      const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
-      this.selectedBoqs = Array.from(unique.values());
+      const unique = new Map(this.selectedItems.map(item => [item.id, item]));
+      this.selectedItems = Array.from(unique.values());
       this.updateSelectedEl();
       this.checkAndAutoChangeType();
-    } else if (target.matches("#invoice_canvas_boq_list input.row-check")) {
+    } else if (target.matches("#invoice_canvas_proposal_item_list input.row-check")) {
       const checked = target.checked;
 
       if (!checked) {
-        document.querySelector("#invoice_canvas_boq_list #select_all_invoice_boq").checked = false;
-        this.selectedBoqs = this.selectedBoqs.filter(obj => obj.id !== target.value)
+        document.querySelector("#invoice_canvas_proposal_item_list #select_all_invoice_proposal_item").checked = false;
+        this.selectedItems = this.selectedItems.filter(obj => obj.id !== target.value)
       } else {
-        this.selectedBoqs.push({
+        this.selectedItems.push({
           id: target.value,
-          code: target.dataset.code
+          description: target.dataset.description
         });
       }
 
-      const unique = new Map(this.selectedBoqs.map(item => [item.id, item]));
-      this.selectedBoqs = Array.from(unique.values());
+      const unique = new Map(this.selectedItems.map(item => [item.id, item]));
+      this.selectedItems = Array.from(unique.values());
       this.updateSelectedEl();
       this.checkAndAutoChangeType();
     }
@@ -75,11 +75,11 @@ class InvoiceForm {
   checkAndAutoChangeType() {
     let isAllSelected = true;
 
-    if (this.proposal?.boqs.length) {
-      const currentBoqs = this.selectedBoqs.map(v => +v.id)
-      const proposalBoqs = this.proposal.boqs.map(v => v.id)
-      proposalBoqs.forEach(b => {
-        if (!currentBoqs.includes(b)) {
+    if (this.proposal?.items?.length) {
+      const currentItems = this.selectedItems.map(v => +v.id)
+      const proposalItems = this.proposal.items.map(v => v.id)
+      proposalItems.forEach(b => {
+        if (!currentItems.includes(b)) {
           isAllSelected = false
         }
       })
@@ -93,40 +93,40 @@ class InvoiceForm {
     }
   }
 
-  getBoqTableHTML() {
-    if (this.data && this.mode === "edit" && this.data.boqs?.length) {
-      this.selectedBoqs = this.data.boqs.map(boq => ({
-        id: boq.id.toString(),
-        code: boq.code
+  getProposalItemTableHTML() {
+    if (this.data && this.mode === "edit" && this.data.items?.length) {
+      this.selectedItems = this.data.items.map(item => ({
+        id: item.id.toString(),
+        description: item.description
       }));
     }
 
-    let selectedBoqEl = "<li class='no-selected-tag'>No Selected BoQ</li>";
+    let selectedProposalEl = "<li class='no-selected-tag'>No Selected Items</li>";
 
-    if (this.selectedBoqs.length) {
-      selectedBoqEl = this.selectedBoqs
-        .map(obj => `<li class="selected-tag">${obj.code}</li>`)
+    if (this.selectedItems.length) {
+      selectedProposalEl = this.selectedItems
+        .map(obj => `<li class="selected-tag">${obj.description}</li>`)
         .join("");
     }
 
     return `
       <div>
         <label class="col-form-label">BoQ(s)</label>
-        <ul id="selected_invoice_canvas_boq" class="mt-2 mb-2">${selectedBoqEl}</ul>
+        <ul id="selected_invoice_canvas_proposal_item" class="mt-2 mb-2">${selectedProposalEl}</ul>
       </div>
       <div style="border: 1px solid #e8e8e8; border-radius: 6px;">
         <div class="table-responsive custom-table">
-          <table class="table" id="invoice_canvas_boq_list">
+          <table class="table" id="invoice_canvas_proposal_item_list">
             <thead class="thead-light">
               <tr>
                 <th class="td-break no-sort" style="position: sticky; z-index: 1;">
                   <label class="checkboxs">
-                    <input type="checkbox" id="select_all_invoice_boq">
+                    <input type="checkbox" id="select_all_invoice_proposal_item">
                     <span class="checkmarks"></span>
                   </label>
                 </th>
-                <th class="td-break" style="width: 100%;">BOQ Code</th>
-                <th class="td-break">Basic Price</th>
+                <th class="td-break" style="width: 100%;">Item Description</th>
+                <th class="td-break">Total Price</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -136,20 +136,20 @@ class InvoiceForm {
           <div class="col-md-6">
             <div class="d-flex align-items-center justify-content-center justify-content-md-start">
               <div class="datatable-info"></div>
-              <div class="invoice-canvas-table-boq-length"></div>
+              <div class="invoice-canvas-table-proposal-item-length"></div>
             </div>
           </div>
           <div class="col-md-6 flex-grow-1">
-            <div class="invoice-canvas-table-boq-paginate"></div>
+            <div class="invoice-canvas-table-proposal-item-paginate"></div>
           </div>
         </div>
       </div>
-      <small id="invoice_boq_error" class="text-danger mt-1" style="display: none;"></small>
+      <small id="invoice_proposal_item_error" class="text-danger mt-1" style="display: none;"></small>
     `;
   }
 
   handleInvoiceTypeChange(type) {
-    const boqSection = document.getElementById("invoice_canvas_boq_section");
+    const proposalItemSection = document.getElementById("invoice_canvas_proposal_item_section");
     const alertInfo = document.getElementById("invoice_type_alert_container");
 
     // Update alert info
@@ -158,25 +158,23 @@ class InvoiceForm {
         alertInfo.innerHTML = `
           <div class="alert alert-info">
             <i class="ti ti-info-circle me-2"></i>
-            Full Invoice: All available BOQs will be automatically included.
+            Full Invoice: All available Items will be automatically included.
           </div>`;
       } else {
         alertInfo.innerHTML = `
           <div class="alert alert-info">
             <i class="ti ti-info-circle me-2"></i>
-            Partial Invoice: Please select specific BOQs to include in this invoice.
+            Partial Invoice: Please select specific Items to include in this invoice.
           </div>`;
       }
     }
 
-    // Clear boq section first to prevent duplicates
-    $(boqSection).empty();
+    $(proposalItemSection).empty();
 
     if (type === "Full") {
-      // Clear selected BOQs
-      this.selectedBoqs = [];
+      this.selectedItems = [];
     } else {
-      $(boqSection).append(this.getBoqTableHTML());
+      $(proposalItemSection).append(this.getProposalItemTableHTML());
       // Initialize DataTable for Partial
       this.initDataTable();
     }
@@ -263,7 +261,14 @@ class InvoiceForm {
       }
     }
 
-    const typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
+    let typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
+
+    // Type A: Only "Full" allowed
+    if (this.proposal?.pricing_model === 'A' || this.data?.proposal?.pricing_model === 'A') {
+      typeOptions = ["Full"];
+      value.type = "Full";
+    }
+
     const selectTypeOptions = typeOptions.map(t => {
       return `<option value="${t}" ${t === value.type ? "selected" : ""}>${t}</option>`;
     });
@@ -333,8 +338,8 @@ class InvoiceForm {
           </div>
         </div>
         <div class="col-md-12 mb-3" id="invoice_type_alert_container"></div>
-        <div class="col-md-12 mb-3" id="invoice_canvas_boq_section">
-          ${value.type === "Full" ? "" : this.getBoqTableHTML()}
+        <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
+          ${value.type === "Full" ? "" : this.getProposalItemTableHTML()}
         </div>
         <div class="col-md-6">
           <div class="mb-3">
@@ -373,27 +378,27 @@ class InvoiceForm {
   }
 
   updateSelectedEl() {
-    const el = this.form.querySelector("#selected_invoice_canvas_boq");
+    const el = this.form.querySelector("#selected_invoice_canvas_proposal_item");
     if (el) {
-      if (this.selectedBoqs.length) {
-        el.innerHTML = this.selectedBoqs
-          .map(obj => `<li class="selected-tag">${obj.code}</li>`)
+      if (this.selectedItems.length) {
+        el.innerHTML = this.selectedItems
+          .map(obj => `<li class="selected-tag">${obj.description}</li>`)
           .join("");
       } else {
-        el.innerHTML = `<li class="no-selected-tag">No Selected BoQ</li>`;
+        el.innerHTML = `<li class="no-selected-tag">No Selected Item</li>`;
       }
     }
   }
 
   initDataTable() {
     const self = this;
-    const $table = $('#invoice_canvas_boq_list');
+    const $table = $('#invoice_canvas_proposal_item_list');
     let data = [];
 
-    if (this.proposal && this.proposal.boqs && this.mode === "create") {
-      data = this.proposal?.boqs?.filter(boq => !boq.invoice_id);
-    } else if (this.data?.proposal?.boqs && this.mode === "edit") {
-      data = this.data.proposal.boqs.filter(boq => !boq.invoice_id || this.data.boqs.some(b => b.id === boq.id));
+    if (this.proposal && this.proposal.items && this.mode === "create") {
+      data = this.proposal?.items?.filter(item => !item.invoice_id);
+    } else if (this.data?.proposal?.items && this.mode === "edit") {
+      data = this.data.proposal.items.filter(item => !item.invoice_id || this.data.items.some(b => b.id === item.id));
     }
 
     // 🔹 Kalau DataTable sudah ada → cuma update data-nya
@@ -420,7 +425,7 @@ class InvoiceForm {
         searchPlaceholder: "Search",
         info: "_START_ - _END_ of _TOTAL_ items",
         lengthMenu: "Show _MENU_ entries",
-        emptyTable: "No BOQs available for billing.",
+        emptyTable: "No Items available for billing.",
         paginate: {
           next: 'Next <i class="fa fa-angle-right"></i>',
           previous: '<i class="fa fa-angle-left"></i> Prev'
@@ -428,26 +433,26 @@ class InvoiceForm {
       },
       initComplete: function (settings, json) {
         const $wrapper = $(settings.nTable).closest('.dataTables_wrapper');
-        $wrapper.find('.dataTables_paginate').appendTo('.invoice-canvas-table-boq-paginate');
-        $wrapper.find('.dataTables_length').appendTo('.invoice-canvas-table-boq-length');
+        $wrapper.find('.dataTables_paginate').appendTo('.invoice-canvas-table-proposal-item-paginate');
+        $wrapper.find('.dataTables_length').appendTo('.invoice-canvas-table-proposal-item-length');
       },
       data,
       columns: [
         {
           data: 'id',
           render: function (data, type, row) {
-            const checked = self.selectedBoqs.some(obj => +obj.id === data);
+            const checked = self.selectedItems.some(obj => +obj.id === data);
             return `
             <label class="checkboxs">
-              <input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-code="${row.code}">
+              <input type="checkbox" class="row-check" ${checked ? "checked" : ""} value="${data}" data-description="${row.description}">
               <span class="checkmarks"></span>
             </label>
           `;
           }
         },
-        { data: 'code' },
+        { data: 'description' },
         {
-          data: 'total_amount_items',
+          data: 'total_price',
           render: data => formatRupiahDisplay(data.toString().replace(".", ","))
         },
       ]
@@ -519,7 +524,7 @@ class InvoiceForm {
 
   resetForm() {
     this.isInit = true;
-    this.selectedBoqs = [];
+    this.selectedItems = [];
     this.isSubmitting = false;
     this.mode = "create";
     this.proposal = {};
@@ -617,16 +622,16 @@ class InvoiceForm {
       }
     });
 
-    // Only send boq_ids for Partial invoice type
+    // Only send item_ids for Partial invoice type
     if (payload.type === "Partial") {
-      payload.boq_ids = this.selectedBoqs.map(obj => obj.id);
+      payload.item_ids = this.selectedItems.map(obj => obj.id);
 
-      // Validate BOQ selection for Partial type
-      if (!payload.boq_ids.length) {
-        this.errors["invoice_boq_error"] = "Please select at least one BOQ for partial invoice.";
+      // Validate Item selection for Partial type
+      if (!payload.item_ids.length) {
+        this.errors["invoice_proposal_item_error"] = "Please select at least one Item for partial invoice.";
       }
     }
-    // For Full type, don't send boq_ids - backend will auto-select all
+    // For Full type, don't send item_ids - backend will auto-select all
 
     return payload;
   }
@@ -638,7 +643,6 @@ class InvoiceForm {
 
     const payload = this.validateFields();
     const errKeys = Object.keys(this.errors);
-    console.log("IF", payload);
 
     if (errKeys.length) {
       errKeys.forEach(v => {
@@ -680,7 +684,7 @@ class InvoiceForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
         } else {
-          showToast("error", `${result.errors?.boq_ids || result.message}`);
+          showToast("error", `${result.errors?.item_ids || result.message}`);
         }
       } catch (err) {
         showToast("error", 'An error occurred while creating Invoice.');
@@ -713,7 +717,7 @@ class InvoiceForm {
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
         } else {
-          showToast("error", `${result.errors?.boq_ids || result.message}`);
+          showToast("error", `${result.errors?.item_ids || result.message}`);
         }
       } catch (err) {
         showToast("error", 'An error occurred while creating Invoice.');
@@ -755,6 +759,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (resopnse.ok && resJson.success) {
             const proposal = resJson.data;
+
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
             await INVOICE_FORM.init("create", proposal);
@@ -813,11 +818,9 @@ document.addEventListener("DOMContentLoaded", () => {
           ) {
             const invoice = invoiceJson.data;
             const proposal = proposalJson.data;
-
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
             await INVOICE_FORM.init("edit", proposal, invoice);
-
           } else {
             if (!invoiceRes.ok || !invoiceJson.success) {
               showToast("error", invoiceJson?.message || "Failed to fetch invoice data.");
@@ -828,8 +831,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
         } catch (error) {
-          console.log(error);
-
           showToast("error", "An error occurred while retrieving invoice data for invoice creation.");
         } finally {
           IS_FETCHING = false;

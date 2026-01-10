@@ -58,15 +58,15 @@ class ProposalController extends Controller
                     return $items ? "<ul>{$items}</ul>" : '-';
                 })
                 ->addColumn('generate_invoice', function($p) {
-                    if ($p->status !== 'Win') {
+                    if (strtolower($p->status) !== 'win') {
                         return '-';
                     }
 
-                    if ($p->boqs->isEmpty()) {
-                        return '-';
-                    }
+                    // if ($p->items->isEmpty()) {
+                    //     return '-';
+                    // }
 
-                    if($p->boqs->every(fn($boq) => $boq->invoice_id !== null)) {
+                    if($p->items->every(fn($item) => $item->invoice_id !== null)) {
                         return '-';
                     }
 
@@ -82,7 +82,7 @@ class ProposalController extends Controller
                     ';
                 })
                 ->addColumn('actions', function ($p) {
-                    if ($p->status === 'Win') {
+                    if (strtolower($p->status) === 'win') {
                         return '
                             <div class="dropdown table-action">
                                 <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
@@ -176,7 +176,7 @@ class ProposalController extends Controller
                 )
                 ->addColumn('grand_total', fn($boq) => formatRupiah($boq->total_amount_items))
                 ->addColumn('actions', function ($boq) {
-                    if ($boq->proposal && $boq->proposal->status === 'Win') {
+                    if ($boq->proposal && strtolower($boq->proposal->status) === 'win') {
                         return '
                             <div class="dropdown table-action">
                                 <a href="#" class="action-icon" data-bs-toggle="dropdown" aria-expanded="false">
@@ -335,15 +335,7 @@ class ProposalController extends Controller
     {
         try {
             // Eager load project.customer instead of customer
-            $proposal = Proposal::with(['project.customer', 'boqs.items'])->findOrFail($proposal_id);
-            
-            // Check if pricing model is set
-            if (empty($proposal->pricing_model)) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Pricing Model has not been selected for this proposal. Please configure it explicitly before generating the PDF.'
-                ], 400);
-            }
+            $proposal = Proposal::with(['project.customer', 'items.product', 'items.productPriceVersion'])->findOrFail($proposal_id);
 
             // Get Default Proposal Template
             $template = \App\Models\PdfTemplate::where('type', 'proposal')
@@ -362,85 +354,95 @@ class ProposalController extends Controller
             }
 
             // Start PDF Generation Logic
-            $boqItemsHtml = '';
+            $proposalItemsHtml = '';
             $totalsRowsHtml = '';
             
             // Calculate basic totals
-            $totalAmountItems = $proposal->boqs->sum('total_amount_items');
+            $sortedItems = $proposal->items->sortBy('id');
+            $totalAmountItems = $sortedItems->sum('total_price');
             $pricingModel = $proposal->pricing_model; // A, B, C, D
 
             // Logic for Item Listing
-            if ($pricingModel === 'A') {
+            if ($pricingModel === 'XXX') {
                 // Type A: Summary Only
                 $description = $proposal->pricing_model_description ?? 'Project Implementation';
 
-                $boqItemsHtml .= '<tr>';
-                $boqItemsHtml .= '<td class="pdf-text-center">1</td>';
-                $boqItemsHtml .= '<td>' . $description . '</td>';
-                $boqItemsHtml .= '<td class="nowrap">-</td>';
-                $boqItemsHtml .= '<td class="nowrap">-</td>';
-                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
-                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
-                $boqItemsHtml .= '</tr>';
+                $proposalItemsHtml .= '<tr>';
+                $proposalItemsHtml .= '<td class="pdf-text-center">1</td>';
+                $proposalItemsHtml .= '<td>' . $description . '</td>';
+                $proposalItemsHtml .= '<td class="nowrap">-</td>';
+                $proposalItemsHtml .= '<td class="nowrap">-</td>';
+                $proposalItemsHtml .= '<td class="nowrap">-</td>';
+                $proposalItemsHtml .= '<td class="nowrap">-</td>';
+                $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($totalAmountItems) . '</td>';
+                $proposalItemsHtml .= '</tr>';
 
             } else {
-                // Type B/Other: Detailed Listing with Grouping
-                $groupedByHeader = $proposal->boqs->groupBy('header');
+                // Type B/C/D: Detailed Listing with Grouping from Proposal Items
+                $groupedByHeader = $sortedItems->groupBy('header');
                 
                 // Sort headers: Empty header comes first
-                $sortedHeaders = $groupedByHeader->sortBy(function ($boqs, $key) {
+                $sortedHeaders = $groupedByHeader->sortBy(function ($items, $key) {
                     return empty($key) ? 0 : 1;
                 }, SORT_NUMERIC);
 
                 $headerIndex = 0;
-                foreach ($sortedHeaders as $header => $boqsWithSameHeader) {
+                foreach ($sortedHeaders as $header => $itemsWithSameHeader) {
                     
                     // IF Header exists
                     if (!empty($header)) {
                         $headerLabel = chr(65 + $headerIndex); // A, B, C...
-                        $headerTotal = $boqsWithSameHeader->sum('total_amount_items');
+                        $headerTotal = $itemsWithSameHeader->sum('total_price');
                         $headerName = $header;
 
-                        // Header Row
-                        $boqItemsHtml .= '<tr class="boq-header">';
-                        $boqItemsHtml .= '<td class="pdf-text-center">' . $headerLabel . '</td>';
-                        $boqItemsHtml .= '<td colspan="4">' . strtoupper($headerName) . '</td>';
-                        $boqItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($headerTotal) . '</td>';
-                        $boqItemsHtml .= '</tr>';
+                        $proposalItemsHtml .= '<tr class="boq-header">';
+                        $proposalItemsHtml .= '<td class="pdf-text-center">' . $headerLabel . '</td>';
+                        $proposalItemsHtml .= '<td colspan="6">' . strtoupper($headerName) . '</td>';
+                        $proposalItemsHtml .= '<td class="pdf-text-right">' . formatRupiah($headerTotal) . '</td>';
+                        $proposalItemsHtml .= '</tr>';
 
                         // Group by Subheader
-                        $groupedBySubheader = $boqsWithSameHeader->groupBy('subheader');
+                        $groupedBySubheader = $itemsWithSameHeader->groupBy('subheader');
                         
-                        // Sort subheaders: Empty subheader comes first
-                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($boqs, $key) {
+                        // Sort subheaders
+                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($items, $key) {
                             return empty($key) ? 0 : 1; 
                         }, SORT_NUMERIC);
                         
                         $subheaderIndex = 1;
-                        foreach ($sortedSubheaders as $subheader => $boqsWithSameSubheader) {
+                        foreach ($sortedSubheaders as $subheader => $itemsWithSameSubheader) {
                             
                             // Show Subheader Row if $subheader is not empty
                             if (!empty($subheader)) {
-                                 $boqItemsHtml .= '<tr class="boq-subheader">';
-                                 $boqItemsHtml .= '<td class="pdf-text-center">'. $headerLabel . '.' . $subheaderIndex .'</td>';
-                                 $boqItemsHtml .= '<td colspan="5">' . $subheader . '</td>';
-                                 $boqItemsHtml .= '</tr>';
+                                 $proposalItemsHtml .= '<tr class="boq-subheader">';
+                                 $proposalItemsHtml .= '<td class="pdf-text-center">'. $headerLabel . '.' . $subheaderIndex .'</td>';
+                                 $proposalItemsHtml .= '<td colspan="7">' . $subheader . '</td>'; // Colspan 8-1 = 7
+                                 $proposalItemsHtml .= '</tr>';
                                  $subheaderIndex++;
                             }
 
                             $itemIndex = 1; 
-                            foreach ($boqsWithSameSubheader as $boq) {
-                                foreach ($boq->items as $item) {
-                                    $boqItemsHtml .= '<tr>';
-                                    $boqItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
-                                    $boqItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
-                                    $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
-                                    $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
-                                    $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
-                                    $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
-                                    $boqItemsHtml .= '</tr>';
-                                    $itemIndex++;
-                                }
+                            foreach ($itemsWithSameSubheader as $item) {
+                                $proposalItemsHtml .= '<tr>';
+                                $proposalItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                $proposalItemsHtml .= '<td>' . ($item->description ?: ($item->product->name ?? '-')) . '</td>'; 
+                                
+                                // Map Title 1 - 4
+                                $t1 = $item->title1_value ? ($item->title1_value . ' ' . ($item->title1_key ?? '')) : '-';
+                                $t2 = $item->title2_value ? ($item->title2_value . ' ' . ($item->title2_key ?? '')) : '-';
+                                $t3 = $item->title3_value ? ($item->title3_value . ' ' . ($item->title3_key ?? '')) : '-';
+                                $t4 = $item->title4_value ? ($item->title4_value . ' ' . ($item->title4_key ?? '')) : '-';
+
+                                $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t1 . '</td>';
+                                $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t2 . '</td>';
+                                $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t3 . '</td>';
+                                $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t4 . '</td>';
+                                
+                                $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                $proposalItemsHtml .= '</tr>';
+                                $itemIndex++;
                             }
                         }
                         $headerIndex++;
@@ -448,24 +450,31 @@ class ProposalController extends Controller
                     } else {
                         // NO Header (Empty) -> List Items Directly at TOP
                         $itemIndex = 1;
-                        foreach ($boqsWithSameHeader as $boq) {
-                            foreach ($boq->items as $item) {
-                                $boqItemsHtml .= '<tr>';
-                                $boqItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
-                                $boqItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
-                                $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
-                                $boqItemsHtml .= '<td class="pdf-text-center nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
-                                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
-                                $boqItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
-                                $boqItemsHtml .= '</tr>';
-                                $itemIndex++;
-                            }
-                         }
+                        foreach ($itemsWithSameHeader as $item) {
+                            $proposalItemsHtml .= '<tr>';
+                            $proposalItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                            $proposalItemsHtml .= '<td>' . ($item->description ?: ($item->product->name ?? '-')) . '</td>';
+                            
+                            $t1 = $item->title1_value ? ($item->title1_value . ' ' . ($item->title1_key ?? '')) : '-';
+                            $t2 = $item->title2_value ? ($item->title2_value . ' ' . ($item->title2_key ?? '')) : '-';
+                            $t3 = $item->title3_value ? ($item->title3_value . ' ' . ($item->title3_key ?? '')) : '-';
+                            $t4 = $item->title4_value ? ($item->title4_value . ' ' . ($item->title4_key ?? '')) : '-';
+
+                            $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t1 . '</td>';
+                            $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t2 . '</td>';
+                            $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t3 . '</td>';
+                            $proposalItemsHtml .= '<td class="pdf-text-center nowrap">' . $t4 . '</td>';
+                            
+                            $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                            $proposalItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                            $proposalItemsHtml .= '</tr>';
+                            $itemIndex++;
+                        }
                     }
                 }
 
                 if ($groupedByHeader->isEmpty()) {
-                   $boqItemsHtml .= '<tr><td colspan="6" class="pdf-text-center">No Items Found</td></tr>';
+                   $proposalItemsHtml .= '<tr><td colspan="8" class="pdf-text-center">No Items Found</td></tr>';
                 }
             }
 
@@ -482,23 +491,24 @@ class ProposalController extends Controller
                 $managementFeeAmount = $proposal->management_fee;
             }
             // If total items is 0, avoid weirdness? Usually proposal fee is fixed or percent.
-            $managementFeeAmount = round($managementFeeAmount, 2);
+            $managementFeeAmount = $managementFeeAmount;
 
             // Sales Amount
-            $salesAmount = round($totalAmountItems + $managementFeeAmount, 2);
+            $salesAmount = $totalAmountItems + $managementFeeAmount;
 
             // VAT
-            $vatAmount = round(($salesAmount * $proposal->vat_rate) / 100, 2);
+            $vatAmount = ($salesAmount * $proposal->vat_rate) / 100;
 
             // Grand Total
             $grandTotal = round($salesAmount + $vatAmount, 2);
+
 
 
             // --- TOTALS HTML GENERATION ---
             
             // 1. Basic Price Sum
             $totalsRowsHtml .= '<tr>';
-            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Basic Price Sum</td>';
+            $totalsRowsHtml .= '<td colspan="7" class="pdf-totals-label pdf-text-right pr-80">Basic Price Sum</td>';
             $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($totalAmountItems) . '</td>';
             $totalsRowsHtml .= '</tr>';
             
@@ -508,25 +518,25 @@ class ProposalController extends Controller
                 $feeLabel .= " ({$proposal->management_fee}%)";
             }
             $totalsRowsHtml .= '<tr>';
-            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">' . $feeLabel . '</td>';
+            $totalsRowsHtml .= '<td colspan="7" class="pdf-totals-label pdf-text-right pr-80">' . $feeLabel . '</td>';
             $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($managementFeeAmount) . '</td>';
             $totalsRowsHtml .= '</tr>';
             
             // 3. Sales Amount
             $totalsRowsHtml .= '<tr>';
-            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">Sales Amount</td>';
+            $totalsRowsHtml .= '<td colspan="7" class="pdf-totals-label pdf-text-right pr-80">Sales Amount</td>';
             $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($salesAmount) . '</td>';
             $totalsRowsHtml .= '</tr>';
             
             // 4. VAT
             $totalsRowsHtml .= '<tr>';
-            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pr-80">VAT (' . $proposal->vat_rate . '%)</td>';
+            $totalsRowsHtml .= '<td colspan="7" class="pdf-totals-label pdf-text-right pr-80">VAT (' . $proposal->vat_rate . '%)</td>';
             $totalsRowsHtml .= '<td class="pdf-totals-value">' . formatRupiah($vatAmount) . '</td>';
             $totalsRowsHtml .= '</tr>';
             
             // 5. Grand Total
             $totalsRowsHtml .= '<tr>';
-            $totalsRowsHtml .= '<td colspan="5" class="pdf-totals-label pdf-text-right pdf-grand-total pr-80">Total Amount</td>';
+            $totalsRowsHtml .= '<td colspan="7" class="pdf-totals-label pdf-text-right pdf-grand-total pr-80">Total Amount</td>';
             $totalsRowsHtml .= '<td class="pdf-totals-value pdf-grand-total">' . formatRupiah($grandTotal) . '</td>';
             $totalsRowsHtml .= '</tr>';
 
@@ -557,7 +567,7 @@ class ProposalController extends Controller
                 'valid_until' => $proposal->valid_until ? \Carbon\Carbon::parse($proposal->valid_until)->format('d F Y') : '-',
                 'sales_code' => $proposal->sales_code ?? '-',
                 'terms_and_conditions' => $proposal->terms_and_conditions ?? '-',
-                'boq_items' => $boqItemsHtml,
+                'proposal_items' => $proposalItemsHtml,
                 'totals_rows' => $totalsRowsHtml,
                 'logo_path' => $logoData,
             ];

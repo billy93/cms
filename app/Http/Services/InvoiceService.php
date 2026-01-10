@@ -17,7 +17,7 @@ class InvoiceService
     public function createInvoice(array $data)
     {
         return DB::transaction(function () use ( $data) {
-            $proposal = Proposal::with(['project', 'boqs'])->find($data['proposal_id']);
+            $proposal = Proposal::with(['project', 'items'])->find($data['proposal_id']);
 
             if (!$proposal) {
                 throw new Exception("Proposal with ID {$data['proposal_id']} not found.");
@@ -43,29 +43,29 @@ class InvoiceService
                     throw new Exception("Cannot create a 'Full' invoice because other invoices already exist for this proposal.");
                 }
                 
-                // Verify ALL proposal BOQs are available (invoice_id is null)
-                $unavailableBoqs = $proposal->boqs->whereNotNull('invoice_id')->count();
-                if ($unavailableBoqs > 0) {
-                    throw new Exception("Cannot create a 'Full' invoice because some BOQs are already invoiced.");
+                // Verify ALL proposal items are available (invoice_id is null)
+                $unavailableItems = $proposal->items->whereNotNull('invoice_id')->count();
+                if ($unavailableItems > 0) {
+                    throw new Exception("Cannot create a 'Full' invoice because some items are already invoiced.");
                 }
 
-                // If Full, force select ALL proposal BOQs
-                $data['boq_ids'] = $proposal->boqs->pluck('id')->toArray();
+                // If Full, force select ALL proposal items
+                $data['item_ids'] = $proposal->items->pluck('id')->toArray();
             } 
 
-            // Ambil hanya BOQ dari proposal yang belum diinvoice
-            $availableBoqIds = $proposal->boqs
+            // Ambil hanya ITEMS dari proposal yang belum diinvoice
+            $availableItemIds = $proposal->items
                 ->whereNull('invoice_id')
                 ->pluck('id')
                 ->toArray();
 
-            if (empty($availableBoqIds)) {
-                throw new Exception("No available BOQs to be billed for this proposal.");
+            if (empty($availableItemIds)) {
+                throw new Exception("No available items to be billed for this proposal.");
             }
          
-             // Pastikan semua BOQ yang dipilih valid
-            if (array_diff($data['boq_ids'], $availableBoqIds)) {
-                throw new Exception("Some selected BOQs are not available for invoicing in this proposal.");
+             // Pastikan semua item yang dipilih valid
+            if (array_diff($data['item_ids'], $availableItemIds)) {
+                throw new Exception("Some selected items are not available for invoicing in this proposal.");
             }
 
             $customer = Customer::find($data['customer_id']);
@@ -77,9 +77,9 @@ class InvoiceService
             // Generate invoice code
             $invoiceCode = Invoice::generateCode($proposal); 
 
-            // Calculate amounts from selected BOQs and proposal
-            $selectedBoqs = $proposal->boqs->whereIn('id', $data['boq_ids']);
-            $totalAmount = $selectedBoqs->sum('total_amount_items');
+            // Calculate amounts from selected items and proposal
+            $selectedItems = $proposal->items->whereIn('id', $data['item_ids']);
+            $totalAmount = $selectedItems->sum('total_price');
             
             // Calculate management fee from proposal (proportional for partial invoices)
             // Calculate amounts using shared logic
@@ -108,18 +108,18 @@ class InvoiceService
                 'invoice_amount'      => $invoiceAmount,
                 'note'                => $data['note'] ?? null    
             ]);
-            // Link BOQs ke invoice
-            Boq::whereIn('id', $data['boq_ids'])
+            // Link items ke invoice
+            \App\Models\ProposalItem::whereIn('id', $data['item_ids'])
                 ->update(['invoice_id' => $invoice->id]);
 
-            return $invoice->fresh(['proposal', 'customer', 'boqs']);
+            return $invoice->fresh(['proposal', 'customer', 'items']);
         });
     }
 
     
     public function getInvoiceById($id)
     {
-        $invoice = Invoice::with(['proposal.project', 'proposal.boqs', 'customer', 'boqs'] )->find($id);
+        $invoice = Invoice::with(['proposal.project', 'proposal.items', 'customer', 'items'] )->find($id);
         if (!$invoice) {
             throw new Exception("Invoice with ID {$id} not found");
         }
@@ -129,8 +129,8 @@ class InvoiceService
     public function updateInvoice(array $data)
     {
         return DB::transaction(function () use ( $data) {
-            $invoice = Invoice::with(['boqs'])->find($data['id']);
-            $proposal = Proposal::with(['boqs'])->find($data['proposal_id']);
+            $invoice = Invoice::with(['items'])->find($data['id']);
+            $proposal = Proposal::with(['items'])->find($data['proposal_id']);
 
             if (!$invoice) {
                 throw new Exception("Invoice with ID {$data['id']} not found.");
@@ -157,32 +157,32 @@ class InvoiceService
                     throw new Exception("Cannot set invoice type to 'Full' because other invoices already exist for this proposal.");
                 }
 
-                // Verify ALL proposal BOQs are available (invoice_id is null OR owned by current invoice)
-                $unavailableBoqs = $proposal->boqs
+                // Verify ALL proposal items are available (invoice_id is null OR owned by current invoice)
+                $unavailableItems = $proposal->items
                     ->filter(fn($b) => $b->invoice_id !== null && $b->invoice_id !== $invoice->id)
                     ->count();
 
-                if ($unavailableBoqs > 0) {
-                    throw new Exception("Cannot set 'Full' type because some BOQs are billed in other invoices.");
+                if ($unavailableItems > 0) {
+                    throw new Exception("Cannot set 'Full' type because some items are billed in other invoices.");
                 }
 
-                 // If Full, force select ALL proposal BOQs
-                 $data['boq_ids'] = $proposal->boqs->pluck('id')->toArray();
+                // If Full, force select ALL proposal items
+                 $data['item_ids'] = $proposal->items->pluck('id')->toArray();
             }
 
-            // Ambil hanya BOQ dari proposal yang belum diinvoice
-            $availableBoqIds = $proposal->boqs
-                ->filter(fn($boq) => !$boq->invoice_id || $boq->invoice_id === $invoice->id)
+            // Ambil hanya ITEMS dari proposal yang belum diinvoice
+            $availableItemIds = $proposal->items
+                ->filter(fn($item) => !$item->invoice_id || $item->invoice_id === $invoice->id)
                 ->pluck('id')
                 ->toArray();
 
-            if (empty($availableBoqIds)) {
-                throw new Exception("No available BOQs to be billed for this proposal.");
+            if (empty($availableItemIds)) {
+                throw new Exception("No available items to be billed for this proposal.");
             }
          
-             // Pastikan semua BOQ yang dipilih valid
-            if (array_diff($data['boq_ids'], $availableBoqIds)) {
-                throw new Exception("Some selected BOQs are not available for invoicing in this proposal.");
+             // Pastikan semua item yang dipilih valid
+            if (array_diff($data['item_ids'], $availableItemIds)) {
+                throw new Exception("Some selected items are not available for invoicing in this proposal.");
             } 
 
             $customer = Customer::find($data['customer_id']);
@@ -191,9 +191,9 @@ class InvoiceService
                 throw new Exception("Customer with ID {$data['customer_id']} not found.");
             }
             
-            // Calculate amounts from selected BOQs and proposal
-            $selectedBoqs = $proposal->boqs->whereIn('id', $data['boq_ids']);
-            $totalAmount = $selectedBoqs->sum('total_amount_items');
+            // Calculate amounts from selected items and proposal
+            $selectedItems = $proposal->items->whereIn('id', $data['item_ids']);
+            $totalAmount = $selectedItems->sum('total_price');
             
             // Calculate amounts using shared logic
             $amounts = $this->calculateInvoiceAmounts($proposal, $totalAmount);
@@ -218,13 +218,13 @@ class InvoiceService
                 'note'                => $data['note'] ?? null,
             ]);
             
-            // --- Reset semua BOQ lama ---
-            Boq::where('invoice_id', $invoice->id)->update(['invoice_id' => null]);
+            // --- Reset semua items lama ---
+            \App\Models\ProposalItem::where('invoice_id', $invoice->id)->update(['invoice_id' => null]);
 
-            // --- Relink BOQ baru ---
-            Boq::whereIn('id', $data['boq_ids'])->update(['invoice_id' => $invoice->id]);
+            // --- Relink items baru ---
+            \App\Models\ProposalItem::whereIn('id', $data['item_ids'])->update(['invoice_id' => $invoice->id]);
 
-            return $invoice->fresh(['proposal', 'customer', 'boqs']);
+            return $invoice->fresh(['proposal', 'customer', 'items']);
         });
     }
     
@@ -254,8 +254,8 @@ class InvoiceService
             // Percent: automatically proportional
             $managementFeeAmount = ($totalAmount * $managementFee) / 100;
         } else {
-            // Nominal: calculate proportion based on selected BOQ vs total BOQ
-            $totalProposalAmount = (float) $proposal->boqs->sum('total_amount_items');
+            // Nominal: calculate proportion based on selected items vs total items
+            $totalProposalAmount = (float) $proposal->items->sum('total_price');
             
             if ($totalProposalAmount > 0) {
                 // Prevent division by zero and weird infinite numbers
@@ -268,14 +268,14 @@ class InvoiceService
             }
         }
         
-        $managementFeeAmount = round($managementFeeAmount, 2);
+        $managementFeeAmount = $managementFeeAmount;
         
         // Sales amount = total_amount + management_fee
-        $salesAmount = round($totalAmount + $managementFeeAmount, 2);
+        $salesAmount = $totalAmount + $managementFeeAmount;
 
         // Calculate VAT from proposal vat_rate
         $vatRate = (float) $proposal->vat_rate;
-        $vatAmount = round(($salesAmount * $vatRate) / 100, 2);
+        $vatAmount = ($salesAmount * $vatRate) / 100;
         
         // Invoice amount = sales_amount + vat_amount
         $invoiceAmount = round($salesAmount + $vatAmount, 2);

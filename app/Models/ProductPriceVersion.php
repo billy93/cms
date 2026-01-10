@@ -40,6 +40,11 @@ class ProductPriceVersion extends Model
         return $this->hasMany(BoqItem::class, 'product_price_version_id');
     }
 
+    public function proposalItems(): HasMany
+    {
+        return $this->hasMany(ProposalItem::class, 'product_price_version_id');
+    }
+
     /**
      * Scope: Get only active versions
      */

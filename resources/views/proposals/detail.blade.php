@@ -3,8 +3,6 @@
 @section('content')
     <!-- Page Wrapper -->
     <div class="page-wrapper">
-        <!-- Used on proposal_2_script -->
-        <div id="boq-route" data-url="{{ route('boqs.index') }}" style="display: none;"></div>
         <div class="content">
 
             <div class="row">
@@ -42,167 +40,49 @@
                         </div>
                     </div>
 
-                    <!-- Pricing Model Configuration Section -->
-                    <div id="pricing_model_section" class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Pricing Model</h5>
-                            @if($proposal->status !== "Win")
-                                <div class="d-flex gap-2">
-                                    <a 
-                                        href="javascript:void(0);" 
-                                        id="c_pricing_model_configure_btn" 
-                                        class="btn btn-primary"
-                                        data-url="{{ route('proposals.read', ['proposal_id' => $proposal->id]) }}"
-                                    >
-                                        <i class="ti ti-settings me-2"></i>Configure
-                                    </a>
-                                </div>
-                            @endif
+                    <!-- Pricing Info Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Pricing Details</h5>
                         </div>
-                        <div class="card-body" id="pricing_model_info">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <strong>Pricing Model</strong>
-                                    <p class="mb-0">{{ $proposal->pricing_model ? 'Type ' . $proposal->pricing_model : 'Not configured' }}</p>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Management Fee</strong>
-                                    <p class="mb-0">
-                                        @if($proposal->management_fee_type === 'percent')
-                                            {{ formatRupiah($proposal->management_fee) }}%
-                                        @else
-                                            Rp. {{ formatRupiah($proposal->management_fee) }}
-                                        @endif
-                                    </p>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>VAT Rate</strong>
-                                    <p class="mb-0">{{ $proposal->vat_rate ?? 11 }}%</p>
-                                </div>
+                        <style>
+                            #pricing_table tfoot td {
+                                color: #6f6f6f;
+                                background-color: #fafafa;
+                                font-size: 14px;
+                            }
+                        </style>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered custom-table" id="pricing_table">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Description</th>
+                                            <th>Title 1</th>
+                                            <th>Title 2</th>
+                                            <th>Title 3</th>
+                                            <th>Title 4</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Total Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pricing_items_body">
+                                        <!-- Items loaded via JS -->
+                                    </tbody>
+                                    <tfoot id="pricing_totals_foot">
+                                        <!-- Totals loaded via JS -->
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-                    <!-- BOQ Section -->
-                    <div id="boqs_section" class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">BOQ Information</h5>
-                            @if($proposal->status !== "Win")
-                                <div class="d-flex gap-2">
-                                    <a  
-                                        class="btn btn-outline-primary" 
-                                        id="c_boq_bulk_unbind_btn" 
-                                        href="javascript:void(0);" 
-                                        data-url="{{ route('boqs.unbindProposal') }}"
-                                        style="display: none;"
-                                    >
-                                        <i class="ti ti-unlink me-2"></i> Unbind
-                                    </a><a  
-                                        class="btn btn-outline-primary" 
-                                        id="c_boq_bulk_delete_btn" 
-                                        href="javascript:void(0);" 
-                                        data-url="{{ route('boqs.bulkDelete') }}"
-                                        style="display: none;"
-                                    >
-                                        <i class="ti ti-trash me-2"></i> Delete
-                                    </a>
-                                    <a 
-                                        href="javascript:void(0);" 
-                                        id="c_append_boq_btn" 
-                                        class="btn btn-outline-primary" 
-                                    >
-                                        <i class="ti ti-square-rounded-plus me-2"></i>Add Existing BoQ
-                                    </a>
-                                    <a 
-                                        href="javascript:void(0);" 
-                                        id="c_boq_create_btn" 
-                                        class="btn btn-primary" 
-                                    >
-                                        <i class="ti ti-square-rounded-plus me-2"></i>Add New BoQ
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="card-body">
-							<div class="table-responsive custom-table">
-                                <table class="table" id="boq_list" data-url="{{ route('proposals.boqs', $proposal->id) }}">
-                                    <style>
-                                        #boq_list tr > th, 
-                                        #boq_list tr > td {
-                                            padding: 12px 30px;
-                                        } 
-                                        #boq_list tr > th:first-child, 
-                                        #boq_list tr > td:first-child {
-                                            left: 0;
-                                            padding: 12px;
-                                        }
-                                        #boq_list th:nth-child(2), 
-                                        #boq_list td:nth-child(2) {
-                                            padding-left: 0;
-                                        }
-										#boq_list tbody tr td {
-											vertical-align: baseline;
-										}
-										#boq_list thead tr th {
-											text-align: center !important;
-										}
-										#boq_list .td-break {
-											text-align: left !important;
-											word-break: auto-phrase;
-											white-space: unset !important;
-										}
-										.desc-col {
-											max-width: 300px
-										}
-									</style>
-									<thead class="thead-light">
-                                        <tr>
-                                            <th class="td-break no-sort" rowspan="2" style="position: sticky; z-index: 1;">
-                                                <label class="checkboxs">
-                                                    <input type="checkbox" id="select_all_boq_list">
-                                                    <span class="checkmarks"></span>
-                                                </label>
-                                            </th>
-                                            <th class="td-break" rowspan="2">BOQ Code</th>
-                                            <th class="td-break" rowspan="2">Sales Code</th>
-                                            <th colspan="6" class="text-center">Items</th>
-                                            <th class="td-break" rowspan="2">Grand Total</th>
-                                            <th class="td-break" rowspan="2" class="no-sort">Action</th>
-                                        </tr>
-                                        <tr>
-                                            <th>Description</th>
-                                            <th class="text-center">Qty</th>
-                                            <th class="text-center">Freq</th>
-                                            <th class="text-end">Unit Price</th>
-                                            <th class="text-end">Selling Price</th>
-                                            <th class="text-end">Total Price</th> 
-                                        </tr>
-									</thead>
-									<tbody>
-                                        <!-- Data akan di-load via AJAX DataTable -->
-									</tbody>
-								</table>
-							</div>
-							<div class="row align-items-center mt-2" style="row-gap: 1em;">
-								<div class="col-md-6">
-									<div class="d-flex align-items-center justify-content-center justify-content-md-start">
-										<div class="datatable-info"></div>
-										<div class="table-boq-length"></div>
-									</div>
-								</div>
-								<div class="col-md-6 flex-grow-1">
-									<div class="table-boq-paginate"></div>
-								</div>
-							</div>
-						</div>
-                    </div>
-
-
+                    
                     <!-- Invoices Info Card -->
                     <div id="invoices_section" class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Invoice Information</h5>
-                            @if($proposal->status === "Win" && $proposal->boqs->some(fn($boq) => $boq->invoice_id === null))
+                            @if(strtolower($proposal->status) === "win" && $proposal->items->contains(fn($item) => $item->invoice_id === null))
                                 <div class="d-flex gap-2">
                                     <a 
                                         href="javascript:void(0);" 
@@ -217,6 +97,8 @@
                         <style>
                             #invoice_info tfoot td {
                                 color: #6f6f6f;
+                                background-color: #fafafa;
+                                font-size: 14px;
                             }
                         </style>
                         <div class="card-body" id="invoice_info">
@@ -229,12 +111,7 @@
     </div>
     <!-- /Page Wrapper -->
 
-    @if($proposal->status !== "Win")
-        @include('components.boqs.create-modal')
-        @include('components.boqs.modal')
-        @include('components.proposals.append-boq-modal')
-        @include('components.proposals.pricing-config-modal')
-    @else
+    @if(strtolower($proposal->status) === "win")
         @include('components.invoices.create-modal')
         @include('components.invoices.modal')
     @endif
@@ -255,6 +132,7 @@
                         PROPOSAL = response.data;
                         
                         renderProposalInfo(response.data);
+                        renderPricingInfo(response.data);
                         renderInvoicesInfo(response.data);
                     } else {
                         showAlert('error', 'Error loading project data');
@@ -267,17 +145,23 @@
         }
 
         function renderProposalInfo(proposal) {
+            
             const invoices = proposal.invoices?.length 
                 ? "<ul>" + proposal.invoices.map(invoice => `<li>${invoice.code}</li>`).join("") + "</ul>" 
                 : "-";
 
-            const noteField = proposal.status.toLowerCase() === "lose" ? 
-                `<div class="col-md-6 col-xxl-4">
-                    <div class="form-group mb-2">
-                        <label class="fw-semibold">Invoice(s)</label>
-                        <p class="mb-0">${proposal.note || "-"}</p>
-                    </div>
-                </div>` : "";
+            const totalAmountItems = parseFloat(proposal.total_amount_items) || 0;
+            console.log(proposal);
+            
+            const feeType = proposal.management_fee_type;
+            const managementFee = feeType === 'percent' ? (parseFloat(proposal.management_fee) || 0) / 100 * totalAmountItems : parseFloat(proposal.management_fee) || 0;
+            const salesAmount = totalAmountItems + managementFee;
+            const vatAmount = (parseFloat(proposal.vat_rate) || 0) / 100 * salesAmount;
+            const invoiceAmount = salesAmount + vatAmount;
+
+            const feeLabel = feeType === 'percent' ? 
+                `Management Fee (${parseFloat(proposal.management_fee || 0).toString().replace(".", ",")}%)` : 
+                "Management Fee (Rp)";
 
             const html = `
                 <div class="col-md-6 col-xxl-4">
@@ -300,6 +184,18 @@
                 </div>
                 <div class="col-md-6 col-xxl-4">
                     <div class="form-group mb-2">
+                        <label class="fw-semibold">Pricing Model</label>
+                        <p class="mb-0">${proposal.pricing_model || "-"}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Proposal Status</label>
+                        <p class="mb-0">${proposal.status ? getProposalStatus(proposal.status) : "-"}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
                         <label class="fw-semibold">Created</label>
                         <p class="mb-0">${proposal.created_at ? formatDate(proposal.created_at) : "-"}</p>
                     </div>
@@ -312,8 +208,32 @@
                 </div>
                 <div class="col-md-6 col-xxl-4">
                     <div class="form-group mb-2">
-                        <label class="fw-semibold">Proposal Status</label>
-                        <p class="mb-0">${proposal.status ? getProposalStatus(proposal.status) : "-"}</p>
+                        <label class="fw-semibold">Basic Price</label>
+                        <p class="mb-0">${formatRupiahDisplay(totalAmountItems.toString().replace('.', ',') || 0)}</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">${feeLabel}</label>
+                        <p class="mb-0">${formatRupiahDisplay(managementFee?.toString().replace('.', ',') || 0)}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Sales Amount</label>
+                        <p class="mb-0">${formatRupiahDisplay(salesAmount?.toString().replace('.', ',') || 0)}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">VAT (${parseFloat(proposal.vat_rate || 0).toString().replace(".", ",")}%)</label>
+                        <p class="mb-0">${formatRupiahDisplay(vatAmount?.toString().replace('.', ',') || 0)}</p>
+                    </div>
+                </div>
+                 <div class="col-md-6 col-xxl-4">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Total Amount</label>
+                        <p class="mb-0 text-primary fw-bold" style="font-size: 1.1em">${formatRupiahDisplay(invoiceAmount?.toString().replace('.', ',') || 0)}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-xxl-4">
@@ -322,7 +242,13 @@
                         <p class="mb-0">${invoices}</p>
                     </div>
                 </div>
-                ${noteField}
+                ${proposal.status?.toLowerCase() === "lose" ? 
+                `<div class="col-md-12">
+                    <div class="form-group mb-2">
+                        <label class="fw-semibold">Note</label>
+                        <p class="mb-0">${proposal.note || "-"}</p>
+                    </div>
+                </div>` : ""}
             `;
             
             $('#proposal_info').html(html);
@@ -353,6 +279,98 @@
                     </button>
                 ` :
                 "";
+
+                // Generate Items HTML (Logic copied from renderPricingInfo)
+                let itemsHtml = "";
+                if (!invoice.items || invoice.items.length === 0) {
+                    itemsHtml = '<tr><td colspan="8" class="text-center">No items found</td></tr>';
+                } else {
+                     // Sort items by ID (assuming order is preserved or simplest sort)
+                     // Note: renderPricingInfo sorts by ID. If we want Header Order we need header_order field which might not be on invoice items directly if they are just proposal items.
+                     // Proposal items have header logic. Invoice items ARE proposal items.
+                    const items = invoice.items.sort((a, b) => a.id - b.id);
+
+                    // Grouping Logic
+                    let grouped = {};
+                    items.forEach(item => {
+                        const h = item.header || "";
+                        if (!grouped[h]) grouped[h] = [];
+                        grouped[h].push(item);
+                    });
+
+                    let counter = 1;
+                    let headerIndex = 0;
+
+                    // Iterate grouped (Headers)
+                    Object.keys(grouped).sort().forEach(header => {
+                         const groupItems = grouped[header];
+                         const headerLabel = String.fromCharCode(65 + headerIndex);
+                         
+                         // Show Header Row if header is not empty
+                             if (header) {
+                                 itemsHtml += `
+                                    <tr style="background-color: #f2f2f2;">
+                                        <td>${headerLabel}</td>
+                                        <td colspan="7" class="fw-bold text-uppercase">${header}</td>
+                                    </tr>
+                                 `;
+                             }
+
+                         // Group by Subheader inside Header
+                         let subGrouped = {};
+                         groupItems.forEach(item => {
+                             const sh = item.subheader || "";
+                             if (!subGrouped[sh]) subGrouped[sh] = [];
+                             subGrouped[sh].push(item);
+                         });
+
+                         let subheaderIndex = 1;
+                         Object.keys(subGrouped).sort().forEach(subheader => {
+                             const subItems = subGrouped[subheader];
+                             const subheaderLabel = header ? `${headerLabel}.${subheaderIndex}` : '';
+                             
+                             // Show Subheader Row if subheader is not empty AND header is present
+                             if (subheader && header) {
+                                  itemsHtml += `
+                                    <tr>
+                                        <td>${subheaderLabel}</td>
+                                        <td colspan="7" class="fst-italic" style="padding-left: 20px;">${subheader}</td>
+                                    </tr>
+                                 `;
+                                 subheaderIndex++;
+                             }
+
+                             subItems.forEach(item => {
+                                const t1 = item.title1_value ? `${item.title1_value} <span class="text-xs">${item.title1_key || ''}</span>` : '-';
+                                const t2 = item.title2_value ? `${item.title2_value} <span class="text-xs">${item.title2_key || ''}</span>` : '-';
+                                const t3 = item.title3_value ? `${item.title3_value} <span class="text-xs">${item.title3_key || ''}</span>` : '-';
+                                const t4 = item.title4_value ? `${item.title4_value} <span class="text-xs">${item.title4_key || ''}</span>` : '-';
+                                 
+                                const desc = (!header && item.subheader) ? 
+                                             `<strong>${item.subheader}</strong>` : 
+                                             (item.description || item.product?.name || '-');
+
+                                itemsHtml += `
+                                    <tr>
+                                        <td>${counter++}</td>
+                                        <td>${desc}</td>
+                                        <td>${t1}</td>
+                                        <td>${t2}</td>
+                                        <td>${t3}</td>
+                                        <td>${t4}</td>
+                                        <td class="text-end nowrap">${formatRupiahDisplay(item.selling_price?.toString().replace('.', ',') || 0)}</td>
+                                        <td class="text-end nowrap">${formatRupiahDisplay(item.total_price?.toString().replace('.', ',') || 0)}</td>
+                                    </tr>
+                                `;
+                             });
+                         });
+
+                         if (header) headerIndex++;
+                    });
+                }
+
+                const feeLabel = proposal.management_fee_type === 'percent' ? 
+                    `Management Fee (${parseFloat(proposal.management_fee || 0).toString().replace(".", ",")}%)` : "";
 
                 const html = `
                     <div class="row ${i !== a.length - 1 ? "pb-3 mb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
@@ -394,7 +412,7 @@
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
-                                <label class="fw-semibold">Basic Price Sum</label>
+                                <label class="fw-semibold">Basic Price</label>
                                 <p class="mb-0">${formatRupiahDisplay(invoice.total_amount?.toString().replace(".", ",") ?? 0) || "-"}</p>
                             </div>
                         </div>
@@ -424,6 +442,12 @@
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
+                                <label class="fw-semibold">Bill To</label>
+                                <p class="mb-0">${invoice.bill_to || "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
                                 <label class="fw-semibold">Note</label>
                                 <p class="mb-0">${invoice.note || "-"}</p>
                             </div>
@@ -436,44 +460,40 @@
                                 <table class="table" id="invoice_items_${invoice.id}">
                                     <thead class="thead-light">
                                     <tr>
-                                        <th class="td-break">BOQ Code</th>
-                                        <th class="td-break text-end">Basic Price</th>
+                                        <th>No</th>
+                                        <th>Description</th>
+                                        <th>Title 1</th>
+                                        <th>Title 2</th>
+                                        <th>Title 3</th>
+                                        <th>Title 4</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Total Price</th>
                                     </tr>
                                     </thead>
-                                    <tbody></tbody>
+                                    <tbody>${itemsHtml}</tbody>
                                     <tfoot>
-                                        <tr style="border-top: 2px solid #dee2e6; font-weight: bold;">
-                                            <td class="text-end">Basic Price Sum</td>
+                                        <tr class="fw-bold">
+                                            <td colspan="7" class="text-end">Basic Price</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.total_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-end">Management Fee</td>
+                                            <td colspan="7" class="text-end">${feeLabel}</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.management_fee?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
-                                        <tr style="font-weight: bold;">
-                                            <td class="text-end">Sales Amount</td>
+                                        <tr class="fw-bold">
+                                            <td colspan="7" class="text-end">Sales Amount</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.sales_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-end">VAT Amount</td>
+                                            <td colspan="7" class="text-end">VAT (${parseFloat(proposal.vat_rate || 0).toString().replace(".", ",")}%)</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.vat_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
-                                        <tr style="font-weight: bold; border-top: 2px solid #dee2e6;">
-                                            <td class="text-end">Total Amount</td>
+                                        <tr class="fw-bold text-primary">
+                                            <td colspan="7" class="text-end">Total Amount</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.invoice_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
-                            </div>
-                            <div class="row align-items-center" style="row-gap: 1em; padding: 10px 15px;">
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
-                                        <div class="invoice_items_${invoice.id}_length"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 flex-grow-1">
-                                    <div class="invoice_items_${invoice.id}_paginate"></div>
-                                </div>
                             </div>
                         </div>
                         <div class="col-md-12 mt-3 d-flex justify-content-end">
@@ -497,7 +517,6 @@
                 `;
 
                 $('#invoice_info').append(html);
-                initInvoicesDataTable(invoice.id, invoice.boqs);
             });
         }
 
@@ -529,54 +548,137 @@
             }
         }
 
-        function initInvoicesDataTable(id, data) {
-            const self = this;
-            const $table = $(`#invoice_items_${id}`);
+        function renderPricingInfo(proposal) {
+            const tbody = $('#pricing_items_body');
+            const tfoot = $('#pricing_totals_foot');
+            tbody.empty();
+            tfoot.empty();
 
-            // 🔹 Kalau DataTable sudah ada → cuma update data-nya
-            if ($.fn.DataTable.isDataTable($table)) {
-            const dt = $table.DataTable();
-            const currentPage = dt.page(); // simpan halaman sekarang
+            if (!proposal.items || proposal.items.length === 0) {
+                tbody.html('<tr><td colspan="8" class="text-center">No items found</td></tr>');
+            } else {
+                // Sort items by Header Order then ID for consistency
+                const items = proposal.items.sort((a, b) => {
+                   return a.id - b.id;
+                });
 
-            dt.clear();
-            dt.rows.add(data);
-            dt.draw(false); // false = jangan reset pagination
-            dt.page(currentPage).draw('page'); // balik ke halaman yang sama
-            return; // selesai, gak usah reinit
+                // Grouping Logic
+                let grouped = {};
+                items.forEach(item => {
+                    const h = item.header || "";
+                    if (!grouped[h]) grouped[h] = [];
+                    grouped[h].push(item);
+                });
+
+                let rowHtml = "";
+                let counter = 1;
+                let headerIndex = 0;
+
+                // Iterate grouped (Headers)
+                Object.keys(grouped).sort().forEach(header => {
+                     const groupItems = grouped[header];
+                     const headerLabel = String.fromCharCode(65 + headerIndex);
+                     
+                     // Show Header Row if header is not empty
+                         if (header) {
+                             rowHtml += `
+                                <tr style="background-color: #f2f2f2;">
+                                    <td>${headerLabel}</td>
+                                    <td colspan="7" class="fw-bold text-uppercase">${header}</td>
+                                </tr>
+                             `;
+                         }
+
+                     // Group by Subheader inside Header
+                     let subGrouped = {};
+                     groupItems.forEach(item => {
+                         const sh = item.subheader || "";
+                         if (!subGrouped[sh]) subGrouped[sh] = [];
+                         subGrouped[sh].push(item);
+                     });
+
+                     let subheaderIndex = 1;
+                     Object.keys(subGrouped).sort().forEach(subheader => {
+                         const subItems = subGrouped[subheader];
+                         const subheaderLabel = header ? `${headerLabel}.${subheaderIndex}` : '';
+                         
+                         // Show Subheader Row if subheader is not empty AND header is present
+                         if (subheader && header) {
+                              rowHtml += `
+                                <tr>
+                                    <td>${subheaderLabel}</td>
+                                    <td colspan="7" class="fst-italic" style="padding-left: 20px;">${subheader}</td>
+                                </tr>
+                             `;
+                             subheaderIndex++;
+                         }
+
+                         subItems.forEach(item => {
+                            const t1 = item.title1_value ? `${item.title1_value} <span class="text-xs">${item.title1_key || ''}</span>` : '-';
+                            const t2 = item.title2_value ? `${item.title2_value} <span class="text-xs">${item.title2_key || ''}</span>` : '-';
+                            const t3 = item.title3_value ? `${item.title3_value} <span class="text-xs">${item.title3_key || ''}</span>` : '-';
+                            const t4 = item.title4_value ? `${item.title4_value} <span class="text-xs">${item.title4_key || ''}</span>` : '-';
+                             
+                            const desc = (!header && item.subheader) ? 
+                                         `<strong>${item.subheader}</strong>` : 
+                                         (item.description || item.product?.name || '-');
+
+                            rowHtml += `
+                                <tr>
+                                    <td>${counter++}</td>
+                                    <td>${desc}</td>
+                                    <td>${t1}</td>
+                                    <td>${t2}</td>
+                                    <td>${t3}</td>
+                                    <td>${t4}</td>
+                                    <td class="text-end nowrap">${formatRupiahDisplay(item.selling_price?.toString().replace('.', ',') || 0)}</td>
+                                    <td class="text-end nowrap">${formatRupiahDisplay(item.total_price?.toString().replace('.', ',') || 0)}</td>
+                                </tr>
+                            `;
+                         });
+                     });
+
+                     if (header) headerIndex++;
+                });
+                tbody.html(rowHtml);
             }
 
-            // 🚀 Kalau belum ada → inisialisasi pertama kali
-            $table.DataTable({
-                bFilter: false,
-                bInfo: false,
-                ordering: true,
-                order: [[0, "desc"]],
-                language: {
-                    search: ' ',
-                    sLengthMenu: '_MENU_',
-                    info: "_START_ - _END_ of _TOTAL_ items",
-                    lengthMenu: "Show _MENU_ entries",
-                    emptyTable: "No BOQs available for billing.",
-                    paginate: {
-                        next: 'Next <i class="fa fa-angle-right"></i>',
-                        previous: '<i class="fa fa-angle-left"></i> Prev'
-                    },
-                },
-                initComplete: function (settings, json) {
-                    const $wrapper = $(settings.nTable).closest('.dataTables_wrapper');
-                    $wrapper.find('.dataTables_paginate').appendTo(`.invoice_items_${id}_paginate`);
-                    $wrapper.find('.dataTables_length').appendTo(`.invoice_items_${id}_length`);
-                },
-                data,
-                columns: [
-                    { data: 'code' },
-                    {
-                        data: 'total_amount_items',
-                        render: data => formatRupiahDisplay(data?.toString().replace(".", ",") ?? 0),
-                        className: 'text-end'
-                    },
-                ]
-            });
+            // --- Totals ---
+            const totalAmountItems = parseFloat(proposal.total_amount_items) || 0;
+            const feeType = proposal.management_fee_type;
+            const managementFee = feeType === 'percent' ? (parseFloat(proposal.management_fee) || 0) / 100 * totalAmountItems : parseFloat(proposal.management_fee) || 0;
+            const salesAmount = totalAmountItems + managementFee;
+            const vatAmount = (parseFloat(proposal.vat_rate) || 0) / 100 * salesAmount;
+            const invoiceAmount = salesAmount + vatAmount;
+
+            const feeLabel = feeType === 'percent' ? 
+                             `Management Fee (${parseFloat(proposal.management_fee || 0).toString().replace(".", ",")}%)` : 
+                             "Management Fee (Rp)";
+
+            const footHtml = `
+                <tr class="fw-bold">
+                    <td colspan="7" class="text-end">Basic Price</td>
+                    <td class="text-end">${formatRupiahDisplay(totalAmountItems.toString().replace('.', ','))}</td>
+                </tr>
+                <tr>
+                    <td colspan="7" class="text-end">Management Fee</td>
+                    <td class="text-end">${formatRupiahDisplay(managementFee.toString().replace('.', ','))}</td>
+                </tr>
+                <tr class="fw-bold">
+                    <td colspan="7" class="text-end">Sales Amount</td>
+                    <td class="text-end">${formatRupiahDisplay(salesAmount.toString().replace('.', ','))}</td>
+                </tr>
+                <tr>
+                    <td colspan="7" class="text-end">VAT (${parseFloat(proposal.vat_rate || 0).toString().replace(".", ",")}%)</td>
+                    <td class="text-end">${formatRupiahDisplay(vatAmount.toString().replace('.', ','))}</td>
+                </tr>
+                <tr class="fw-bold text-primary">
+                    <td colspan="7" class="text-end">Total Amount</td>
+                    <td class="text-end">${formatRupiahDisplay(invoiceAmount.toString().replace('.', ','))}</td>
+                </tr>
+            `;
+            
+            tfoot.html(footHtml);
         }
 
         $(document).ready(function() {
@@ -620,10 +722,9 @@
     <script src="/build/js/boqs/datatables.js"></script>
     <script src="/build/js/proposals/pricing_config.js"></script>
 
-    @if($proposal->status !== "Win")
+    @if(strtolower($proposal->status) === "win")
         <script src="/build/js/proposals/append_boqs.js"></script>
         <script src="/build/js/boqs/events.js"></script>
-    @else
         <script src="/build/js/invoices/events.js"></script>
     @endif
 @endpush

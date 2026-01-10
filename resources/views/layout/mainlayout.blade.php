@@ -724,7 +724,7 @@
         }
 
         function normalizeFormatRupiah(raw) {
-            raw = raw.replace(/[^\d,]/g, "");
+            raw = raw.toString().replace(/[^\d,]/g, "");
 
             const comma = raw.indexOf(",");
             if (comma !== -1) {
@@ -745,12 +745,13 @@
             i = i.replace(/\D/g, "");
             i = i.replace(/^0+(?=\d)/, "");
             i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            
             return d !== undefined ? `${i},${d.slice(0, 2)}` : i;
         }
 
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
+            return date.toLocaleDateString('en-UK', {
                 year: 'numeric',
                 month: 'long',
                 day: '2-digit'

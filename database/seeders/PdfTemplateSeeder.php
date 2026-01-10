@@ -326,8 +326,8 @@ class PdfTemplateSeeder extends Seeder
             .pdf-table thead { display: table-header-group; }
             .pdf-table tfoot { display: table-footer-group; }
         }
-        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 8px 10px; font-size: 10pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .pdf-table td { padding: 10px 10px; border-bottom: 1px solid #E6E6E6; font-size: 10pt; font-weight: 300; vertical-align: top; }
+        .pdf-table th { background: #4059C6; color: white; text-align: left; padding: 8px 10px; font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .pdf-table td { padding: 10px 10px; border-bottom: 1px solid #E6E6E6; font-size: 8pt; font-weight: 300; vertical-align: top; }
         .pdf-table tr { page-break-inside: avoid; }
         /* Last row of tbody (item list) gets blue border */
         .pdf-table tbody:not(.no-break) tr:last-child td { border-bottom: 2px solid #4059C6; }
@@ -397,15 +397,17 @@ class PdfTemplateSeeder extends Seeder
                         <thead>
                             <tr>
                                 <th style="width: 5%; text-align: center;">No</th>
-                                <th style="width: 35%;">Description</th>
-                                <th class="pdf-text-center" style="width: 15%;">Qty</th>
-                                <th class="pdf-text-center" style="width: 15%;">Freq</th>
+                                <th style="width: 100%;">Description</th>
+                                <th class="pdf-text-center" style="width: 8%;">Title 1</th>
+                                <th class="pdf-text-center" style="width: 8%;">Title 2</th>
+                                <th class="pdf-text-center" style="width: 8%;">Title 3</th>
+                                <th class="pdf-text-center" style="width: 8%;">Title 4</th>
                                 <th class="pdf-text-right" style="width: 15%;">Unit Price</th>
                                 <th class="pdf-text-right" style="width: 15%;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{boq_items}}
+                            {{proposal_items}}
                         </tbody>
                         <tbody class="no-break">
                             {{totals_rows}}
@@ -425,7 +427,7 @@ class PdfTemplateSeeder extends Seeder
                 ['name' => 'valid_until', 'label' => 'Valid Until Date'],
                 ['name' => 'sales_code', 'label' => 'Sales Code'],
                 ['name' => 'terms_and_conditions', 'label' => 'Terms & Conditions'],
-                ['name' => 'boq_items', 'label' => 'BOQ Items (Table Rows)'],
+                ['name' => 'proposal_items', 'label' => 'Proposal Items (Table Rows)'],
                 ['name' => 'totals_rows', 'label' => 'Totals Section Rows'],
                 ['name' => 'logo_path', 'label' => 'Logo Path'],
             ],

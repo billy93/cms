@@ -35,7 +35,7 @@ class InvoiceController extends Controller
         {
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $invoices = Invoice::with(['customer', 'proposal', 'boqs']);
+            $invoices = Invoice::with(['customer', 'proposal', 'items']);
 
             $result = DataTables::eloquent($invoices)
                 ->filter(function ($query) use ($search) {
@@ -198,7 +198,7 @@ class InvoiceController extends Controller
     public function generatePdf($invoice_id)
     {
         try {
-            $invoice = Invoice::with(['customer', 'proposal', 'boqs.items'])->findOrFail($invoice_id);
+            $invoice = Invoice::with(['customer', 'proposal', 'items'])->findOrFail($invoice_id);
             
             // Get Default Invoice Template
             $template = \App\Models\PdfTemplate::where('type', 'invoice')
@@ -222,15 +222,14 @@ class InvoiceController extends Controller
             // Note: In a real scenario, we'd iterate BOQs to get subtotal/tax details if stored there.
             
             $invoiceItemsHtml = '';
-            $invoiceItemsHtml = '';
 
-            $totalAmountItems = $invoice->boqs->sum('total_amount_items');
+            $totalAmountItems = $invoice->items->sum('total_price');
             $pricingModel = $invoice->proposal->pricing_model; // Assuming "A" or "Type A" handled by switch or if
 
             // Normalize pricing model check (just in case "Type A" or "A")
             // The user previously changed it to strict 'A'.
             
-            if ($pricingModel === 'A') {
+            if ($pricingModel === 'XXX') {
                 // Type A (Summary Only)
                 $description = $invoice->proposal->pricing_model_description ?? 'Project Implementation';
 
@@ -245,19 +244,19 @@ class InvoiceController extends Controller
 
             } else {
                 // Type B / Default (Group by Header -> Subheader)
-                $groupedByHeader = $invoice->boqs->groupBy('header');
+                $groupedByHeader = $invoice->items->groupBy('header');
                 // Sort headers: Empty header comes first
-                $sortedHeaders = $groupedByHeader->sortBy(function ($boqs, $key) {
+                $sortedHeaders = $groupedByHeader->sortBy(function ($items, $key) {
                     return empty($key) ? 0 : 1;
                 }, SORT_NUMERIC);
 
                 $headerIndex = 0;
-                foreach ($sortedHeaders as $header => $boqsWithSameHeader) {
+                foreach ($sortedHeaders as $header => $itemsWithSameHeader) {
                     
                     // If Header exists
                     if (!empty($header)) {
                         $headerLabel = chr(65 + $headerIndex); // A, B, C...
-                        $headerTotal = $boqsWithSameHeader->sum('total_amount_items');
+                        $headerTotal = $itemsWithSameHeader->sum('total_price');
                         $headerName = $header;
 
                         // Header Row
@@ -268,15 +267,15 @@ class InvoiceController extends Controller
                         $invoiceItemsHtml .= '</tr>';
 
                         // Group by Subheader
-                        $groupedBySubheader = $boqsWithSameHeader->groupBy('subheader');
+                        $groupedBySubheader = $itemsWithSameHeader->groupBy('subheader');
                         
                         // Sort subheaders: Empty subheader comes first
-                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($boqs, $key) {
+                        $sortedSubheaders = $groupedBySubheader->sortBy(function ($items, $key) {
                             return empty($key) ? 0 : 1; 
                         }, SORT_NUMERIC);
                         
                         $subheaderIndex = 1;
-                        foreach ($sortedSubheaders as $subheader => $boqsWithSameSubheader) {
+                        foreach ($sortedSubheaders as $subheader => $itemsWithSameSubheader) {
                             
                             // Show Subheader Row if $subheader is not empty
                             if (!empty($subheader)) {
@@ -288,18 +287,16 @@ class InvoiceController extends Controller
                             }
 
                             $itemIndex = 1; 
-                            foreach ($boqsWithSameSubheader as $boq) {
-                                foreach ($boq->items as $item) {
-                                    $invoiceItemsHtml .= '<tr>';
-                                    $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
-                                    $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
-                                    $invoiceItemsHtml .= '<td class="nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
-                                    $invoiceItemsHtml .= '<td class="nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
-                                    $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
-                                    $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
-                                    $invoiceItemsHtml .= '</tr>';
-                                    $itemIndex++;
-                                }
+                            foreach ($itemsWithSameSubheader as $item) {
+                                $invoiceItemsHtml .= '<tr>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                                $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->title1_value . ' ' . $item->title1_key . '</td>';
+                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->title2_value . ' ' . $item->title2_key . '</td>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                                $invoiceItemsHtml .= '</tr>';
+                                $itemIndex++;
                             }
                         }
                         $headerIndex++;
@@ -307,18 +304,16 @@ class InvoiceController extends Controller
                     } else {
                         // Header is Unknown/Empty -> Just List Items (Flattened) at the TOP
                         $itemIndex = 1;
-                        foreach ($boqsWithSameHeader as $boq) {
-                            foreach ($boq->items as $item) {
-                                $invoiceItemsHtml .= '<tr>';
-                                $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
-                                $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
-                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->qty . ' ' . $item->qty_unit . '</td>';
-                                $invoiceItemsHtml .= '<td class="nowrap">' . $item->freq . ' ' . $item->freq_unit . '</td>';
-                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
-                                $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
-                                $invoiceItemsHtml .= '</tr>';
-                                $itemIndex++;
-                            }
+                        foreach ($itemsWithSameHeader as $item) {
+                            $invoiceItemsHtml .= '<tr>';
+                            $invoiceItemsHtml .= '<td class="pdf-text-center">' . $itemIndex . '</td>';
+                            $invoiceItemsHtml .= '<td>' . ($item->description ?: '-') . '</td>';
+                            $invoiceItemsHtml .= '<td class="nowrap">' . $item->title1_value . ' ' . $item->title1_key . '</td>';
+                            $invoiceItemsHtml .= '<td class="nowrap">' . $item->title2_value . ' ' . $item->title2_key . '</td>';
+                            $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->selling_price) . '</td>';
+                            $invoiceItemsHtml .= '<td class="pdf-text-right nowrap">' . formatRupiah($item->total_price) . '</td>';
+                            $invoiceItemsHtml .= '</tr>';
+                            $itemIndex++;
                          }
                     }
                 }

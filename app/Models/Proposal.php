@@ -12,6 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Proposal extends Model
 {
     use HasFactory, SoftDeletes;
+    
+    protected $appends = [
+        'calculated_management_fee',
+        'sales_amount',
+        'vat_amount',
+        'invoice_amount'
+    ];
 
     protected $fillable = [
         'project_id',
@@ -24,6 +31,7 @@ class Proposal extends Model
         'management_fee',
         'vat_rate',
         'pricing_model_description',
+        'total_amount_items',
     ];
 
     protected $casts = [
@@ -31,7 +39,7 @@ class Proposal extends Model
         'pricing_model' => 'string',
         'management_fee_type' => 'string',
         'management_fee' => 'decimal:2',
-        'vat_rate' => 'integer',
+        'vat_rate' => 'decimal:2',
     ];
 
     /**
@@ -57,6 +65,11 @@ class Proposal extends Model
             ->orderBy('id')
             ->get()
             ->groupBy('header');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(ProposalItem::class);
     }
 
     public function invoices(): HasMany
@@ -117,5 +130,32 @@ class Proposal extends Model
         } while ($exists);
 
         return $candidate;
+    }
+
+    // Accessors
+    public function getCalculatedManagementFeeAttribute()
+    {
+        $basic = (float) $this->total_amount_items;
+        $fee = (float) $this->management_fee;
+        
+        if ($this->management_fee_type === 'percent') {
+            return round($basic * ($fee / 100), 2);
+        }
+        return round($fee, 2);
+    }
+
+    public function getSalesAmountAttribute()
+    {
+        return round((float) $this->total_amount_items + $this->calculated_management_fee, 2);
+    }
+
+    public function getVatAmountAttribute()
+    {
+        return round($this->sales_amount * ((float) $this->vat_rate / 100), 2);
+    }
+
+    public function getInvoiceAmountAttribute()
+    {
+        return round($this->sales_amount + $this->vat_amount, 2);
     }
 }
