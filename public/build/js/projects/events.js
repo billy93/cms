@@ -298,6 +298,13 @@ class ProjectForm {
         el.datetimepicker({
           format: 'DD/MM/YY',
           date: parsedDate || null,
+          icons: {
+            previous: 'ti ti-chevron-left',
+            next: 'ti ti-chevron-right',
+            up: 'ti ti-chevron-up',
+            down: 'ti ti-chevron-down',
+            close: 'ti ti-x'
+          }
         });
 
         if (isIso) {
@@ -448,6 +455,23 @@ class ProjectForm {
         this.errors[id.field + "_error"] = id.message;
       }
     });
+
+    // Custom Date Validation
+    if (payload.start_date && payload.end_date) {
+      if (moment(payload.end_date).isSameOrBefore(payload.start_date)) {
+        this.errors["input_end_date_error"] = "End Date must be greater than Start Date.";
+      }
+    }
+
+    if (payload.start_date && payload.end_date && payload.due_date) {
+      const start = moment(payload.start_date);
+      const end = moment(payload.end_date);
+      const due = moment(payload.due_date);
+
+      if (due.isBefore(start) || due.isAfter(end)) {
+        this.errors["input_due_date_error"] = "Due Date must be between Start Date and End Date.";
+      }
+    }
 
     return payload;
   }

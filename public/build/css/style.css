@@ -45017,3 +45017,58 @@ th.no-sort::before {
 .desc-col {
     max-width: 300px
 }
+/* Bootstrap Datepicker Overrides */
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+    background-color: #E41F07 !important;
+    color: #fff !important;
+    text-shadow: none;
+}
+
+.bootstrap-datetimepicker-widget table td.today:before {
+    border-bottom-color: #E41F07 !important;
+}
+
+.bootstrap-datetimepicker-widget table td.active.today:before {
+    border-bottom-color: #fff !important;
+}
+
+.bootstrap-datetimepicker-widget table td span.active {
+    background-color: #E41F07 !important;
+    color: #fff !important;
+    text-shadow: none;
+}
+
+.bootstrap-datetimepicker-widget .timepicker-hour:hover,
+.bootstrap-datetimepicker-widget .timepicker-minute:hover,
+.bootstrap-datetimepicker-widget .timepicker-second:hover {
+    background: #E8E8E8;
+    color: #262A2A;
+}
+
+.bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+    background: #E8E8E8;
+    color: #262A2A;
+}
+
+.bootstrap-datetimepicker-widget a[data-action]:hover {
+    background: #E8E8E8;
+    color: #262A2A;
+}
+
+
+.bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.bootstrap-datetimepicker-widget table td.day:hover,
+.bootstrap-datetimepicker-widget table td.hour:hover,
+.bootstrap-datetimepicker-widget table td.minute:hover,
+.bootstrap-datetimepicker-widget table td.second:hover,
+.bootstrap-datetimepicker-widget table td span:hover {
+    background: #E8E8E8 !important;
+}
+
+/* Fix year/month wrapper hover issue */
+.bootstrap-datetimepicker-widget .datepicker-years table tbody tr > td,
+.bootstrap-datetimepicker-widget .datepicker-months table tbody tr > td,
+.bootstrap-datetimepicker-widget .datepicker-decades table tbody tr > td {
+    background-color: #fff !important;
+}

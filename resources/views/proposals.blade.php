@@ -73,6 +73,24 @@
 										}
                                     </style>
                                     <thead class="thead-light">
+                                        <!-- <tr>
+                                            <th class="td-break no-sort" rowspan="2">
+												<label class="checkboxs">
+													<input type="checkbox" id="select_all_proposal_list">
+													<span class="checkmarks"></span>
+												</label>
+											</th>
+                                            <th rowspan="2">Proposal Code</th>
+                                            <th rowspan="2">Project Name</th>
+                                            <th rowspan="2">Status</th>
+                                            <th class="td-break" rowspan="2">Sales Code</th>
+                                            <th class="text-center" colspan="2">Invoices</th>
+                                            <th class="no-sort fit" rowspan="2">Action</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">No</th>
+                                            <th class="text-center">Generate</th>
+                                        </tr> -->
                                         <tr>
                                             <th class="td-break no-sort" rowspan="2">
 												<label class="checkboxs">
@@ -81,14 +99,14 @@
 												</label>
 											</th>
                                             <th rowspan="2">Proposal Code</th>
-                                            <th rowspan="2">Created</th>
-                                            <th rowspan="2">Updated</th>
-                                            <th rowspan="2">Project Code</th>
-                                           
+                                            <th rowspan="2">Project Name</th>
                                             <th rowspan="2">Status</th>
+                                            <th class="no-sort fit" rowspan="2">Action</th>
                                             <th class="td-break" rowspan="2">Sales Code</th>
                                             <th class="text-center" colspan="2">Invoices</th>
-                                            <th class="no-sort fit" rowspan="2">Action</th>
+                                            <th rowspan="2">Created</th>
+                                            <th rowspan="2">Updated</th>
+                                           
                                         </tr>
                                         <tr>
                                             <th class="text-center">No</th>

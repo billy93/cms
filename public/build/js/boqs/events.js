@@ -259,7 +259,7 @@ class BoqForm {
           <label class="form-label">Proposal</label>
           <select class="select form-select" id="input_boq_proposal_id" ${isDisableProposalField ? "disabled" : ""}>
             <option value="" ${!value.proposal_id ? "selected" : ""}>-- Select Proposal --</option>
-            ${this.proposals.filter(p => p.status.toLowerCase() === "win").map(p => `<option value="${p.id}" ${value.proposal_id == p.id ? "selected" : ""}>${p.code}</option>`).join("")}
+            ${this.proposals.filter(p => p.status.toLowerCase() === "win").map(p => `<option value="${p.id}" ${value.proposal_id == p.id ? "selected" : ""}>${p.pricing_model_description}</option>`).join("")}
           </select>
           <small id="input_boq_proposal_id_error" class="text-danger mt-1" style="display: none;"></small>
         </div>

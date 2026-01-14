@@ -39,8 +39,8 @@ class ProjectRequest extends ApiFormRequest
                 'regex:/^\d{1,3}(\.\d{3})*(,\d{1,2})?$/',
             ],
             'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'], 
-            'due_date' => ['required', 'date', 'after_or_equal:end_date'], 
+            'end_date' => ['required', 'date', 'after:start_date'], 
+            'due_date' => ['required', 'date', 'after_or_equal:start_date', 'before_or_equal:end_date'], 
             'description' => ['nullable', 'string'],
             'customer_id' => ['required', 'exists:customers,id'],
             'status' => [

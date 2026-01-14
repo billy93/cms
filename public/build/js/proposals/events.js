@@ -652,19 +652,19 @@ class ProposalForm {
     }
 
     const tr = document.createElement('tr');
-    let header = `<td><input id="header_${id}" type="text" class="form-control" placeholder="Header" value="${header_input}"></td>`;
+    // let header = `<td><input id="header_${id}" type="text" class="form-control" placeholder="Header" value="${header_input}"></td>`;
     let subheader = `<td><input id="subheader_input_${id}" type="text" class="form-control" placeholder="Sub Header" value="${subheader_input_value}"></td>`
 
     if (this.type === "C") {
-      header = `
-        <td>
-          <select id="header_${id}" class="select form-select header-select">
-            <option value="" ${!header_input ? "selected" : ""}>-- Select Header --</option>
-            ${this.headers.map(h => `<option value="${h}" ${h === header_input ? "selected" : ""}>${h}</option>`).join('')}
-          </select>
-          <small id="item_header_${id}_error" class="text-danger mt-1" style="display: none;"></small>
-        </td>
-      `;
+      // header = `
+      //   <td>
+      //     <select id="header_${id}" class="select form-select header-select">
+      //       <option value="" ${!header_input ? "selected" : ""}>-- Select Header --</option>
+      //       ${this.headers.map(h => `<option value="${h}" ${h === header_input ? "selected" : ""}>${h}</option>`).join('')}
+      //     </select>
+      //     <small id="item_header_${id}_error" class="text-danger mt-1" style="display: none;"></small>
+      //   </td>
+      // `;
 
       subheader = `
         <td>	
@@ -679,7 +679,7 @@ class ProposalForm {
 
     tr.id = rowId;
     tr.innerHTML = `
-      ${header}
+      ${/*header*/ ""}
       ${subheader}
       <td>
         <select id="title1_key_${id}" class="select form-select title-select">
@@ -726,7 +726,7 @@ class ProposalForm {
     errorTr.style.display = "none";
     errorTr.classList.add("tr-error");
     errorTr.innerHTML = `
-      <td colspan="10">
+      <td colspan="9">
         <small id="items_${id}_error" class="text-danger" style="display:none;"></small>
       </td>
     `;
@@ -949,7 +949,6 @@ class ProposalForm {
             <table class="table table-bordered" id="products_services_table">
               <thead>
                 <tr>
-                  <th>Header</th>
                   <th>Sub Header (Product)</th>
                   <th>Title 1</th>
                   <th>Title 2</th>
@@ -995,9 +994,33 @@ class ProposalForm {
         dropdownParent: $('#c_proposal_canvas_form')
       });
 
-      // bridge event agar change bisa dideteksi
       $('.select').on('select2:select', function () {
         this.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+
+    if ($('.datetimepicker').length && $.fn.datetimepicker) {
+      $('.datetimepicker').each(function () {
+        const el = $(this);
+        const rawValue = el.val();
+        const isIso = rawValue && moment(rawValue, moment.ISO_8601, true).isValid();
+        const parsedDate = isIso ? moment(rawValue) : null;
+
+        el.datetimepicker({
+          format: 'DD/MM/YY',
+          date: parsedDate || null,
+          icons: {
+            previous: 'ti ti-chevron-left',
+            next: 'ti ti-chevron-right',
+            up: 'ti ti-chevron-up',
+            down: 'ti ti-chevron-down',
+            close: 'ti ti-x'
+          }
+        });
+
+        if (isIso) {
+          el.val(parsedDate.format('DD/MM/YY'));
+        }
       });
     }
   }
@@ -1204,7 +1227,7 @@ class ProposalForm {
       for (let i = 0; i < arr.length; i++) {
         const id = arr[i];
 
-        const headerEl = this.pricingModelContainer.querySelector(`#header_${id}`);
+        // const headerEl = this.pricingModelContainer.querySelector(`#header_${id}`);
         const subheaderInputEl = this.pricingModelContainer.querySelector(`#subheader_input_${id}`);
         const subheaderSelectEl = this.pricingModelContainer.querySelector(`#subheader_select_${id}`);
         const sellingPriceEl = this.pricingModelContainer.querySelector(`#selling_price_${id}`);
@@ -1220,7 +1243,8 @@ class ProposalForm {
         const t4ValEl = this.pricingModelContainer.querySelector(`#title4_value_${id}`);
 
         const item = {
-          header: headerEl?.value?.trim() || '',
+          header: '',
+          // header: headerEl?.value?.trim() || '',
           subheader: subheaderInputEl?.value?.trim() || '',
           product_id: subheaderSelectEl?.value || null,
           selling_price: sellingPriceEl?.value?.trim() || null,
@@ -1234,9 +1258,9 @@ class ProposalForm {
           title4_value: t4ValEl?.value ? parseInt(t4ValEl.value) : null
         };
 
-        if (!item.header.trim()) {
-          this.errors[`item_header_${id}_error`] = "Header is required."
-        }
+        // if (!item.header.trim()) {
+        //   this.errors[`item_header_${id}_error`] = "Header is required."
+        // }
 
         if (!item.selling_price) {
           this.errors[`selling_price_${id}_error`] = "Amount is required."

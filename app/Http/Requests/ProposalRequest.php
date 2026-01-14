@@ -54,7 +54,7 @@ class ProposalRequest extends ApiFormRequest
 
         // Type C & D specific
         if (in_array($this->input('pricing_model'), ['C','D'])) {
-            $rules['items.*.header'] = ['required','string'];
+            // $rules['items.*.header'] = ['required','string'];
             $rules['items.*.subheader'] = ['nullable','string'];
             $rules['items.*.product_id'] = ['nullable','exists:products,id'];
             $rules['items.*.description'] = ['nullable','string'];

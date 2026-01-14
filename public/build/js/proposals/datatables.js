@@ -67,19 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'code' },
         {
-          data: 'created_at',
-          render: function (data, type, row) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
-        {
-          data: 'updated_at',
-          render: function (data, type, row) {
-            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
-          }
-        },
-        {
-          data: 'project_code',
+          data: 'project_name',
           orderable: false,
         },
         {
@@ -99,6 +87,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         {
+          data: 'actions',
+          orderable: false,
+          searchable: false
+        },
+        {
           data: 'sales_code',
           render: function (data, type, row) {
             return data && data.trim() !== '' ? data : '-';
@@ -111,10 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
           searchable: false
         },
         {
-          data: 'actions',
-          orderable: false,
-          searchable: false
-        }
+          data: 'created_at',
+          render: function (data, type, row) {
+            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+          }
+        },
+        {
+          data: 'updated_at',
+          render: function (data, type, row) {
+            return type === 'display' ? moment(data).format('DD-MMM-YYYY') : data;
+          }
+        },
       ],
       columnDefs: [
         // { targets: [15], width: '1%', className: 'text-nowrap' } // fit-content
