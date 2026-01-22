@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         { data: 'code', orderable: false },
+        { data: 'project_name', orderable: false },
         { data: 'proposal_code', orderable: false },
         { data: 'sales_code', orderable: false },
         {

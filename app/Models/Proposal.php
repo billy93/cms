@@ -91,28 +91,18 @@ class Proposal extends Model
         return $code;
     }
     
-    public static function generateSalesCode($projectId, $proposalId)
+    public function generateSalesCode()
     {
-        $dateCode = now()->format('Ymd'); // contoh: 20251107
-
-        // Ambil proposal + project
-        $proposal = Proposal::with('project')->findOrFail($proposalId);
-        $project = $proposal->project;
-
-        // Ambil 5 karakter terakhir dari project code
-        $projCodeRaw = $project->code ?? (string)$project->id;
-        $projCodeLast5 = substr($projCodeRaw, -5);
-        $projCodeLast5 = str_pad($projCodeLast5, 5, '0', STR_PAD_LEFT);
-
-        // Ambil 5 karakter terakhir dari proposal code
-        $propCodeRaw = $proposal->code ?? (string)$proposal->id;
+        $dateCode = now()->format('Ymd');
+        
+        // Get 5 chars from proposal code
+        // Note: For existing proposals this works. For new ones, ensure 'code' is set before calling this.
+        $propCodeRaw = $this->code ?? (string)$this->id;
         $propCodeLast5 = substr($propCodeRaw, -5);
         $propCodeLast5 = str_pad($propCodeLast5, 5, '0', STR_PAD_LEFT);
 
-        // Ambil invoice terakhir dari proposal ini
-        $latestInvoice = Invoice::where('proposal_id', $proposalId)
-            ->orderByDesc('id')
-            ->first();
+        // Get latest invoice for THIS proposal
+        $latestInvoice = $this->invoices()->orderByDesc('id')->first();
 
         if ($latestInvoice && preg_match('/-(\d{3})$/', $latestInvoice->code, $m)) {
             $sequence = intval($m[1]) + 1;
@@ -120,13 +110,19 @@ class Proposal extends Model
             $sequence = 1;
         }
 
-        // Loop sampai dapat kode yang unik
         do {
-            $seqCode = str_pad($sequence, 3, '0', STR_PAD_LEFT); // 001, 002, ...
-            $candidate = "INV-{$projCodeLast5}-{$propCodeLast5}-{$dateCode}-{$seqCode}";
+            $seqCode = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            $candidate = "REG-{$propCodeLast5}-{$dateCode}-{$seqCode}";
 
+            // Check uniqueness in Invoices
             $exists = Invoice::where('code', $candidate)->exists();
-            $sequence++;
+            
+            // Also check Proposal's sales_code uniqueness (to avoid duplicates if multiple proposals generated)
+            if (!$exists) {
+                 $exists = Proposal::where('sales_code', $candidate)->where('id', '!=', $this->id)->exists();
+            }
+            
+            if ($exists) $sequence++;
         } while ($exists);
 
         return $candidate;

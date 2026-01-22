@@ -52,7 +52,7 @@ class ProposalSeeder extends Seeder
 
             if ($status === 'Win') {
                 $proposal->update([
-                    'sales_code' => Proposal::generateSalesCode($project->id, $proposal->id)
+                    'sales_code' => $proposal->generateSalesCode()
                 ]);
             }
 

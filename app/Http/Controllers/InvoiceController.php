@@ -37,7 +37,7 @@ class InvoiceController extends Controller
         {
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $invoices = Invoice::with(['customer', 'proposal', 'items']);
+            $invoices = Invoice::with(['customer', 'proposal', 'items', 'project']);
 
             $result = DataTables::eloquent($invoices)
                 ->filter(function ($query) use ($search) {
@@ -53,12 +53,25 @@ class InvoiceController extends Controller
                             )
                             ->orWhereHas('proposal', fn($p) =>
                                 $p->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            )
+                            ->orWhereHas('project', fn($p) =>
+                                $p->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                                  ->orWhereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
                             );
                         });
                     }
                 })
-                ->addColumn('proposal_code', fn($boq) => $boq->proposal?->code ?: '-')
-                ->addColumn('sales_code', fn($boq) => $boq->proposal?->sales_code ?: "-")
+                ->addColumn('project_name', fn($inv) => $inv->project?->name ?: '-')
+                ->addColumn('proposal_code', fn($inv) => $inv->proposal?->code ?: '-')
+                ->addColumn('sales_code', function($inv) {
+                    if ($inv->proposal && $inv->proposal->sales_code) {
+                        return $inv->proposal->sales_code;
+                    }
+                    if ($inv->project && $inv->project->sales_code) {
+                        return $inv->project->sales_code;
+                    }
+                    return '-';
+                })
                 ->addColumn('invoice_amount', fn($invoice) => formatRupiah($invoice->invoice_amount))
                 ->addColumn('actions', function($invoice) {
                     return '

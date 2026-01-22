@@ -246,10 +246,7 @@ class ProposalService
              if (($data['status'] ?? null) === 'Win') {
                  if (!$proposal->sales_code) {
                     $proposal->update([
-                        'sales_code' => Proposal::generateSalesCode(
-                            $proposal->project_id,
-                            $proposal->id 
-                        ),
+                        'sales_code' => $proposal->generateSalesCode(),
                     ]);
                  }
             }

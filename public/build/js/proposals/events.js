@@ -181,7 +181,7 @@ class ProposalForm {
       <div class="row">
         <div class="col-md-6 mb-3">
           <label>Management Fee Type</label>
-          <select class="form-select" id="input_proposal_management_fee_type">
+          <select class="form-select select" id="input_proposal_management_fee_type">
             <option value="" ${!managementFeeType ? 'selected' : ''}>-- Select Type --</option>
             <option value="percent" ${managementFeeType === 'percent' ? 'selected' : ''}>Percent (%)</option>
             <option value="nominal" ${managementFeeType === 'nominal' ? 'selected' : ''}>Nominal (Rp)</option>

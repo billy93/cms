@@ -414,6 +414,7 @@
 												</label>
 											</th>
                                             <th>Invoice Code</th>
+                                            <th>Project Name</th>
                                             <th>Proposal Code</th>
                                             <th>Sales Code</th>
                                             <th>Invoice Date</th>
