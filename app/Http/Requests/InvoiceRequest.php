@@ -36,9 +36,13 @@ class InvoiceRequest extends ApiFormRequest
     protected function createRules()
     {
         return [
-            'proposal_id' => ['required', 'exists:proposals,id'],
+            'proposal_id' => ['required_without:project_id', 'nullable', 'exists:proposals,id'],
+            'project_id' => ['required_without:proposal_id', 'nullable', 'exists:projects,id'],
             'customer_id' => ['required', 'exists:customers,id'],
-            'item_ids' => ['required_if:type,Partial', 'array'],
+            'item_ids' => [
+                Rule::requiredIf(fn() => $this->proposal_id && $this->type === 'Partial'),
+                'array'
+            ],
             'item_ids.*' => ['integer', 'exists:proposal_items,id'],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
@@ -48,6 +52,11 @@ class InvoiceRequest extends ApiFormRequest
             'bill_to' => ['nullable', 'string'],
             'ship_to' => ['nullable', 'string'],
             'note' => ['nullable', 'string'],
+            'total_amount' => ['required_without:proposal_id', 'numeric', 'min:0'],
+            'management_fee_type' => ['required_without:proposal_id', Rule::in(['nominal', 'percent'])],
+            'management_fee' => ['required_without:proposal_id', 'numeric', 'min:0'],
+            'vat_rate' => ['required_without:proposal_id', 'integer', Rule::in([1, 11])],
+            'description' => ['required_without:proposal_id', 'nullable', 'string'],
         ];
     }
 

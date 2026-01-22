@@ -1324,6 +1324,7 @@ class ProposalForm {
       this.hideLoading()
       return;
     }
+    console.log(payload);
 
     if (this.mode === "create") {
       try {

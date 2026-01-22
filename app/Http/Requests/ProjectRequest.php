@@ -43,6 +43,7 @@ class ProjectRequest extends ApiFormRequest
             'due_date' => ['required', 'date', 'after_or_equal:start_date', 'before_or_equal:end_date'], 
             'description' => ['nullable', 'string'],
             'customer_id' => ['required', 'exists:customers,id'],
+            'type' => ['required', Rule::in(['FIT', 'Regular'])],
             'status' => [
                 'nullable',
                 Rule::in(['Active', 'Inactive', 'Completed', 'Cancelled']),

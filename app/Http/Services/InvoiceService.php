@@ -4,23 +4,74 @@ namespace App\Http\Services;
 
 use App\Models\Invoice;
 use App\Models\Proposal;
+use App\Models\ProposalItem;
 use App\Models\Customer;
 use App\Models\Boq;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class InvoiceService
 {
-    /**
-     * Generate invoice from a proposal
-     */
     public function createInvoice(array $data)
     {
         return DB::transaction(function () use ( $data) {
+            // ------------------------------ FIT Project Flow ------------------------------
+            if (isset($data['project_id'])) {
+                $project = Project::find($data['project_id']);
+                
+                if (!$project) {
+                    throw new Exception("Project with ID {$data['project_id']} not found.");
+                }
+
+                if ($project->type !== 'FIT') {
+                    throw new Exception("Only FIT projects can generate invoices directly. Regular projects must use Proposals.");
+                }
+
+                $invoiceCode = Invoice::generateCodeFromProject($project);
+
+                $customer = Customer::find($data['customer_id']);
+                if (!$customer) {
+                    throw new Exception("Customer with ID {$data['customer_id']} not found.");
+                }
+
+                $invoice = Invoice::create([
+                    'project_id'          => $data['project_id'], // Direct link
+                    'proposal_id'         => null,
+                    'customer_id'         => $data['customer_id'],
+                    'code'                => $invoiceCode,
+                    'invoice_date'        => $data['invoice_date'],
+                    'due_date'            => $data['due_date'],
+                    'description'         => $data['description'] ?? null,
+                    'status'              => $data['status'],
+                    'type'                => $data['type'],
+                    'payment_method'      => $data['payment_method'] ?? null,
+                    'bill_to'             => $data['bill_to'] ?? null,
+                    'ship_to'             => $data['ship_to'] ?? null,
+                    'total_amount'        => $data['total_amount'],
+                    'management_fee_type' => $data['management_fee_type'],
+                    'management_fee'      => $data['management_fee'],
+                    'vat_rate'            => $data['vat_rate'],
+                    'note'                => $data['note'] ?? null    
+                ]);
+
+                return $invoice->fresh(['project', 'customer']);
+            }
+
+            // ------------------------------ Regular Project Flow ------------------------------
+            if (!isset($data['proposal_id'])) {
+                 throw new Exception("Proposal ID is required for regular invoices.");
+            }
+
             $proposal = Proposal::with(['project', 'items'])->find($data['proposal_id']);
 
             if (!$proposal) {
                 throw new Exception("Proposal with ID {$data['proposal_id']} not found.");
+            }
+            
+            // Validate that the project is NOT FIT (Regular projects only)
+            if ($proposal->project && $proposal->project->type !== 'Regular') {
+                 throw new Exception("Only Regular Projects can generate invoices via Proposals. Type is '{$proposal->project->type}'.");
             }
             
             if ($proposal->status !== 'Win') {
@@ -31,15 +82,14 @@ class InvoiceService
                 throw new Exception("Proposal must have a pricing model configured to generate an invoice.");
             }
             
-            // --- Validation for Invoice Type ---
-            // 1. Check if 'Full' is allowed (must be the only invoice)
+            // Check if type 'Full' is allowed (must be the only invoice)
             if ($data['type'] === 'Full') {
                 $otherInvoicesCount = $proposal->invoices()
                     ->where('status', '!=', 'Cancelled')
                     ->count();
 
                 if ($otherInvoicesCount > 0) {
-                     // If there are existing invoices, type cannot be Full
+                     // If there are other existing invoices, type cannot be Full
                     throw new Exception("Cannot create a 'Full' invoice because other invoices already exist for this proposal.");
                 }
                 
@@ -53,7 +103,7 @@ class InvoiceService
                 $data['item_ids'] = $proposal->items->pluck('id')->toArray();
             } 
 
-            // Ambil hanya ITEMS dari proposal yang belum diinvoice
+            // Get only items from proposal that haven't been invoiced
             $availableItemIds = $proposal->items
                 ->whereNull('invoice_id')
                 ->pluck('id')
@@ -63,7 +113,7 @@ class InvoiceService
                 throw new Exception("No available items to be billed for this proposal.");
             }
          
-             // Pastikan semua item yang dipilih valid
+            // Ensure all selected items are valid
             if (array_diff($data['item_ids'], $availableItemIds)) {
                 throw new Exception("Some selected items are not available for invoicing in this proposal.");
             }
@@ -74,22 +124,16 @@ class InvoiceService
                 throw new Exception("Customer with ID {$data['customer_id']} not found.");
             }
             
-            // Generate invoice code
+            // Generate invoice code for Regular (via Invoice model)
             $invoiceCode = Invoice::generateCode($proposal); 
 
             // Calculate amounts from selected items and proposal
             $selectedItems = $proposal->items->whereIn('id', $data['item_ids']);
             $totalAmount = $selectedItems->sum('total_price');
             
-            // Calculate management fee from proposal (proportional for partial invoices)
-            // Calculate amounts using shared logic
-            $amounts = $this->calculateInvoiceAmounts($proposal, $totalAmount);
-            $managementFeeAmount = $amounts['management_fee'];
-            $salesAmount = $amounts['sales_amount'];
-            $vatAmount = $amounts['vat_amount'];
-            $invoiceAmount = $amounts['invoice_amount'];
+            // Calculate management fee value to store
+            $managementFeeToStore = $this->calculateProposalFeeValue($proposal, $totalAmount);
 
-             // Buat invoice baru
             $invoice = Invoice::create([
                 'proposal_id'         => $data['proposal_id'],
                 'customer_id'         => $data['customer_id'],
@@ -102,14 +146,14 @@ class InvoiceService
                 'bill_to'             => $data['bill_to'] ?? null,
                 'ship_to'             => $data['ship_to'] ?? null,
                 'total_amount'        => $totalAmount,
-                'management_fee'      => $managementFeeAmount,
-                'sales_amount'        => $salesAmount,
-                'vat_amount'          => $vatAmount,
-                'invoice_amount'      => $invoiceAmount,
+                'management_fee_type' => $proposal->management_fee_type,
+                'management_fee'      => $managementFeeToStore,
+                'vat_rate'            => $proposal->vat_rate,
                 'note'                => $data['note'] ?? null    
             ]);
-            // Link items ke invoice
-            \App\Models\ProposalItem::whereIn('id', $data['item_ids'])
+            
+            // Link items to invoice
+            ProposalItem::whereIn('id', $data['item_ids'])
                 ->update(['invoice_id' => $invoice->id]);
 
             return $invoice->fresh(['proposal', 'customer', 'items']);
@@ -129,23 +173,53 @@ class InvoiceService
     public function updateInvoice(array $data)
     {
         return DB::transaction(function () use ( $data) {
-            $invoice = Invoice::with(['items'])->find($data['id']);
-            $proposal = Proposal::with(['items'])->find($data['proposal_id']);
+            $invoice = Invoice::find($data['id']);
 
             if (!$invoice) {
                 throw new Exception("Invoice with ID {$data['id']} not found.");
             }
 
+            // ------------------------------ FIT Project Flow ------------------------------
+            if ($invoice->project_id) {
+                /* For FIT, we expect financial fields to be passed, but we trust the Model accessors for amounts.
+                 * Just update the base values.
+                 */
+                $invoice->update([
+                    'invoice_date'        => $data['invoice_date'],
+                    'due_date'            => $data['due_date'],
+                    'description'         => $data['description'] ?? null,
+                    'status'              => $data['status'],
+                    'type'                => $data['type'],
+                    'payment_method'      => $data['payment_method'] ?? null,
+                    'bill_to'             => $data['bill_to'] ?? null,
+                    'ship_to'             => $data['ship_to'] ?? null,
+                    'total_amount'        => $data['total_amount'],
+                    'management_fee_type' => $data['management_fee_type'],
+                    'management_fee'      => $data['management_fee'],
+                    'vat_rate'            => $data['vat_rate'],
+                    'note'                => $data['note'] ?? null,
+                ]);
+
+                return $invoice->fresh(['project', 'customer']);
+            }
+
+            // ------------------------------ Regular Project Flow ------------------------------
+            $proposalId = $invoice->proposal_id;
+            $proposal = Proposal::with(['items'])->find($proposalId);
+
             if (!$proposal) {
-                throw new Exception("Proposal with ID {$data['proposal_id']} not found.");
+                throw new Exception("Proposal with ID {$proposalId} not found.");
             }
             
             if ($proposal->status !== 'Win') {
                 throw new Exception("Invoice can only be edited for win proposals.");
             }
+
+            if (!$proposal->pricing_model) {
+                throw new Exception("Proposal must have a pricing model configured to generate an invoice.");
+            }
             
-            // --- Validation for Invoice Type ---
-            // 1. Check if 'Full' is allowed (must be the only invoice)
+            // Invoice Type Validation. Check if type 'Full' is allowed (must be the only invoice)
             if ($data['type'] === 'Full') {
                 $otherInvoicesCount = $proposal->invoices()
                     ->where('id', '!=', $invoice->id) // Exclude current invoice
@@ -166,11 +240,11 @@ class InvoiceService
                     throw new Exception("Cannot set 'Full' type because some items are billed in other invoices.");
                 }
 
-                // If Full, force select ALL proposal items
-                 $data['item_ids'] = $proposal->items->pluck('id')->toArray();
+                // If type is Full, force select ALL proposal items
+                $data['item_ids'] = $proposal->items->pluck('id')->toArray();
             }
 
-            // Ambil hanya ITEMS dari proposal yang belum diinvoice
+            // Get only items from proposal that haven't been invoiced
             $availableItemIds = $proposal->items
                 ->filter(fn($item) => !$item->invoice_id || $item->invoice_id === $invoice->id)
                 ->pluck('id')
@@ -180,7 +254,7 @@ class InvoiceService
                 throw new Exception("No available items to be billed for this proposal.");
             }
          
-             // Pastikan semua item yang dipilih valid
+             // Make sure all selected items are available
             if (array_diff($data['item_ids'], $availableItemIds)) {
                 throw new Exception("Some selected items are not available for invoicing in this proposal.");
             } 
@@ -195,12 +269,8 @@ class InvoiceService
             $selectedItems = $proposal->items->whereIn('id', $data['item_ids']);
             $totalAmount = $selectedItems->sum('total_price');
             
-            // Calculate amounts using shared logic
-            $amounts = $this->calculateInvoiceAmounts($proposal, $totalAmount);
-            $managementFeeAmount = $amounts['management_fee'];
-            $salesAmount = $amounts['sales_amount'];
-            $vatAmount = $amounts['vat_amount'];
-            $invoiceAmount = $amounts['invoice_amount'];
+            // Calculate management fee value to store
+            $managementFeeToStore = $this->calculateProposalFeeValue($proposal, $totalAmount);
             
             $invoice->update([
                 'invoice_date'        => $data['invoice_date'],
@@ -211,18 +281,17 @@ class InvoiceService
                 'bill_to'             => $data['bill_to'] ?? null,
                 'ship_to'             => $data['ship_to'] ?? null,
                 'total_amount'        => $totalAmount,
-                'management_fee'      => $managementFeeAmount,
-                'sales_amount'        => $salesAmount,
-                'vat_amount'          => $vatAmount,
-                'invoice_amount'      => $invoiceAmount,
+                'management_fee_type' => $proposal->management_fee_type,
+                'management_fee'      => $managementFeeToStore,
+                'vat_rate'            => $proposal->vat_rate,
                 'note'                => $data['note'] ?? null,
             ]);
             
-            // --- Reset semua items lama ---
-            \App\Models\ProposalItem::where('invoice_id', $invoice->id)->update(['invoice_id' => null]);
+            // Reset old items
+            ProposalItem::where('invoice_id', $invoice->id)->update(['invoice_id' => null]);
 
-            // --- Relink items baru ---
-            \App\Models\ProposalItem::whereIn('id', $data['item_ids'])->update(['invoice_id' => $invoice->id]);
+            // Relink new items
+            ProposalItem::whereIn('id', $data['item_ids'])->update(['invoice_id' => $invoice->id]);
 
             return $invoice->fresh(['proposal', 'customer', 'items']);
         });
@@ -239,52 +308,27 @@ class InvoiceService
     }
 
     /**
-     * Calculate all invoice amounts based on selected BOQ total and proposal settings.
+     * Calculate Management Fee Value to Store (Logic for Proposal-based invoicing)
+     * If percent: returns the Rate (e.g. 10).
+     * If nominal: returns the Proportional Amount (e.g. 250000).
      */
-    private function calculateInvoiceAmounts(Proposal $proposal, $totalAmount)
+    private function calculateProposalFeeValue(Proposal $proposal, $totalAmount)
     {
-        // Calculate management fee
-        $managementFeeAmount = 0;
-        
-        // Ensure inputs are numeric to prevent overflow from weird types
         $totalAmount = (float) $totalAmount;
         $managementFee = (float) ($proposal->management_fee ?? 0);
-        
+
         if ($proposal->management_fee_type === 'percent') {
-            // Percent: automatically proportional
-            $managementFeeAmount = ($totalAmount * $managementFee) / 100;
+            // Return Rate
+            return $managementFee;
         } else {
-            // Nominal: calculate proportion based on selected items vs total items
+            // Nominal Proportional Logic
+            // Return Calculated Amount
             $totalProposalAmount = (float) $proposal->items->sum('total_price');
-            
             if ($totalProposalAmount > 0) {
-                // Prevent division by zero and weird infinite numbers
                 $proportion = $totalAmount / $totalProposalAmount;
-                $managementFeeAmount = $managementFee * $proportion;
-            } else {
-                 // Check if totalAmount is also 0, then fee is 0. 
-                 // If totalAmount > 0 but totalProposalAmount is 0 (should imply data inconsistency), default to 0 to be safe.
-                $managementFeeAmount = 0;
+                return $managementFee * $proportion;
             }
+            return 0; // Or keep as 0 if inconsistent
         }
-        
-        $managementFeeAmount = $managementFeeAmount;
-        
-        // Sales amount = total_amount + management_fee
-        $salesAmount = $totalAmount + $managementFeeAmount;
-
-        // Calculate VAT from proposal vat_rate
-        $vatRate = (float) $proposal->vat_rate;
-        $vatAmount = ($salesAmount * $vatRate) / 100;
-        
-        // Invoice amount = sales_amount + vat_amount
-        $invoiceAmount = round($salesAmount + $vatAmount, 2);
-
-        return [
-            'management_fee' => $managementFeeAmount,
-            'sales_amount' => $salesAmount,
-            'vat_amount' => $vatAmount,
-            'invoice_amount' => $invoiceAmount,
-        ];
     }
 }

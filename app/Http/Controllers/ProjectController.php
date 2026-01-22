@@ -96,10 +96,9 @@ class ProjectController extends Controller
                 'data' => $project
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create Project'
+                'message' => $e->getMessage() ?: 'Failed to create Project'
             ], 500);
         }
     }
@@ -135,7 +134,7 @@ class ProjectController extends Controller
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to load Project'
+                    'message' => $e->getMessage() ?: 'Failed to load Project'
                 ], 500);
             }
         }
@@ -156,7 +155,7 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update Project'
+                'message' => $e->getMessage() ?: 'Failed to update Project'
             ], 500);
         }
     }
@@ -170,10 +169,9 @@ class ProjectController extends Controller
                 'message' => 'Project deleted successfully'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error deleting Project: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete Project'
+                'message' => $e->getMessage() ?: 'Failed to delete Project'
             ], 500);
         }
     }

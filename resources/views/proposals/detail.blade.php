@@ -478,14 +478,14 @@
                                         </tr>
                                         <tr>
                                             <td colspan="7" class="text-end">${feeLabel}</td>
-                                            <td class="text-end">${formatRupiahDisplay(invoice.management_fee?.toString().replace(".", ",") ?? 0)}</td>
+                                            <td class="text-end">${formatRupiahDisplay(invoice.management_fee_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                         <tr class="fw-bold">
                                             <td colspan="7" class="text-end">Sales Amount</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.sales_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                         <tr>
-                                            <td colspan="7" class="text-end">VAT (${parseFloat(proposal.vat_rate || 0).toString().replace(".", ",")}%)</td>
+                                            <td colspan="7" class="text-end">VAT (${formatRupiahDisplay((proposal.vat_rate || 0).toString().replace(".", ","))}%)</td>
                                             <td class="text-end">${formatRupiahDisplay(invoice.vat_amount?.toString().replace(".", ",") ?? 0)}</td>
                                         </tr>
                                         <tr class="fw-bold text-primary">
@@ -652,7 +652,7 @@
             const invoiceAmount = salesAmount + vatAmount;
 
             const feeLabel = feeType === 'percent' ? 
-                             `Management Fee (${parseFloat(proposal.management_fee || 0).toString().replace(".", ",")}%)` : 
+                             `Management Fee (${formatRupiahDisplay((proposal.management_fee || 0).toString().replace(".", ","))}%)` : 
                              "Management Fee (Rp)";
 
             const footHtml = `
@@ -669,7 +669,7 @@
                     <td class="text-end">${formatRupiahDisplay(salesAmount.toString().replace('.', ','))}</td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="text-end">VAT (${parseFloat(proposal.vat_rate || 0).toString().replace(".", ",")}%)</td>
+                    <td colspan="7" class="text-end">VAT (${formatRupiahDisplay((proposal.vat_rate || 0).toString().replace(".", ","))}%)</td>
                     <td class="text-end">${formatRupiahDisplay(vatAmount.toString().replace('.', ','))}</td>
                 </tr>
                 <tr class="fw-bold text-primary">

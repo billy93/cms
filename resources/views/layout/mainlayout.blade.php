@@ -739,14 +739,39 @@
             return raw;
         }
         
-        function formatRupiahDisplay(val) {
-            let [i, d] = val.toString().split(",");
+        // function formatRupiahDisplay(val) {
+        //     let [i, d] = val.toString().split(",");
             
+        //     i = i.replace(/\D/g, "");
+        //     i = i.replace(/^0+(?=\d)/, "");
+        //     i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            
+        //     return d !== undefined ? `${i},${d.slice(0, 2)}` : i;
+        // }
+
+        function formatRupiahDisplay(val) {
+            val = val.toString();
+
+            // allow typing comma
+            if (val.endsWith(",")) {
+                let i = val.slice(0, -1)
+                    .replace(/\D/g, "")
+                    .replace(/^0+(?=\d)/, "")
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                return i + ",";
+            }
+
+            let [i, d] = val.split(",");
+
             i = i.replace(/\D/g, "");
             i = i.replace(/^0+(?=\d)/, "");
             i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            
-            return d !== undefined ? `${i},${d.slice(0, 2)}` : i;
+
+            if (d === undefined) return i;
+
+            d = d.slice(0, 2);
+
+            return d === "00" ? i : `${i},${d}`;
         }
 
         function formatDate(dateString) {

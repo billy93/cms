@@ -23,6 +23,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade')->nullable();
             $table->enum('status', ['Active', 'Inactive', 'Completed', 'Cancelled'])->default('Active');
+            $table->enum('type', ['FIT', 'Regular'])->default('Regular');
+            $table->string('sales_code')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -120,6 +120,7 @@ class ProjectForm {
       due_date: "",
       description: "",
       status: "",
+      type: "Regular",
     }
 
     if (isEdit && this.data) {
@@ -139,6 +140,7 @@ class ProjectForm {
         : "";
       value.description = this.data.description || "";
       value.status = this.data.status || "";
+      value.type = this.data.type || "Regular";
 
     }
 
@@ -148,6 +150,10 @@ class ProjectForm {
 
     const selectStatusOptions = ['Active', 'Inactive'].map(s => {
       return `<option value="${s}" ${value.status === s ? "selected" : ""}>${s}</option>`;
+    });
+
+    const selectTypeOptions = ['FIT', 'Regular'].map(t => {
+      return `<option value="${t}" ${value.type === t ? "selected" : ""}>${t}</option>`;
     });
 
     const dynamic = !isEdit ? `
@@ -161,6 +167,17 @@ class ProjectForm {
             ${selectStatusOptions}
           </select>
           <small id="input_status_error" class="text-danger mt-1" style="display: none;"></small>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <label class="col-form-label">Type<span class="text-danger">*</span></label>
+          </div>
+          <select id="input_type" class="select">
+            ${selectTypeOptions}
+          </select>
+          <small id="input_type_error" class="text-danger mt-1" style="display: none;"></small>
         </div>
       </div>
       <div class="col-md-6">
@@ -195,7 +212,18 @@ class ProjectForm {
           <small id="input_status_error" class="text-danger mt-1" style="display: none;"></small>
         </div>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <label class="col-form-label">Type<span class="text-danger">*</span></label>
+          </div>
+          <select id="input_type" class="select">
+            ${selectTypeOptions}
+          </select>
+          <small id="input_type_error" class="text-danger mt-1" style="display: none;"></small>
+        </div>
+      </div>
+      <div class="col-md-6">
         <div class="mb-3">
           <div class="d-flex align-items-center justify-content-between">
             <label class="col-form-label">Customer<span class="text-danger">*</span></label>
@@ -377,6 +405,7 @@ class ProjectForm {
     const name = this.form.querySelector("#input_name");
     const description = this.form.querySelector("#input_description");
     const status = this.form.querySelector("#input_status");
+    const type = this.form.querySelector("#input_type");
 
 
     const payload = {
@@ -384,6 +413,7 @@ class ProjectForm {
       name: name.value,
       description: description.value,
       status: status.value,
+      type: type.value,
     };
 
     const inputs = [
@@ -428,6 +458,11 @@ class ProjectForm {
         field: "input_status",
         required: true,
         message: "Status is required."
+      },
+      {
+        field: "input_type",
+        required: true,
+        message: "Type is required."
       },
       {
         field: "input_description",

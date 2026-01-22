@@ -109,8 +109,8 @@
                                            
                                         </tr>
                                         <tr>
-                                            <th class="text-center">No</th>
-                                            <th class="text-center">Generate</th>
+                                            <th class="text-left">No</th>
+                                            <th class="text-left">Generate</th>
                                         </tr>
                                     </thead>
                                     <tbody>

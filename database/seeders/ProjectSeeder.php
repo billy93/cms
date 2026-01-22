@@ -34,6 +34,7 @@ class ProjectSeeder extends Seeder
                 'description'  => "Deskripsi untuk project {$customer->name}",
                 'customer_id'  => $customer->id,
                 'status'       => 'Active',
+                'type'         => 'Regular',
             ]);
         }
 

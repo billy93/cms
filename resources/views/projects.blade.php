@@ -71,6 +71,7 @@
 											<th rowspan="2">Value</th>
 											<th colspan="2" class="text-center">Period</th>
 											<th class="td-break" rowspan="2">Due Date</th>
+											<th rowspan="2">Type</th>
 											<th rowspan="2">Status</th>
 											<th rowspan="2" class="fit">Action</th>
 										</tr>

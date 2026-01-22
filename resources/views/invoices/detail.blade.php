@@ -26,260 +26,330 @@
                             <h5 class="card-title mb-0">Invoice Information</h5>
                             <div class="d-flex gap-2">
                                 <a 
-                                    href="/invoices/{{ $invoice->id }}/pdf"
+                                    href="{{ route('invoices.pdf', $invoice->id) }}"
                                     target="_blank"
                                     class="btn btn-outline-danger"
                                     title="Generate PDF"
                                 >
                                     <i class="ti ti-file-type-pdf me-1"></i>Generate PDF
                                 </a>
-                                <a href="/invoices" class="btn btn-outline-secondary">
-                                    <i class="ti ti-arrow-left me-1"></i>Back to Invoices
+                                <a href="{{ route('invoices.index') }}" class="btn btn-outline-secondary">
+                                    <i class="ti ti-arrow-left me-1"></i>Back
                                 </a>
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="row" id="boq_info">
-                                <div class="col-md-6 col-xxl-4">
+                            <style>
+                                #invoice_table tfoot td {
+                                    color: #6f6f6f;
+                                    background-color: #fafafa;
+                                    font-size: 14px;
+                                }
+                            </style>
+
+                            <!-- Helper Variables -->
+                            @php
+                                $isRegular = $invoice->project == null && $invoice->proposal != null;
+                                $isFit = $invoice->project != null && $invoice->proposal == null;
+                            @endphp
+
+                            <!-- Top Info Grid -->
+                            <div class="row mb-4">
+                                <!-- Col 1: References -->
+                                <div class="col-md-4">
+                                    <h5 class="card-title mb-3">References</h5>
+                                    
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Project Code</label>
-                                        <p class="mb-0">{{ $invoice->proposal?->project?->code ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Proposal Code</label>
-                                        <p class="mb-0">{{ $invoice->proposal?->code ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Sales Code</label>
-                                        <p class="mb-0">{{ $invoice->proposal?->sales_code ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Pricing Model</label>
-                                        <p class="mb-0">{{ $invoice->proposal?->pricing_model ? ucfirst($invoice->proposal->pricing_model) : "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Invoice No.</label>
+                                        <label class="fw-semibold">Invoice Code</label>
                                         <p class="mb-0">{{ $invoice->code ?: "-" }}</p>
                                     </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
+                                    
+                                    @if($isRegular)
+                                        <div class="form-group mb-2">
+                                            <label class="fw-semibold">Proposal Code</label>
+                                            <p class="mb-0">{{ $invoice->proposal?->code ?: "-" }}</p>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label class="fw-semibold">Sales Code</label>
+                                            <p class="mb-0">{{ $invoice->proposal?->sales_code ?: "-" }}</p>
+                                        </div>
+                                    @elseif($isFit)
+                                        <div class="form-group mb-2">
+                                            <label class="fw-semibold">Project Code</label>
+                                            <p class="mb-0">{{ $invoice->project?->code ?: "-" }}</p>
+                                        </div>
+                                    @endif
+
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Created</label>
-                                        <p class="mb-0">{{ $invoice->created_at ? formatDate($invoice->created_at, 'j F Y') : "-" }}</p>
+                                        <label class="fw-semibold">Customer</label>
+                                        <p class="mb-0">{{ $invoice->customer?->name ?: "-" }}</p>
                                     </div>
                                 </div>
-                                <div class="col-md-6 col-xxl-4">
+
+                                <!-- Col 2: Dates & Status -->
+                                <div class="col-md-4">
+                                    <h5 class="card-title mb-3">Dates & Status</h5>
+                                    
                                     <div class="form-group mb-2">
-                                        <label class="fw-semibold">Updated</label>
-                                        <p class="mb-0">{{ $invoice->updated_at ? formatDate($invoice->updated_at, 'j F Y') : "-" }}</p>
+                                        <label class="fw-semibold">Invoice Date</label>
+                                        <p class="mb-0">{{ $invoice->invoice_date ? \Carbon\Carbon::parse($invoice->invoice_date)->format('d F Y') : "-" }}</p>
                                     </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Due Date</label>
-                                        <p class="mb-0">{{ $invoice->due_date ? formatDate($invoice->due_date, 'j F Y') : "-" }}</p>
+                                        <p class="mb-0">{{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d F Y') : "-" }}</p>
                                     </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Type</label>
                                         <p class="mb-0">
                                             @if ($invoice->type === 'Partial')
-                                                <span class="badge badge-status bg-secondary">Partial</span>
+                                                <span class="badge bg-secondary">Partial</span>
                                             @elseif ($invoice->type === 'Full')
-                                                <span class="badge badge-status bg-success">Full</span>
+                                                <span class="badge bg-success">Full</span>
                                             @else
-                                                <span class="badge badge-status bg-secondary">Unknown</span>
+                                                <span class="badge bg-light text-dark">-</span>
                                             @endif
                                         </p>
                                     </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Status</label>
                                         <p class="mb-0">
-                                            @if ($invoice->status === 'Unpaid')
-                                                <span class="badge badge-status bg-secondary">Unpaid</span>
-                                            @elseif ($invoice->status === 'Paid')
-                                                <span class="badge badge-status bg-success">Paid</span>
-                                            @elseif ($invoice->status === 'Cancelled')
-                                                <span class="badge badge-status bg-danger">Cancelled</span>
-                                            @else
-                                                <span class="badge badge-status bg-secondary">Unknown</span>
-                                            @endif
+                                            @php
+                                                $statusClass = match($invoice->status) {
+                                                    'Paid' => 'bg-success',
+                                                    'Unpaid' => 'bg-warning',
+                                                    'Cancelled' => 'bg-danger',
+                                                    default => 'bg-secondary'
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $statusClass }}">{{ $invoice->status }}</span>
                                         </p>
                                     </div>
                                 </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Basic Price</label>
-                                        <p class="mb-0">{{ formatRupiah($invoice->total_amount) ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Management Fee</label>
-                                        <p class="mb-0">{{ formatRupiah($invoice->management_fee) ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Sales Amount</label>
-                                        <p class="mb-0">{{ formatRupiah($invoice->sales_amount) ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Total Amount</label>
-                                        <p class="mb-0">{{ formatRupiah($invoice->invoice_amount) ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
-                                    <div class="form-group mb-2">
-                                        <label class="fw-semibold">Payment Method</label>
-                                        <p class="mb-0">{{ $invoice->payment_method ?: "-" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
+
+                                <!-- Col 3: Payment & Notes -->
+                                <div class="col-md-4">
+                                    <h5 class="card-title mb-3">Payment Details</h5>
+                                    
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Bill To</label>
                                         <p class="mb-0">{{ $invoice->bill_to ?: "-" }}</p>
                                     </div>
-                                </div>
-                                <div class="col-md-6 col-xxl-4">
+                                    <div class="form-group mb-2">
+                                        <label class="fw-semibold">Payment Method</label>
+                                        <p class="mb-0">{{ $invoice->payment_method ?: "-" }}</p>
+                                    </div>
                                     <div class="form-group mb-2">
                                         <label class="fw-semibold">Note</label>
-                                        <p class="mb-0">{{ $invoice->note ?: "-" }}</p>
+                                        <p class="fst-italic mb-0">{{ $invoice->note ?: "No notes" }}</p>
                                     </div>
                                 </div>
-                                <div class="form-group mb-2">
-                                    <label class="fw-semibold">Items</label>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="table-responsive custom-table" style="border: 1px solid #e8e8e8; border-radius: 6px;">
-                                    <style>
-                                        #invoice_items_list tfoot td {
-                                            color: #6f6f6f;
-                                            background-color: #fafafa;
-                                            font-size: 14px;
-                                        }
-                                    </style>
-                                        <table class="table" id="invoice_items_list">
-                                            <thead class="thead-light">
+                            </div>
+                            
+                            <h5 class="card-title mb-3">Items</h5>
+
+                            <!-- Items Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered custom-table" id="invoice_table">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            @if($isFit)
+                                                <th class="text-center" width="5%">No</th>
+                                                <th width="55%">Description</th>
+                                                <th class="text-end" width="20%">Unit Price</th>
+                                                <th class="text-end" width="20%">Total</th>
+                                            @else
+                                                <th class="text-center" width="5%">No</th>
+                                                <th width="35%">Description</th>
+                                                <th width="10%" class="text-center">QTY</th>
+                                                <th width="10%" class="text-center">Freq</th>
+                                                <th class="text-end" width="20%">Unit Price</th>
+                                                <th class="text-end" width="20%">Total</th>
+                                            @endif
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if ($isFit)
+                                            <!-- FIT FLOW: Simple Single Item -->
+                                            <tr>
+                                                <td class="text-center">1</td>
+                                                <td>{{ $invoice->description ?: 'Project Implementation' }}</td>
+                                                <td class="text-end">{{ formatRupiah($invoice->total_amount) }}</td>
+                                                <td class="text-end">{{ formatRupiah($invoice->total_amount) }}</td>
+                                            </tr>
+
+                                        @elseif ($isRegular)
+                                            <!-- REGULAR FLOW: BOQ Items -->
+                                            @php
+                                                $pricingModel = $invoice->proposal->pricing_model;
+                                            @endphp
+
+                                            @if ($pricingModel === 'XXX')
+                                                <!-- Type A / Summary Only -->
                                                 <tr>
-                                                    <th>No</th>
-                                                    <th>Description</th>
-                                                    <th>Title 1</th>
-                                                    <th>Title 2</th>
-                                                    <th>Title 3</th>
-                                                    <th>Title 4</th>
-                                                    <th class="text-end">Unit Price</th>
-                                                    <th class="text-end">Total Price</th>
+                                                    <td class="text-center">1</td>
+                                                    <td>{{ $invoice->proposal->pricing_model_description ?? 'Project Implementation' }}</td>
+                                                    <td class="text-center">-</td>
+                                                    <td class="text-center">-</td>
+                                                    <td class="text-end">{{ formatRupiah($invoice->items->sum('total_price')) }}</td>
+                                                    <td class="text-end">{{ formatRupiah($invoice->items->sum('total_price')) }}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if($invoice->items->count() == 0)
-                                                    <tr><td colspan="8" class="text-center">No items found</td></tr>
-                                                @else
-                                                    @php
-                                                        $items = $invoice->items->sortBy('id'); 
-                                                        $grouped = $items->groupBy('header')->sortKeys();
-                                                        $counter = 1;
-                                                        $headerIndex = 0;
-                                                    @endphp
+                                            @else
+                                                <!-- Type B / Detailed Grouping -->
+                                                @php
+                                                    $groupedByHeader = $invoice->items->groupBy('header');
+                                                    // Sort keys: Empty key first
+                                                    $sortedHeaders = $groupedByHeader->sortBy(fn($items, $key) => empty($key) ? 0 : 1, SORT_NUMERIC);
+                                                    $headerIndex = 0;
+                                                @endphp
 
-                                                    @foreach($grouped as $header => $groupItems)
-                                                        @php $headerLabel = chr(65 + $headerIndex); @endphp
-                                                        
-                                                        @if($header)
-                                                            <tr style="background-color: #f2f2f2;">
-                                                                <td>{{ $headerLabel }}</td>
-                                                                <td colspan="7" class="fw-bold text-uppercase">{{ $header }}</td>
-                                                            </tr>
-                                                        @endif
-
+                                                @foreach($sortedHeaders as $header => $itemsWithSameHeader)
+                                                    @if(!empty($header))
                                                         @php
-                                                            $subGrouped = $groupItems->groupBy('subheader')->sortKeys();
+                                                            $headerLabel = chr(65 + $headerIndex);
+                                                            $headerTotal = $itemsWithSameHeader->sum('total_price');
+                                                        @endphp
+                                                        <!-- Header Row -->
+                                                        <tr style="background-color: #f2f2f2;">
+                                                            <td class="text-center fw-bold">{{ $headerLabel }}</td>
+                                                            <td colspan="4" class="fw-bold text-uppercase">{{ $header }}</td>
+                                                            <td class="text-end fw-bold">{{ formatRupiah($headerTotal) }}</td>
+                                                        </tr>
+
+                                                        <!-- Subheaders -->
+                                                        @php
+                                                            $groupedBySubheader = $itemsWithSameHeader->groupBy('subheader');
+                                                            $sortedSubheaders = $groupedBySubheader->sortBy(fn($items, $key) => empty($key) ? 0 : 1, SORT_NUMERIC);
                                                             $subheaderIndex = 1;
                                                         @endphp
 
-                                                        @foreach($subGrouped as $subheader => $subItems)
-                                                            @php $subheaderLabel = $header ? "{$headerLabel}.{$subheaderIndex}" : ''; @endphp
-
-                                                            @if($subheader && $header)
+                                                        @foreach($sortedSubheaders as $subheader => $itemsWithSameSubheader)
+                                                            @if(!empty($subheader))
                                                                 <tr>
-                                                                    <td>{{ $subheaderLabel }}</td>
-                                                                    <td colspan="7" class="fst-italic" style="padding-left: 20px;">{{ $subheader }}</td>
+                                                                    <td class="text-center text-muted">{{ $headerLabel }}.{{ $subheaderIndex }}</td>
+                                                                    <td colspan="5" class="fst-italic" style="padding-left: 20px;">{{ $subheader }}</td>
                                                                 </tr>
                                                                 @php $subheaderIndex++; @endphp
                                                             @endif
 
-                                                            @foreach($subItems as $item)
-                                                                @php
-                                                                    $t1 = $item->title1_value ? "{$item->title1_value} <span class='text-xs'>{$item->title1_key}</span>" : '-';
-                                                                    $t2 = $item->title2_value ? "{$item->title2_value} <span class='text-xs'>{$item->title2_key}</span>" : '-';
-                                                                    $t3 = $item->title3_value ? "{$item->title3_value} <span class='text-xs'>{$item->title3_key}</span>" : '-';
-                                                                    $t4 = $item->title4_value ? "{$item->title4_value} <span class='text-xs'>{$item->title4_key}</span>" : '-';
-                                                                    
-                                                                    $desc = (!$header && $item->subheader) ? 
-                                                                            "<strong>{$item->subheader}</strong>" : 
-                                                                            ($item->description ?: ($item->product?->name ?: '-'));
-                                                                @endphp
+                                                            @php $itemIndex = 1; @endphp
+                                                            @foreach($itemsWithSameSubheader as $item)
                                                                 <tr>
-                                                                    <td>{{ $counter++ }}</td>
-                                                                    <td>{!! $desc !!}</td>
-                                                                    <td>{!! $t1 !!}</td>
-                                                                    <td>{!! $t2 !!}</td>
-                                                                    <td>{!! $t3 !!}</td>
-                                                                    <td>{!! $t4 !!}</td>
-                                                                    <td class="text-end nowrap">{{ formatRupiah($item->selling_price) }}</td>
-                                                                    <td class="text-end nowrap">{{ formatRupiah($item->total_price) }}</td>
+                                                                    <td class="text-center">{{ $itemIndex++ }}</td>
+                                                                    <td>
+                                                                        {{ $item->description ?: '-' }}
+                                                                    </td>
+                                                                    <td class="text-center text-nowrap">
+                                                                        {{ $item->title1_value }} {{ $item->title1_key }}
+                                                                    </td>
+                                                                    <td class="text-center text-nowrap">
+                                                                        {{ $item->title2_value }} {{ $item->title2_key }}
+                                                                    </td>
+                                                                    <td class="text-end">{{ formatRupiah($item->selling_price) }}</td>
+                                                                    <td class="text-end">{{ formatRupiah($item->total_price) }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         @endforeach
+                                                        
+                                                        @php $headerIndex++; @endphp
 
-                                                        @if($header)
-                                                            @php $headerIndex++; @endphp
-                                                        @endif
-                                                    @endforeach
+                                                    @else
+                                                        <!-- No Header Items (Flattened) -->
+                                                        @php $itemIndex = 1; @endphp
+                                                        @foreach($itemsWithSameHeader as $item)
+                                                            <tr>
+                                                                <td class="text-center">{{ $itemIndex++ }}</td>
+                                                                <td>{{ $item->description ?: '-' }}</td>
+                                                                <td class="text-center text-nowrap">{{ $item->title1_value }} {{ $item->title1_key }}</td>
+                                                                <td class="text-center text-nowrap">{{ $item->title2_value }} {{ $item->title2_key }}</td>
+                                                                <td class="text-end">{{ formatRupiah($item->selling_price) }}</td>
+                                                                <td class="text-end">{{ formatRupiah($item->total_price) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+
+                                                @if($groupedByHeader->isEmpty())
+                                                    <tr><td colspan="6" class="text-center text-muted py-3">No items found</td></tr>
                                                 @endif
-                                            </tbody>
-                                            <tfoot>
-                                                <tr class="fw-bold">
-                                                    <td colspan="7" class="text-end">Basic Price</td>
-                                                    <td class="text-end">{{ formatRupiah($invoice->total_amount) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="7" class="text-end">Management Fee ({{ (float) number_format($invoice->proposal?->management_fee ?? 0, 2, '.', '') }}%)</td>
-                                                    <td class="text-end">{{ formatRupiah($invoice->management_fee) }}</td>
-                                                </tr>
-                                                <tr class="fw-bold">
-                                                    <td colspan="7" class="text-end">Sales Amount</td>
-                                                    <td class="text-end">{{ formatRupiah($invoice->sales_amount) }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="7" class="text-end">VAT ({{ (float) number_format($invoice->proposal?->vat_rate ?? 0, 2, '.', '') }}%)</td>
-                                                    <td class="text-end">{{ formatRupiah($invoice->vat_amount) }}</td>
-                                                </tr>
-                                                <tr class="fw-bold text-primary">
-                                                    <td colspan="7" class="text-end">Total Amount</td>
-                                                    <td class="text-end">{{ formatRupiah($invoice->invoice_amount) }}</td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
+                                            @endif
+                                        @else
+                                            <tr><td colspan="6" class="text-center text-danger">Invalid Invoice Type</td></tr>
+                                        @endif
+                                    </tbody>
+
+                                    <!-- FOOTER TOTALS -->
+                                    @php
+                                        // Determine values based on type
+                                        if ($isRegular) {
+                                            $colSpan = 5;
+                                            $basicSum = $invoice->items->sum('total_price');
+                                            
+                                            $feeRate = $invoice->proposal->management_fee;
+                                            $vatRate = $invoice->proposal->vat_rate;
+                                            $feeType = $invoice->proposal->management_fee_type;
+
+
+                                            if ($feeType != 'nominal') { // Default to percent
+                                                $feeAmount = round($basicSum * ($feeRate / 100), 2);
+                                            } else {
+                                                // Proportional Fee Calculation for Nominal
+                                                $proposalTotal = $invoice->proposal->total_amount_items ?: 1; 
+                                                $feeAmount = round(($basicSum / $proposalTotal) * $feeRate, 2);
+                                            }
+                                            
+                                            // Recalculate dependent values
+                                            $salesAmount = $basicSum + $feeAmount;
+                                            $vatAmount = round($salesAmount * ($vatRate / 100), 2);
+                                            $invoiceAmount = $salesAmount + $vatAmount;
+
+                                        } else {
+                                            $colSpan = 3;
+                                            $basicSum = $invoice->total_amount;
+                                            $feeRate = $invoice->management_fee;
+                                            $vatRate = $invoice->vat_rate;
+                                            $feeType = $invoice->management_fee_type;
+                                            
+                                            $feeAmount = $invoice->management_fee_amount;
+                                            $salesAmount = $invoice->sales_amount;
+                                            $vatAmount = $invoice->vat_amount;
+                                            $invoiceAmount = $invoice->invoice_amount;
+                                        }
+                                        
+                                        $feeLabel = "Management Fee";
+                                        if ($feeType === 'percent') {
+                                            $feeLabel .= " (" . formatRupiah($feeRate) . "%)";
+                                        }
+                                    @endphp
+
+                                    <tfoot>
+                                        <tr class="fw-bold">
+                                            <td colspan="{{ $colSpan }}" class="text-end">Basic Price</td>
+                                            <td class="text-end">{{ formatRupiah($basicSum) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="{{ $colSpan }}" class="text-end">{{ $feeLabel }}</td>
+                                            <td class="text-end">{{ formatRupiah($feeAmount) }}</td>
+                                        </tr>
+                                        <tr class="fw-bold">
+                                            <td colspan="{{ $colSpan }}" class="text-end">Sales Amount</td>
+                                            <td class="text-end">{{ formatRupiah($salesAmount) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="{{ $colSpan }}" class="text-end">VAT ({{ formatRupiah($vatRate) }}%)</td>
+                                            <td class="text-end">{{ formatRupiah($vatAmount) }}</td>
+                                        </tr>
+                                        <tr class="fw-bold text-primary">
+                                            <td colspan="{{ $colSpan }}" class="text-end">Total Amount</td>
+                                            <td class="text-end">{{ formatRupiah($invoiceAmount) }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
+                            <!-- /Items Table -->
+
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

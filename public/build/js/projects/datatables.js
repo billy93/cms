@@ -88,6 +88,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return type === 'display' && data ? moment(data).format('DD MMM YYYY') : "-";
           }
         },
+
+        {
+          data: 'type',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data === 'FIT'
+                ? '<span class="badge badge-status bg-warning">FIT</span>'
+                : '<span class="badge badge-status bg-info">Regular</span>';
+            }
+            return data;
+          }
+        },
         {
           data: 'status',
           render: function (data, type, row) {

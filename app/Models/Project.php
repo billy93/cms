@@ -22,7 +22,9 @@ class Project extends Model
         'due_date',
         'description',
         'customer_id',
-        'status'
+        'status',
+        'type',
+        'sales_code'
     ];
 
     protected $casts = [
@@ -30,6 +32,7 @@ class Project extends Model
         'end_date' => 'date',
         'due_date' => 'date',
         'status' => 'string',
+        'type' => 'string',
     ];
 
     /**
@@ -46,46 +49,73 @@ class Project extends Model
         return $code;
     }
 
-    /**
-     * Relationship with Customer
-     */
+
+    public function generateSalesCode()
+    {
+        $dateCode = now()->format('Ymd');
+        
+        // Get 5 chars from project code
+        $projCodeRaw = $this->code ?? (string)$this->id;
+        $projCodeLast5 = substr($projCodeRaw, -5);
+        $projCodeLast5 = str_pad($projCodeLast5, 5, '0', STR_PAD_LEFT);
+
+        // FIT projects don't have proposals, so we skip propCodeLast5 or use '00000'? 
+        // User pattern: FIT-...-urutan sequence.
+        // Let's assume FIT-{Proj}-{Date}-{Seq}
+
+        // Get latest invoice for THIS project
+        $latestInvoice = $this->invoices()->orderByDesc('id')->first();
+
+        if ($latestInvoice && preg_match('/-(\d{3})$/', $latestInvoice->code, $m)) {
+            $sequence = intval($m[1]) + 1;
+        } else {
+            $sequence = 1;
+        }
+
+        do {
+            $seqCode = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            $candidate = "FIT-{$projCodeLast5}-{$dateCode}-{$seqCode}";
+
+            // Check uniqueness in Invoices (since this will be an invoice code)
+            $exists = Invoice::where('code', $candidate)->exists();
+            // Also check current Project's sales_code to avoid self-collision if running multiple times before invoice creation?
+            // Actually usually sales_code on Project is just the FIRST one.
+            if (!$exists) {
+                 // Check if any OTHER project has this sales_code (unlikely with ProjCode included)
+                 $exists = Project::where('sales_code', $candidate)->where('id', '!=', $this->id)->exists();
+            }
+            
+            if ($exists) $sequence++;
+        } while ($exists);
+
+        return $candidate;
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
 
-    /**
-     * Relationship with Proposal (one-to-one)
-     */
     public function proposals()
     {
         return $this->hasMany(Proposal::class);
     }
 
-    public function hasProposal()
+    public function invoices()
     {
-        return $this->proposal()->exists();
+        return $this->hasMany(Invoice::class);
     }
 
-    /**
-     * Scope for active projects
-     */
     public function scopeActive($query)
     {
         return $query->where('status', 'Active');
     }
 
-    /**
-     * Scope for projects with customer
-     */
     public function scopeWithCustomer($query)
     {
         return $query->with('customer');
     }
 
-    /**
-     * Scope for projects with proposal
-     */
     public function scopeWithProposal($query)
     {
         return $query->with('proposals');
@@ -108,11 +138,8 @@ class Project extends Model
         $this->attributes['value'] = (float) $clean;
     }
 
-    /**
-     * Accessor: format numeric value ke format Rupiah saat dibaca
-     */
     public function getValueAttribute($value)
     {
-        return number_format($value ?? 0, 2, ',', '.'); // contoh: 1.250.000,50
+        return number_format($value ?? 0, 2, ',', '.'); 
     }
 }

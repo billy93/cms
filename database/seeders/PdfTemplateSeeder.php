@@ -202,12 +202,7 @@ class PdfTemplateSeeder extends Seeder
             <table class="pdf-table">
                 <thead>
                     <tr>
-                        <th class="pdf-text-center" style="width: 30px;">NO</th>
-                        <th>DESCRIPTION</th>
-                        <th class="pdf-text-center" style="width: 60px;">QTY</th>
-                        <th class="pdf-text-center" style="width: 60px;">FREQ</th>
-                        <th class="pdf-text-right" style="width: 100px;">UNIT PRICE</th>
-                        <th class="pdf-text-right" style="width: 100px;">TOTAL</th>
+                        {{invoice_table_header}}
                     </tr>
                 </thead>
                 <tbody>
@@ -221,27 +216,28 @@ class PdfTemplateSeeder extends Seeder
     </div>
 </body>
 </html>',
-            'variables' => [
-                ['name' => 'invoice_code', 'label' => 'Invoice Code'],
-                ['name' => 'invoice_date', 'label' => 'Invoice Date'],
-                ['name' => 'customer_name', 'label' => 'Customer Name'],
-                ['name' => 'bill_to', 'label' => 'Billing Address'],
-                ['name' => 'due_date', 'label' => 'Due Date'],
-                ['name' => 'payment_method', 'label' => 'Payment Method'],
-                ['name' => 'totals_rows', 'label' => 'Totals Section Rows'],
-                ['name' => 'notes', 'label' => 'Notes'],
-                ['name' => 'invoice_items', 'label' => 'Invoice Items (Table Rows)'],
-                ['name' => 'logo_path', 'label' => 'Logo Path'],
-            ],
-            'is_active' => true,
-        ]);
+    'variables' => [
+        ['name' => 'invoice_code', 'label' => 'Invoice Code'],
+        ['name' => 'invoice_date', 'label' => 'Invoice Date'],
+        ['name' => 'customer_name', 'label' => 'Customer Name'],
+        ['name' => 'bill_to', 'label' => 'Billing Address'],
+        ['name' => 'due_date', 'label' => 'Due Date'],
+        ['name' => 'payment_method', 'label' => 'Payment Method'],
+        ['name' => 'totals_rows', 'label' => 'Totals Section Rows'],
+        ['name' => 'notes', 'label' => 'Notes'],
+        ['name' => 'invoice_table_header', 'label' => 'Invoice Heaeder (Table Header)'],
+        ['name' => 'invoice_items', 'label' => 'Invoice Items (Table Rows)'],
+        ['name' => 'logo_path', 'label' => 'Logo Path'],
+    ],
+    'is_active' => true,
+    ]);
 
-        // Default Proposal Template
-        PdfTemplate::create([
-            'name' => 'Default Proposal',
-            'type' => 'proposal',
-            'description' => 'Standard proposal template with ATI branding',
-            'html_content' => '<!DOCTYPE html>
+    // Default Proposal Template
+    PdfTemplate::create([
+    'name' => 'Default Proposal',
+    'type' => 'proposal',
+    'description' => 'Standard proposal template with ATI branding',
+    'html_content' => '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

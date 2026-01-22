@@ -13,15 +13,70 @@ class InvoiceForm {
     this.handleSubmit = this.handleSubmit.bind(this);
 
     this.handleDocumentChange = this.handleDocumentChange.bind(this);
+    this.handleDocumentInput = this.handleDocumentInput.bind(this);
+    this.handleDocumentKeyDown = this.handleDocumentKeyDown.bind(this);
+
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.handleSubmit()
     });
 
     document.addEventListener("change", this.handleDocumentChange);
+    document.addEventListener("input", this.handleDocumentInput);
+    document.addEventListener("keydown", this.handleDocumentKeyDown);
   }
 
   // ---------------------------------------- GLOBAL HANDLER ----------------------------------------
+  handleDocumentKeyDown(e) {
+    const target = e.target;
+    if (target.matches(`.number-input`)) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const k = e.key;
+
+      if (
+        k === "Backspace" ||
+        k === "Delete" ||
+        k === "ArrowLeft" ||
+        k === "ArrowRight" ||
+        k === "Home" ||
+        k === "End" ||
+        k === "Tab"
+      ) return;
+
+      if (!/[\d,]/.test(k)) e.preventDefault();
+    }
+  }
+
+  handleDocumentInput(e) {
+    const target = e.target;
+
+    if (target.matches(`.number-input`)) {
+      if (target.classList.contains("no-decimal")) {
+
+        let val = target.value;
+        val = val.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+        if (val === "") val = "0";
+        target.value = val;
+      } else {
+        const before = target.value;
+        const caret = target.selectionStart;
+
+        const norm = normalizeFormatRupiah(before);
+        const formatted = formatRupiahDisplay(norm);
+
+        target.value = formatted;
+
+        const delta = formatted.length - before.length;
+        const newCaret = caret + delta > 0 ? caret + delta : 0;
+        target.setSelectionRange(newCaret, newCaret);
+      }
+    }
+
+    if (target.matches("#input_invoice_total_amount") || target.matches("#input_invoice_management_fee")) {
+      this.calculateFitAmount();
+    }
+  }
   async handleDocumentChange(e) {
     const target = e.target;
 
@@ -69,11 +124,39 @@ class InvoiceForm {
       this.selectedItems = Array.from(unique.values());
       this.updateSelectedEl();
       this.checkAndAutoChangeType();
+    } else if (target.matches("#input_invoice_vat_rate") || target.matches("#input_invoice_management_fee_type")) {
+      this.calculateFitAmount();
+    }
+  }
+
+  calculateFitAmount() {
+    const basicPrice = parseFloat(normalizeFormatRupiah(this.form.querySelector("#input_invoice_total_amount")?.value || "0").replace(",", ".")) || 0;
+    const vatRate = parseFloat(this.form.querySelector("#input_invoice_vat_rate")?.value || 0);
+    const mgmtFeeRaw = this.form.querySelector("#input_invoice_management_fee")?.value || "0";
+    const mgmtFee = parseFloat(normalizeFormatRupiah(mgmtFeeRaw).replace(",", ".")) || 0;
+    const mgmtType = this.form.querySelector("#input_invoice_management_fee_type")?.value || "percent";
+
+    let mgmtAmount = 0;
+    if (mgmtType === "percent") {
+      mgmtAmount = (basicPrice * mgmtFee) / 100;
+    } else {
+      mgmtAmount = mgmtFee;
+    }
+
+    const salesAmount = basicPrice + mgmtAmount;
+    const vatAmount = (salesAmount * vatRate) / 100;
+    const totalAmount = salesAmount + vatAmount;
+
+    const calcField = this.form.querySelector("#input_invoice_calculated_amount");
+    if (calcField) {
+      calcField.value = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalAmount);
     }
   }
 
   checkAndAutoChangeType() {
     let isAllSelected = true;
+
+    if (this.project) return; // Skip auto-type for FIT projects
 
     if (this.proposal?.items?.length) {
       const currentItems = this.selectedItems.map(v => +v.id)
@@ -181,16 +264,20 @@ class InvoiceForm {
   }
 
   // ---------------------------------------- INIT ----------------------------------------
-  async init(mode = "create", proposal = {}, data = {}) {
+  async init({ mode = "create", project = null, proposal = null, data = null }) {
     this.resetForm();
     this.showLoading();
     this.mode = mode;
+    this.project = project;
     this.proposal = proposal;
     this.data = data;
 
     const formWrapper = document.createElement("div");
     formWrapper.innerHTML = this.generateForm();
     this.form.appendChild(formWrapper);
+    if (this.project) {
+      this.calculateFitAmount();
+    }
     this.initPlugins();
     this.isInit = false;
     this.hideLoading();
@@ -208,6 +295,7 @@ class InvoiceForm {
       project_name: "",
       customer_name: "",
       proposal_code: "",
+      description: "",
       type: "Full",
       status: "Unpaid",
       invoice_date: "",
@@ -216,23 +304,44 @@ class InvoiceForm {
       ship_to: "",
       payment_method: "",
       note: "",
+      total_amount: "0",
+      vat_rate: "11",
+      management_fee: "0",
+      management_fee_type: "percent",
     }
 
     // Create With Proposal Data 
-    if (this.proposal && this.mode === "create") {
+    if (this.proposal && this.mode === "create") { // Project Regular
       value.project_name = this.proposal.project?.name || "";
       value.customer_name = this.proposal.project?.customer?.name || "";
       value.proposal_code = this.proposal.code || "";
+    } else if (this.project && this.mode === "create") { // Project Fit
+      value.project_name = this.project.name || "";
+      value.customer_name = this.project.customer?.name || "";
     }
 
     if (this.data && this.mode === "edit") {
-      value.project_name = this.data.proposal?.project?.name || "";
+      if (this.data && this.mode === "edit" && this.proposal) { // Project Regular
+        value.project_name = this.data.proposal?.project?.name || "";
+        value.proposal_code = this.data.proposal?.code || "";
+      } else if (this.data && this.mode === "edit" && this.project) { // Project Fit
+        value.project_name = this.data.project?.name || "";
+        value.description = this.data.description || "";
+        value.total_amount = formatRupiahDisplay(this.data.total_amount?.toString().replace(".", ",") || "0");
+        value.vat_rate = this.data.vat_rate || "11";
+        value.management_fee = formatRupiahDisplay(this.data.management_fee?.toString().replace(".", ",") || "0");
+        value.management_fee_type = this.data.management_fee_type || "percent";
+      }
+
       value.customer_name = this.data.customer?.name || "";
-      value.proposal_code = this.data.proposal?.code || "";
       value.type = this.data?.type || "Full";
       value.status = this.data?.status || "Unpaid";
-      value.invoice_date = this.data?.invoice_date || "";
-      value.due_date = this.data?.due_date || "";
+      value.invoice_date = this.data?.invoice_date
+        ? moment(this.data.invoice_date).format("YYYY-MM-DD")
+        : "";
+      value.due_date = this.data?.due_date
+        ? moment(this.data.due_date).format("YYYY-MM-DD")
+        : "";
       value.bill_to = this.data?.bill_to || "";
       value.ship_to = this.data?.ship_to || "";
       value.payment_method = this.data?.payment_method || "";
@@ -241,32 +350,36 @@ class InvoiceForm {
 
     // Check if 'Full' type allowed
     // Full is allowed only if there are NO other active invoices.
-    let isFullAllowed = true;
-    const allInvoices = this.proposal?.invoices || [];
-    const currentInvoiceId = this.mode === 'edit' ? this.data?.id : null;
+    let typeOptions = [];
 
-    const otherActiveInvoices = allInvoices.filter(inv => {
-      // Ignore current invoice
-      if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
-      // Ignore cancelled invoices (optional, but typical)
-      if (inv.status === 'Cancelled') return false;
-      return true;
-    });
+    if (this.proposal) { // Project Regular
+      let isFullAllowed = true;
+      const allInvoices = this.proposal?.invoices || [];
+      const currentInvoiceId = this.mode === 'edit' ? this.data?.id : null;
 
-    if (otherActiveInvoices.length > 0) {
-      isFullAllowed = false;
-      // Force type to Partial if Full was selected/defaulted but not allowed
-      if (value.type === 'Full') {
-        value.type = 'Partial';
+      const otherActiveInvoices = allInvoices.filter(inv => {
+        // Ignore current invoice
+        if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
+        // Ignore cancelled invoices (optional, but typical)
+        if (inv.status === 'Cancelled') return false;
+        return true;
+      });
+
+      if (otherActiveInvoices.length > 0) {
+        isFullAllowed = false;
+        // Force type to Partial if Full was selected/defaulted but not allowed
+        if (value.type === 'Full') {
+          value.type = 'Partial';
+        }
       }
-    }
-
-    let typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
-
-    // Type A: Only "Full" allowed
-    if (this.proposal?.pricing_model === 'A' || this.data?.proposal?.pricing_model === 'A') {
-      typeOptions = ["Full"];
-      value.type = "Full";
+      typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
+      // Type A: Only "Full" allowed
+      if (this.proposal?.pricing_model === 'A' || this.data?.proposal?.pricing_model === 'A') {
+        typeOptions = ["Full"];
+        value.type = "Full";
+      }
+    } else if (this.project) { // Project Fit
+      typeOptions = ["Partial"];
     }
 
     const selectTypeOptions = typeOptions.map(t => {
@@ -283,6 +396,7 @@ class InvoiceForm {
           <div class="mb-3">
             <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
             <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${value.project_name}" disabled>
+            <small id="input_invoice_project_name_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
         <div class="col-md-6">
@@ -292,13 +406,15 @@ class InvoiceForm {
             <small id="input_invoice_customer_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label">Proposal Code<span class="text-danger">*</span></label>
-            <input type="text" id="input_invoice_proposal_code" class="form-control btn-disabled" value="${value.proposal_code}" disabled>
-            <small id="input_invoice_proposal_error" class="text-danger mt-1" style="display: none;"></small>
+        ${this.proposal ? `
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Proposal Code<span class="text-danger">*</span></label>
+              <input type="text" id="input_invoice_proposal_code" class="form-control btn-disabled" value="${value.proposal_code}" disabled>
+              <small id="input_invoice_proposal_code_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
           </div>
-        </div>
+        ` : ""}
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Type<span class="text-danger">*</span></label>
@@ -338,9 +454,11 @@ class InvoiceForm {
           </div>
         </div>
         <div class="col-md-12 mb-3" id="invoice_type_alert_container"></div>
-        <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
-          ${value.type === "Full" ? "" : this.getProposalItemTableHTML()}
-        </div>
+        ${this.proposal ? `
+          <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
+            ${value.type === "Full" ? "" : this.getProposalItemTableHTML()}
+          </div>
+        ` : ""}
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Bill To</label>
@@ -370,6 +488,61 @@ class InvoiceForm {
           </div>
         </div>
       </div>
+      
+      <!-- FIT Calculator Fields -->
+      ${this.project ? `
+      <div class="row border p-2 mb-3 rounded bg-light">
+          <div class="col-12"><h6 class="text-primary"><i class="ti ti-calculator me-1"></i>Amount Calculation</h6></div>
+          <div class="col-md-12">
+            <div class="mb-3">
+              <label class="col-form-label">Description (Item/Service)<span class="text-danger">*</span></label>
+              <textarea id="input_invoice_description" class="form-control" rows="2">${value.description}</textarea>
+              <small id="input_invoice_description_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+                <label class="col-form-label">Basic Price (IDR)<span class="text-danger">*</span></label>
+                <input type="text" id="input_invoice_total_amount" class="form-control number-input" value="${value.total_amount}">
+                <small id="input_invoice_total_amount_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+                <label class="col-form-label">Mgmt Fee Type</label>
+                <select id="input_invoice_management_fee_type" class="select form-control">
+                    <option value="percent" ${value.management_fee_type == 'percent' ? 'selected' : ''}>Percent (%)</option>
+                    <option value="nominal" ${value.management_fee_type == 'nominal' ? 'selected' : ''}>Nominal (IDR)</option>
+                </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+                <label class="col-form-label">Mgmt Fee Value</label>
+                <input type="text" id="input_invoice_management_fee" class="form-control number-input" value="${value.management_fee}">
+                <small id="input_invoice_management_fee_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+                <label class="col-form-label">VAT Rate (%)<span class="text-danger">*</span></label>
+                <select id="input_invoice_vat_rate" class="select form-select">
+                    <option value="11" ${value.vat_rate == 11 ? 'selected' : ''}>11%</option>
+                    <option value="1" ${value.vat_rate == 1 ? 'selected' : ''}>1%</option>
+                </select>
+                <small id="input_invoice_vat_rate_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="mb-3">
+                <label class="col-form-label fw-bold">Calculated Invoice Amount</label>
+                <input type="text" id="input_invoice_calculated_amount" class="form-control fw-bold text-success" readonly>
+                <small class="text-muted">Basic + Mgmt Fee + VAT</small>
+            </div>
+          </div>
+      </div>
+      ` : ''}
+
       <div class="d-flex align-items-center justify-content-end mt-4">
         <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
         <button type="submit" class="btn btn-primary">Save</button>
@@ -483,6 +656,13 @@ class InvoiceForm {
         el.datetimepicker({
           format: 'DD/MM/YY',
           date: parsedDate || null,
+          icons: {
+            previous: 'ti ti-chevron-left',
+            next: 'ti ti-chevron-right',
+            up: 'ti ti-chevron-up',
+            down: 'ti ti-chevron-down',
+            close: 'ti ti-x'
+          }
         });
 
         if (isIso) {
@@ -527,8 +707,9 @@ class InvoiceForm {
     this.selectedItems = [];
     this.isSubmitting = false;
     this.mode = "create";
-    this.proposal = {};
-    this.data = {};
+    this.project = null;
+    this.proposal = null;
+    this.data = null;
     this.errors = {};
     this.form.innerHTML = "";
     this.loadingEl = null;
@@ -553,17 +734,27 @@ class InvoiceForm {
     this.resetErrorFields();
     const payload = {};
 
+    payload.project_id = this.project?.id || null;
     payload.proposal_id = this.proposal?.id || null;
-    payload.customer_id = this.proposal?.project?.customer?.id || null;
 
+    // Attempt to get customer_id from proposal OR project
+    payload.customer_id = this.proposal?.project?.customer?.id || this.project?.customer?.id || null;
 
     if (this.mode === "edit") {
       payload.proposal_id = this.data?.proposal_id || null;
       payload.customer_id = this.data?.customer_id || null;
+
+      // If editing FIT, project_id is in data
+      if (this.data?.project_id) {
+        payload.project_id = this.data.project_id;
+      }
     }
 
-    if (!payload.proposal_id) {
-      this.errors["input_invoice_proposal_error"] = "Proposal ID is required.";
+    // Validation: Proposal ID required ONLY if Project ID is missing
+    if (!payload.project_id && !payload.proposal_id) {
+      const msg = "Proposal or Project is required.";
+      this.errors["input_invoice_proposal_error"] = msg;
+      this.errors["input_invoice_project_name_error"] = msg;
     }
 
     if (!payload.customer_id) {
@@ -573,39 +764,58 @@ class InvoiceForm {
     const inputs = [
       {
         field: "input_invoice_type",
-        required: true
+        required: true,
+        message: "Invoice Type is required."
       },
       {
         field: "input_invoice_status",
-        required: true
+        required: true,
+        message: "Status is required."
       },
       {
         field: "input_invoice_invoice_date",
         date: true,
         required: true,
+        message: "Invoice Date is required."
       },
       {
         field: "input_invoice_due_date",
         date: true,
         required: true,
+        message: "Due Date is required."
       },
       {
         field: "input_invoice_bill_to",
-        required: false
+        required: false,
+        message: "Bill To is required."
       },
       {
         field: "input_invoice_ship_to",
-        required: false
+        required: false,
+        message: "Ship To is required."
       },
       {
         field: "input_invoice_payment_method",
-        required: false
+        required: false,
+        message: "Payment Method is required."
       },
       {
         field: "input_invoice_note",
-        required: false
+        required: false,
+        message: "Note is required."
       },
     ];
+
+    // Add FIT fields validation
+    if (this.project) {
+      inputs.push(
+        { field: "input_invoice_description", required: true, message: "Description is required." },
+        { field: "input_invoice_total_amount", required: true, message: "Basic Price is required." },
+        { field: "input_invoice_vat_rate", required: true, message: "VAT Rate is required." },
+        { field: "input_invoice_management_fee", required: true, message: "Management Fee is required." }, // Assuming required, or false if optional
+        { field: "input_invoice_management_fee_type", required: true, message: "Mgmt Fee Type is required." }
+      );
+    }
 
     inputs.forEach(id => {
       const el = this.form.querySelector("#" + id.field);
@@ -618,12 +828,23 @@ class InvoiceForm {
       payload[id.field.replace("input_invoice_", "")] = value;
 
       if (!value && id.required) {
-        this.errors[id.field + "_error"] = "This field is required.";
+        this.errors[id.field + "_error"] = id.message || "This field is required.";
       }
     });
 
+    if (payload.invoice_date && payload.due_date) {
+      if (moment(payload.due_date).isBefore(payload.invoice_date)) {
+        this.errors["input_invoice_due_date_error"] = "The due date field must be a date after or equal to invoice date.";
+      }
+    }
+
+    if (this.project) {
+      if (payload.total_amount) payload.total_amount = parseFloat(normalizeFormatRupiah(payload.total_amount).replace(",", "."));
+      if (payload.management_fee) payload.management_fee = parseFloat(normalizeFormatRupiah(payload.management_fee).replace(",", "."));
+    }
+
     // Only send item_ids for Partial invoice type
-    if (payload.type === "Partial") {
+    if (payload.type === "Partial" && payload.proposal_id) {
       payload.item_ids = this.selectedItems.map(obj => obj.id);
 
       // Validate Item selection for Partial type
@@ -631,7 +852,7 @@ class InvoiceForm {
         this.errors["invoice_proposal_item_error"] = "Please select at least one Item for partial invoice.";
       }
     }
-    // For Full type, don't send item_ids - backend will auto-select all
+    console.log(payload);
 
     return payload;
   }
@@ -676,9 +897,12 @@ class InvoiceForm {
         if (response.ok && result.success) {
           try {
             // On proposal.detail page
+            loadProjectData(PROJECT_ID);
+          } catch (error) { }
+          try {
+            // On proposal.detail page
             loadProposalData(PROPOSAL_ID);
           } catch (error) { }
-
           $('#proposal_list').DataTable().ajax.reload(); // On proposal index page 
           showToast("success", result.message || 'Invoice created successfully!');
           if (this.closeForm) this.closeForm.click();
@@ -707,6 +931,10 @@ class InvoiceForm {
         const result = await response.json();
 
         if (response.ok && result.success) {
+          try {
+            // On proposal.detail page
+            loadProjectData(PROJECT_ID);
+          } catch (error) { }
           try {
             // On proposal.detail page
             loadProposalData(PROPOSAL_ID);
@@ -750,6 +978,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
           const url = target.dataset.url;
+          const type = target.dataset.type;
+
           const resopnse = await fetch(url, {
             headers: {
               "Accept": "application/json",
@@ -758,11 +988,15 @@ document.addEventListener("DOMContentLoaded", () => {
           const resJson = await resopnse.json();
 
           if (resopnse.ok && resJson.success) {
-            const proposal = resJson.data;
+            const data = resJson.data;
 
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
-            await INVOICE_FORM.init("create", proposal);
+            if (type == "fit") {
+              await INVOICE_FORM.init({ mode: "create", project: data });
+            } else {
+              await INVOICE_FORM.init({ mode: "create", proposal: data });
+            }
           } else {
             showToast("error", resJson.message || "Failed to retrieve proposal data for invoice creation.");
           }
@@ -782,55 +1016,95 @@ document.addEventListener("DOMContentLoaded", () => {
         IS_FETCHING = true;
 
         try {
-          const proposal_id = target.dataset.proposal_id
+          let proposal_id = target.dataset.proposal_id;
+          let project_id = target.dataset.project_id;
           const invoiceUrl = target.dataset.url;
 
+          // Try to get global PROPOSAL_ID if not in dataset, ensuring we don't overwrite if dataset exists (though logic below prioritizes dataset)
+          // Actually, simply check if global PROPOSAL_ID exists and is valid if dataset is missing
           try {
-            proposal_id = PROPOSAL_ID;
+            if (PROPOSAL_ID) {
+              proposal_id = PROPOSAL_ID;
+            }
           } catch (error) { }
 
+          try {
+            if (PROJECT_ID) {
+              project_id = PROJECT_ID;
+            }
+          } catch (error) { }
 
-          const [invoiceRes, proposalRes] = await Promise.all([
+          const promises = [
             fetch(invoiceUrl, {
               headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
               },
-            }),
-            fetch(`/proposals/${proposal_id}`, {
-              headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-              },
             })
-          ]);
+          ];
 
-          const [invoiceJson, proposalJson] = await Promise.all([
-            invoiceRes.json(),
-            proposalRes.json()
-          ]);
+          let isFit = false;
+
+          if (proposal_id) {
+            promises.push(
+              fetch(`/proposals/${proposal_id}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+              })
+            );
+          } else if (project_id) {
+            isFit = true;
+            promises.push(
+              fetch(`/projects/${project_id}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+              })
+            );
+          } else {
+            showToast("error", "Missing Proposal or Project ID for invoice editing.");
+            IS_FETCHING = false;
+            return;
+          }
+
+          const results = await Promise.all(promises);
+          const invoiceRes = results[0]; // First promise is always invoice
+          const contextRes = results[1]; // Second is context (proposal or project)
+
+          const invoiceJson = await invoiceRes.json();
+          const contextJson = await contextRes.json();
 
           if (
             invoiceRes.ok && invoiceJson.success &&
-            proposalRes.ok && proposalJson.success
+            contextRes.ok && contextJson.success
           ) {
             const invoice = invoiceJson.data;
-            const proposal = proposalJson.data;
+            const contextData = contextJson.data;
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
-            await INVOICE_FORM.init("edit", proposal, invoice);
+
+            if (isFit) {
+              await INVOICE_FORM.init({ mode: "edit", project: contextData, data: invoice });
+            } else {
+              await INVOICE_FORM.init({ mode: "edit", proposal: contextData, data: invoice });
+            }
           } else {
             if (!invoiceRes.ok || !invoiceJson.success) {
               showToast("error", invoiceJson?.message || "Failed to fetch invoice data.");
-            } else if (!proposalRes.ok || !proposalJson.success) {
-              showToast("error", proposalJson?.message || "Failed to fetch proposal data.");
+            } else if (!contextRes.ok || !contextJson.success) {
+              showToast("error", contextJson?.message || "Failed to fetch context data.");
             } else {
               showToast("error", "Failed to fetch required data.");
             }
           }
         } catch (error) {
+          console.error(error);
           showToast("error", "An error occurred while retrieving invoice data for invoice creation.");
         } finally {
           IS_FETCHING = false;
@@ -870,6 +1144,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const resJson = await resopnse.json();
 
           if (resopnse.ok && resJson.success) {
+            try {
+              // On proposal.detail page
+              loadProjectData(PROJECT_ID);
+            } catch (error) { }
             try {
               // On proposal.detail page
               loadProposalData(PROPOSAL_ID);
