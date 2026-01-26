@@ -45,7 +45,7 @@
                                                 </ul>
                                             </div>
                                         </div>	
-                                        <!-- <a href="javascript:void(0);" id="c_invoice_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a> -->
+                                        <a href="javascript:void(0);" id="c_invoice_create_btn" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-2"></i>Add New Invoices</a>
                                     </div>
                                 </div>
                             </div>

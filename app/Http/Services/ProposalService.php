@@ -257,7 +257,7 @@ class ProposalService
 
     public function getAllProposals()
     {
-        return Proposal::with('project', 'invoices')->get();
+        return Proposal::with('items', 'project.customer', 'invoices')->get();
     }
 
     public function getProposalById($id)

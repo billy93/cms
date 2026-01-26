@@ -3,8 +3,12 @@ class InvoiceForm {
   selectedItems = [];
   isSubmitting = false;
   mode = "create";
-  proposal = {};
+  project = null;
+  projects = [];
+  proposal = null;
+  proposals = [];
   data = {};
+  isFetching = false;
   errors = {};
 
   constructor (formId) {
@@ -85,6 +89,110 @@ class InvoiceForm {
       this.handleInvoiceTypeChange(target.value);
     }
 
+    if (target.matches("#select_invoice_project_id")) {
+      const val = target.value;
+      const $proposal = $("#select_invoice_proposal_id");
+      const $proposalLabelStar = $proposal.closest('.mb-3').find('label span.text-danger');
+      const $projectLabelStar = $(target).closest('.mb-3').find('label span.text-danger');
+
+      if (val) {
+        $proposal.val("").trigger("change");
+        $proposal.prop("disabled", true);
+        $proposalLabelStar.hide();
+        $projectLabelStar.show();
+
+        const project = this.projects.find(p => +p.id === +val);
+        this.project = project;
+        this.proposal = null;
+        this.updateInvoiceTypeOptions(project, null);
+
+        // Update Customer
+        $("#input_invoice_customer").val(project?.customer?.name || "");
+
+        // Inject FIT Calculation Fields
+        const fitHtml = this.getFitCalculationHTML();
+        $("#invoice_fit_calculation_container").html(fitHtml);
+        this.initPlugins();
+
+      } else {
+        this.project = null;
+        $proposal.prop("disabled", false);
+        if (!$proposal.val()) {
+          $proposalLabelStar.show();
+          $projectLabelStar.show();
+        }
+
+        // Reset type options if both empty
+        if (!$proposal.val() && !val) {
+          this.updateInvoiceTypeOptions(null, null);
+          $("#input_invoice_customer").val("");
+        }
+
+        // Remove FIT Calculation Fields
+        $("#invoice_fit_calculation_container").empty();
+      }
+    }
+
+    if (target.matches("#select_invoice_proposal_id")) {
+      const val = target.value;
+      const $project = $("#select_invoice_project_id");
+      const $projectLabelStar = $project.closest('.mb-3').find('label span.text-danger');
+      const $proposalLabelStar = $(target).closest('.mb-3').find('label span.text-danger');
+
+      if (val) {
+        $projectLabelStar.hide();
+        $proposalLabelStar.show();
+
+        const proposal = this.proposals.find(p => +p.id === +val);
+        this.proposal = proposal;
+        this.project = null;
+        this.updateInvoiceTypeOptions(null, proposal);
+
+        // Update Customer
+        $("#input_invoice_customer").val(proposal?.project?.customer?.name || "");
+
+        // --- Dynamic Field Swap: Project Select -> Project Name Input ---
+        let $projectContainer = $("#select_invoice_project_id").closest('.mb-3').parent();
+        if ($projectContainer.length) {
+          $projectContainer.html(`
+            <div class="mb-3">
+              <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
+              <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${proposal?.project?.name || ''}" disabled>
+              <small id="input_invoice_project_name_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+        `);
+        }
+
+        // Inject Proposal Items Table (Manual Mode)
+        // Only if Type is NOT Full
+        const currentType = $("#input_invoice_type").val();
+
+        if (currentType !== 'Full') {
+          const tableHtml = this.getProposalItemTableHTML();
+          $("#invoice_canvas_proposal_item_section").html(tableHtml);
+          this.initDataTable();
+        } else {
+          $("#invoice_canvas_proposal_item_section").empty();
+        }
+
+      } else {
+        this.proposal = null;
+
+        // --- Restore Project Select ---
+        this.restoreProjectSelect();
+
+        // Reset type options if both empty
+        // Since we restored project select, it has no value.
+        // We pass null, null.
+        this.updateInvoiceTypeOptions(null, null);
+        $("#input_invoice_customer").val("");
+
+
+        // Clear Proposal Section
+        $("#invoice_canvas_proposal_item_section").empty();
+      }
+    }
+
     if (target.matches("#invoice_canvas_proposal_item_list #select_all_invoice_proposal_item")) {
       const checked = target.checked;
 
@@ -127,6 +235,132 @@ class InvoiceForm {
     } else if (target.matches("#input_invoice_vat_rate") || target.matches("#input_invoice_management_fee_type")) {
       this.calculateFitAmount();
     }
+  }
+
+  updateInvoiceTypeOptions(project, proposal) {
+    let typeOptions = [];
+    const $typeSelect = $("#input_invoice_type");
+    let currentVal = $typeSelect.val();
+
+    if (proposal) {
+      // --- Proposal Logic ---
+      let isFullAllowed = true;
+      const allInvoices = proposal.invoices || [];
+      // If in Edit mode, exclude current invoice ID from the check
+      const currentInvoiceId = (this.mode === 'edit' && this.data) ? this.data.id : null;
+
+      const otherActiveInvoices = allInvoices.filter(inv => {
+        if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
+        // if (inv.status === 'Cancelled') return false;
+        return true;
+      });
+
+      if (otherActiveInvoices.length > 0) {
+        isFullAllowed = false;
+      }
+
+      // Pricing Model A -> Only Full
+      if (proposal.pricing_model === 'A') {
+        typeOptions = ["Full"];
+      } else {
+        // If not A, check the other invoices rule
+        if (!isFullAllowed) {
+          typeOptions = ["Partial"];
+        } else {
+          typeOptions = ["Full", "Partial"];
+        }
+      }
+    } else if (project) {
+      // If Project (Fit) -> Defaults to ["Full", "Partial"]
+      typeOptions = ["Full", "Partial"];
+    }
+
+    // Rebuild Options
+    $typeSelect.empty();
+
+    if (typeOptions.length === 0) {
+      $typeSelect.prop('disabled', true);
+      // Optional: Add placeholder or keep empty
+    } else {
+      $typeSelect.prop('disabled', false);
+      typeOptions.forEach(opt => {
+        $typeSelect.append(new Option(opt, opt));
+      });
+
+      // Attempt to preserve selection, or default to first
+      if (typeOptions.includes(currentVal)) {
+        $typeSelect.val(currentVal);
+      } else {
+        $typeSelect.val(typeOptions[0]);
+      }
+    }
+
+    // Trigger change to update UI alerts etc.
+    $typeSelect.trigger('change');
+  }
+
+  // ---------------------------------------- FETCHER ----------------------------------------
+  async fetchProjects() {
+    this.isFetching = true;
+    this.showLoading();
+    return fetch(`/projects/all`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        this.projects = (res.data || []).filter(p => p.type.toLowerCase() === "fit");
+      })
+      .catch(err => {
+        console.error("Fetch projects error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        if (!this.isInit) this.hideLoading();
+      });
+  }
+
+  async fetchProposals() {
+    this.isFetching = true;
+    this.showLoading();
+    return fetch(`/proposals/all`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        this.proposals = (res.data || []).filter(p => {
+          return p.status.toLowerCase() === "win" &&
+            p.project.type.toLowerCase() === "regular" &&
+            Array.isArray(p.items) &&
+            p.items.some(item => {
+              // const isCancelled = p.invoices?.find(inv => inv.id === item.invoice_id)?.status.toLowerCase() === "cancelled";
+              // return !item.invoice_id || isCancelled;
+              return !item.invoice_id;
+            });
+        });
+      })
+      .catch(err => {
+        console.error("Fetch proposals error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        if (!this.isInit) this.hideLoading();
+      });
   }
 
   calculateFitAmount() {
@@ -232,6 +466,9 @@ class InvoiceForm {
   }
 
   handleInvoiceTypeChange(type) {
+    if (this.project) return;
+    if (!this.proposal) return; // Add this check to prevent premature init
+
     const proposalItemSection = document.getElementById("invoice_canvas_proposal_item_section");
     const alertInfo = document.getElementById("invoice_type_alert_container");
 
@@ -271,6 +508,10 @@ class InvoiceForm {
     this.project = project;
     this.proposal = proposal;
     this.data = data;
+
+    if (!project && !proposal) {
+      await Promise.all([this.fetchProjects(), this.fetchProposals()]);
+    }
 
     const formWrapper = document.createElement("div");
     formWrapper.innerHTML = this.generateForm();
@@ -361,7 +602,7 @@ class InvoiceForm {
         // Ignore current invoice
         if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
         // Ignore cancelled invoices (optional, but typical)
-        if (inv.status === 'Cancelled') return false;
+        // if (inv.status === 'Cancelled') return false;
         return true;
       });
 
@@ -379,7 +620,7 @@ class InvoiceForm {
         value.type = "Full";
       }
     } else if (this.project) { // Project Fit
-      typeOptions = ["Partial"];
+      typeOptions = ["Full", "Partial"];
     }
 
     const selectTypeOptions = typeOptions.map(t => {
@@ -390,15 +631,46 @@ class InvoiceForm {
       return `<option value="${t}" ${t === value.status ? "selected" : ""}>${t}</option>`;
     });
 
+    const selectProjectOptions = this.projects.map(t => {
+      return `<option value="${t.id}">${t.name}</option>`;
+    });
+
+    const selectProposalOptions = this.proposals.map(t => {
+      return `<option value="${t.id}">${t.code}</option>`;
+    });
+
     return `
       <div class="row">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
-            <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${value.project_name}" disabled>
-            <small id="input_invoice_project_name_error" class="text-danger mt-1" style="display: none;"></small>
+        ${!this.project && !this.proposal ? `
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Project<span class="text-danger">*</span></label>
+              <select id="select_invoice_project_id" class="select form-select" ${this.projects.length ? "" : "disabled"}>
+                <option value="">-- Select Project --</option>
+                ${selectProjectOptions.join("")}
+              </select>
+              <small id="select_invoice_project_id_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
           </div>
-        </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Proposal <span class="text-danger">*</span></label>
+              <select id="select_invoice_proposal_id" class="select form-select" ${this.proposals.length ? "" : "disabled"}>
+                <option value="">-- Select Proposal --</option>
+                ${selectProposalOptions.join("")}
+              </select>
+              <small id="select_invoice_proposal_id_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+          ` : `
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="col-form-label">Project Name<span class="text-danger">*</span></label>
+              <input type="text" id="input_invoice_project_name" class="form-control btn-disabled" value="${value.project_name}" disabled>
+              <small id="input_invoice_project_name_error" class="text-danger mt-1" style="display: none;"></small>
+            </div>
+          </div>
+        `}
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Customer<span class="text-danger">*</span></label>
@@ -418,7 +690,7 @@ class InvoiceForm {
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Type<span class="text-danger">*</span></label>
-            <select id="input_invoice_type" class="select form-control">
+            <select id="input_invoice_type" class="select form-control" ${typeOptions.length ? "" : "disabled"}>
               ${selectTypeOptions}
             </select>
             <small id="input_invoice_type_error" class="text-danger mt-1" style="display: none;"></small>
@@ -454,11 +726,9 @@ class InvoiceForm {
           </div>
         </div>
         <div class="col-md-12 mb-3" id="invoice_type_alert_container"></div>
-        ${this.proposal ? `
-          <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
-            ${value.type === "Full" ? "" : this.getProposalItemTableHTML()}
-          </div>
-        ` : ""}
+        <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
+          ${this.proposal && value.type !== "Full" ? this.getProposalItemTableHTML() : ""}
+        </div>
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Bill To</label>
@@ -490,7 +760,26 @@ class InvoiceForm {
       </div>
       
       <!-- FIT Calculator Fields -->
-      ${this.project ? `
+      <div id="invoice_fit_calculation_container">
+        ${this.project ? this.getFitCalculationHTML(value) : ''}
+      </div>
+
+      <div class="d-flex align-items-center justify-content-end mt-4">
+        <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    `;
+  }
+
+  getFitCalculationHTML(value = {}) {
+    // Defaults for values if not provided
+    value.description = value.description || "";
+    value.total_amount = value.total_amount || "0";
+    value.management_fee_type = value.management_fee_type || "percent";
+    value.management_fee = value.management_fee || "0";
+    value.vat_rate = value.vat_rate || "11";
+
+    return `
       <div class="row border p-2 mb-3 rounded bg-light">
           <div class="col-12"><h6 class="text-primary"><i class="ti ti-calculator me-1"></i>Amount Calculation</h6></div>
           <div class="col-md-12">
@@ -509,7 +798,7 @@ class InvoiceForm {
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-                <label class="col-form-label">Mgmt Fee Type</label>
+                <label class="col-form-label">Management Fee Type<span class="text-danger">*</span></label>
                 <select id="input_invoice_management_fee_type" class="select form-control">
                     <option value="percent" ${value.management_fee_type == 'percent' ? 'selected' : ''}>Percent (%)</option>
                     <option value="nominal" ${value.management_fee_type == 'nominal' ? 'selected' : ''}>Nominal (IDR)</option>
@@ -518,7 +807,7 @@ class InvoiceForm {
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-                <label class="col-form-label">Mgmt Fee Value</label>
+                <label class="col-form-label">Management Fee Value</label>
                 <input type="text" id="input_invoice_management_fee" class="form-control number-input" value="${value.management_fee}">
                 <small id="input_invoice_management_fee_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
@@ -537,17 +826,40 @@ class InvoiceForm {
             <div class="mb-3">
                 <label class="col-form-label fw-bold">Calculated Invoice Amount</label>
                 <input type="text" id="input_invoice_calculated_amount" class="form-control fw-bold text-success" readonly>
-                <small class="text-muted">Basic + Mgmt Fee + VAT</small>
+                <small class="text-muted">Basic + Management Fee + VAT</small>
             </div>
           </div>
       </div>
-      ` : ''}
+     `;
+  }
 
-      <div class="d-flex align-items-center justify-content-end mt-4">
-        <a href="javascript:void(0)" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save</button>
-      </div>
-    `;
+  restoreProjectSelect() {
+    const $nameInput = $("#input_invoice_project_name");
+
+    // Only restore if we are currently showing the name input (meaning it was swapped)
+    // OR if the select is missing (safety).
+    if ($nameInput.length) {
+      let $container = $nameInput.closest('.mb-3').parent();
+
+      const selectProjectOptions = this.projects.map(t => {
+        return `<option value="${t.id}">${t.name}</option>`;
+      });
+
+      $container.html(`
+        <div class="mb-3">
+          <label class="col-form-label">Project<span class="text-danger">*</span></label>
+          <select id="select_invoice_project_id" class="select form-select">
+            <option value="">-- Select Project --</option>
+            ${selectProjectOptions.join("")}
+          </select>
+          <small id="select_invoice_project_id_error" class="text-danger mt-1" style="display: none;"></small>
+        </div>
+      `);
+
+      // Re-init plugins (Select2)
+      // We only need to init the new select.
+      this.initPlugins();
+    }
   }
 
   updateSelectedEl() {
@@ -569,9 +881,18 @@ class InvoiceForm {
     let data = [];
 
     if (this.proposal && this.proposal.items && this.mode === "create") {
-      data = this.proposal?.items?.filter(item => !item.invoice_id);
+      data = this.proposal.items.filter(item => {
+        // const isCancelled = this.proposal.invoices?.find(inv => inv.id === item.invoice_id)?.status.toLowerCase() === "cancelled";
+        // return !item.invoice_id || isCancelled;
+        return !item.invoice_id;
+      });
     } else if (this.data?.proposal?.items && this.mode === "edit") {
-      data = this.data.proposal.items.filter(item => !item.invoice_id || this.data.items.some(b => b.id === item.id));
+      data = this.data.proposal.items.filter(item => {
+        const isSelected = this.data.items.some(b => b.id === item.id);
+        // const isCancelled = this.proposal.invoices?.find(inv => inv.id === item.invoice_id)?.status.toLowerCase() === "cancelled";
+        // return !item.invoice_id || isSelected || isCancelled;
+        return !item.invoice_id || isSelected;
+      });
     }
 
     // 🔹 Kalau DataTable sudah ada → cuma update data-nya
@@ -734,27 +1055,55 @@ class InvoiceForm {
     this.resetErrorFields();
     const payload = {};
 
+    // 1. Try to get from class properties (Pre-filled context)
     payload.project_id = this.project?.id || null;
     payload.proposal_id = this.proposal?.id || null;
 
-    // Attempt to get customer_id from proposal OR project
-    payload.customer_id = this.proposal?.project?.customer?.id || this.project?.customer?.id || null;
+    // 2. If valid manual selection exists (Create Mode with no pre-fill), override
+    if (!payload.project_id && !payload.proposal_id && this.mode === 'create') {
+      const selectedProject = $("#select_invoice_project_id").val();
+      const selectedProposal = $("#select_invoice_proposal_id").val();
+
+      if (selectedProject) payload.project_id = selectedProject;
+      if (selectedProposal) payload.proposal_id = selectedProposal;
+    }
 
     if (this.mode === "edit") {
       payload.proposal_id = this.data?.proposal_id || null;
-      payload.customer_id = this.data?.customer_id || null;
-
       // If editing FIT, project_id is in data
       if (this.data?.project_id) {
         payload.project_id = this.data.project_id;
       }
     }
 
+    // Attempt to get customer_id
+    if (this.mode === 'edit') {
+      payload.customer_id = this.data?.customer_id || null;
+    } else {
+      // Create Mode
+      if (this.proposal) {
+        payload.customer_id = this.proposal.project?.customer?.id;
+      } else if (this.project) {
+        payload.customer_id = this.project.customer?.id;
+      } else {
+        // Manual Mode: Find in loaded arrays
+        if (payload.proposal_id) {
+          const p = this.proposals.find(x => x.id == payload.proposal_id);
+          payload.customer_id = p?.project?.customer?.id;
+        } else if (payload.project_id) {
+          const p = this.projects.find(x => x.id == payload.project_id);
+          payload.customer_id = p?.customer?.id;
+        }
+      }
+    }
+
     // Validation: Proposal ID required ONLY if Project ID is missing
     if (!payload.project_id && !payload.proposal_id) {
       const msg = "Proposal or Project is required.";
-      this.errors["input_invoice_proposal_error"] = msg;
+      this.errors["input_invoice_proposal_code_error"] = msg;
       this.errors["input_invoice_project_name_error"] = msg;
+      this.errors["select_invoice_proposal_id_error"] = msg;
+      this.errors["select_invoice_project_id_error"] = msg;
     }
 
     if (!payload.customer_id) {
@@ -852,7 +1201,6 @@ class InvoiceForm {
         this.errors["invoice_proposal_item_error"] = "Please select at least one Item for partial invoice.";
       }
     }
-    console.log(payload);
 
     return payload;
   }
@@ -903,6 +1251,7 @@ class InvoiceForm {
             // On proposal.detail page
             loadProposalData(PROPOSAL_ID);
           } catch (error) { }
+          $('#invoice_list').DataTable().ajax.reload();
           $('#proposal_list').DataTable().ajax.reload(); // On proposal index page 
           showToast("success", result.message || 'Invoice created successfully!');
           if (this.closeForm) this.closeForm.click();
@@ -939,8 +1288,8 @@ class InvoiceForm {
             // On proposal.detail page
             loadProposalData(PROPOSAL_ID);
           } catch (error) { }
-
           $('#invoice_list').DataTable().ajax.reload(null, false);
+          $('#proposal_list').DataTable().ajax.reload(); // On proposal index page 
           showToast("success", result.message || 'Invoice created successfully!');
           if (this.closeForm) this.closeForm.click();
           this.resetForm();
@@ -980,27 +1329,34 @@ document.addEventListener("DOMContentLoaded", () => {
           const url = target.dataset.url;
           const type = target.dataset.type;
 
-          const resopnse = await fetch(url, {
-            headers: {
-              "Accept": "application/json",
-            },
-          });
-          const resJson = await resopnse.json();
-
-          if (resopnse.ok && resJson.success) {
-            const data = resJson.data;
-
+          if (!url && !type) {
             INVOICE_CANVAS_BS.show();
             INVOICE_FORM.resetForm();
-            if (type == "fit") {
-              await INVOICE_FORM.init({ mode: "create", project: data });
-            } else {
-              await INVOICE_FORM.init({ mode: "create", proposal: data });
-            }
+            await INVOICE_FORM.init({ mode: "create" });
           } else {
-            showToast("error", resJson.message || "Failed to retrieve proposal data for invoice creation.");
+            const resopnse = await fetch(url, {
+              headers: {
+                "Accept": "application/json",
+              },
+            });
+            const resJson = await resopnse.json();
+
+            if (resopnse.ok && resJson.success) {
+              const data = resJson.data;
+
+              INVOICE_CANVAS_BS.show();
+              INVOICE_FORM.resetForm();
+              if (type == "fit") {
+                await INVOICE_FORM.init({ mode: "create", project: data });
+              } else {
+                await INVOICE_FORM.init({ mode: "create", proposal: data });
+              }
+            } else {
+              showToast("error", resJson.message || "Failed to retrieve proposal data for invoice creation.");
+            }
           }
         } catch (error) {
+          console.error(error);
           showToast("error", "An error occurred while retrieving proposal data for invoice creation.");
         } finally {
           IS_FETCHING = false;
