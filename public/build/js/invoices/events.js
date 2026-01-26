@@ -563,10 +563,10 @@ class InvoiceForm {
 
     if (this.data && this.mode === "edit") {
       if (this.data && this.mode === "edit" && this.proposal) { // Project Regular
-        value.project_name = this.data.proposal?.project?.name || "";
+        value.project_name = this.proposal?.project?.name || "";
         value.proposal_code = this.data.proposal?.code || "";
       } else if (this.data && this.mode === "edit" && this.project) { // Project Fit
-        value.project_name = this.data.project?.name || "";
+        value.project_name = this.project?.name || "";
         value.description = this.data.description || "";
         value.total_amount = formatRupiahDisplay(this.data.total_amount?.toString().replace(".", ",") || "0");
         value.vat_rate = this.data.vat_rate || "11";
