@@ -11,43 +11,75 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
 
+            // Invoice Code: I-000/Year/ActivityCode (Prefix automatic)
+            $table->string('code')->unique();
+
+            // Invoice No: P-000/ (Free text, Prefix automatic, Mandatory 3 digits)
+            $table->string('invoice_number');
+
+            // Due Date: Manual entry, Default 30 Days
+            $table->date('due_date');
+
+            // Sales Code: From DB Sales Code (Proposals or Projects)
+            // Storing as string snapshot to handle both Fit and Regular flows + relationships
+            $table->string('sales_code')->index()->nullable(); // Snapshot
+
+            // Project Name (from Sales Code/Proposal)
+            // Project Description (from Sales Code/Proposal)
             $table->foreignId('project_id')
                 ->nullable()
                 ->constrained('projects')
                 ->cascadeOnDelete();
-
+                        
             $table->foreignId('proposal_id')
                 ->nullable()
                 ->constrained('proposals')
                 ->cascadeOnDelete();
 
+            // Billing To: From DB Customer
             $table->foreignId('customer_id')
                 ->nullable()
                 ->constrained('customers')
                 ->cascadeOnDelete();
 
-            $table->string('code')->unique();
+            $table->foreignId('billing_option_id')
+                ->nullable()
+                ->constrained('billing_options')
+                ->nullOnDelete();
 
-            $table->date('invoice_date');
-            $table->date('due_date');
-            $table->text('description')->nullable();
+            // Bank Account (Company Bank)
+            // "KECUALI YANG NO TAX - Harus BCA yang XXX 666 tidak bisa yang lain"
+            // Linking to pcmi_banks table
+            $table->foreignId('pcmi_bank_id')
+                ->nullable()
+                ->constrained('pcmi_banks')
+                ->nullOnDelete();
+                
+            $table->string('project_name')->nullable(); // Snapshot
+            $table->text('project_description')->nullable(); // Snapshot
 
-            $table->enum('status', ['Unpaid','Paid','Cancelled'])->default('Unpaid');
-            $table->enum('type', ['Full','Partial'])->default('Full');
-            $table->string('payment_method')->nullable();
-            $table->string('bill_to')->nullable();
-            $table->string('ship_to')->nullable();
+            $table->text('description')->nullable(); // Additional Description if needed
 
+            // Type of billing
+            $table->enum('billing_type', ['Partly Payment', 'Full Amount'])->default('Full Amount');
+
+            // Taxation
+            $table->enum('tax_type', ['No Tax', 'Tax - Non WAPU', 'Tax - WAPU'])->default('Tax - Non WAPU');
+
+            // Invoice Amount
             $table->decimal('total_amount', 15, 2);
+
+            // Invoice Status
+            $table->enum('status', ['VOID', 'REVISED', 'PREPARED', 'SENT'])->default('PREPARED');
+
+            // Payment Status
+            $table->enum('payment_status', ['UNPAID', 'PARTLY PAID', 'FULLY PAID'])->default('UNPAID');
+
+            // Kept for backward compatibility or calculation needs if acceptable, otherwise can be removed.
+            // Leaving them for now as they might be useful for the logic:
             $table->enum('management_fee_type', ['nominal', 'percent'])->default('percent');
             $table->decimal('management_fee', 15, 2)->default(0);
             $table->integer('vat_rate')->default(11);
-
-            $table->text('note')->nullable();
-            $table->text('terms_and_conditions')->nullable();
-
-            $table->string('signature_name')->nullable();
-            $table->string('signature_image')->nullable();
 
             $table->timestamps();
         });

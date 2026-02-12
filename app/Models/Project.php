@@ -106,6 +106,11 @@ class Project extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    public function salesItems()
+    {
+        return $this->hasMany(SalesItem::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'Active');

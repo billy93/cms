@@ -36,27 +36,39 @@ class InvoiceRequest extends ApiFormRequest
     protected function createRules()
     {
         return [
-            'proposal_id' => ['required_without:project_id', 'nullable', 'exists:proposals,id'],
             'project_id' => ['required_without:proposal_id', 'nullable', 'exists:projects,id'],
+            'proposal_id' => ['required_without:project_id', 'nullable', 'exists:proposals,id'],
             'customer_id' => ['required', 'exists:customers,id'],
+            'billing_option_id' => ['required', 'exists:billing_options,id'],
+            'pcmi_bank_id' => ['required', 'exists:pcmi_banks,id'],
             'item_ids' => [
-                Rule::requiredIf(fn() => $this->proposal_id && $this->type === 'Partial'),
+                Rule::requiredIf(fn() => $this->proposal_id && $this->billing_type === 'Partly Payment'),
                 'array'
             ],
-            'item_ids.*' => ['integer', 'exists:proposal_items,id'],
-            'invoice_date' => ['required', 'date'],
-            'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
-            'status' => ['required', Rule::in(['Unpaid','Paid','Cancelled'])],
-            'type' => ['required', Rule::in(['Full','Partial'])],
-            'payment_method' => ['nullable', 'string'],
-            'bill_to' => ['nullable', 'string'],
-            'ship_to' => ['nullable', 'string'],
-            'note' => ['nullable', 'string'],
+            'item_ids.*' => ['integer', 'exists:sales_items,id'],
+            'invoice_number' => ['required', 'string'], // User Input
+            'due_date' => ['required', 'date'],
+            'description' => ['required_without:proposal_id', 'nullable', 'string'],
+            'billing_type' => ['required', Rule::in(['Full Amount','Partly Payment'])],
+            'tax_type' => ['required', Rule::in(['No Tax', 'Tax - Non WAPU', 'Tax - WAPU'])],
             'total_amount' => ['required_without:proposal_id', 'numeric', 'min:0'],
+            'status' => ['required', Rule::in(['VOID','REVISED','PREPARED','SENT'])],
+            'payment_status' => [
+                'required', 
+                function ($attribute, $value, $fail) {
+                    $billingType = request()->input('billing_type');
+                    if ($billingType === 'Full Amount' && !in_array($value, ['UNPAID', 'FULLY PAID'])) {
+                        $fail("The payment status must be UNPAID or FULLY PAID for Full Amount invoices.");
+                    }
+                    if ($billingType === 'Partly Payment' && !in_array($value, ['UNPAID', 'PARTLY PAID'])) {
+                        $fail("The payment status must be UNPAID or PARTLY PAID for Partly Payment invoices.");
+                    }
+                },
+                Rule::in(['UNPAID', 'PARTLY PAID', 'FULLY PAID'])
+            ],
             'management_fee_type' => ['required_without:proposal_id', Rule::in(['nominal', 'percent'])],
             'management_fee' => ['required_without:proposal_id', 'numeric', 'min:0'],
             'vat_rate' => ['required_without:proposal_id', 'integer', Rule::in([1, 11])],
-            'description' => ['required_without:proposal_id', 'nullable', 'string'],
         ];
     }
 

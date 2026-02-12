@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProposalItem extends Model
+class SalesItem extends Model
 {
     use HasFactory;
+
+    protected $table = 'sales_items';
 
     protected $guarded = ['id'];
 
@@ -19,6 +21,11 @@ class ProposalItem extends Model
     public function proposal()
     {
         return $this->belongsTo(Proposal::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function product()

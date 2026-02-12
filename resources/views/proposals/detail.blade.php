@@ -371,12 +371,19 @@
 
                 const feeLabel = proposal.management_fee_type === 'percent' ? 
                     `Management Fee (${parseFloat(proposal.management_fee || 0).toString().replace(".", ",")}%)` : "";
+console.log("AA",invoice);
 
                 const html = `
                     <div class="row ${i !== a.length - 1 ? "pb-3 mb-3" : ""}" style="${i !== a.length - 1 ? "border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color)" : ""}">
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Invoice No.</label>
+                                <p class="mb-0">${invoice.invoice_number || "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
+                                <label class="fw-semibold">Invoice Code</label>
                                 <p class="mb-0">${invoice.code || "-"}</p>
                             </div>
                         </div>
@@ -401,13 +408,19 @@
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Type</label>
-                                <p class="mb-0">${invoice.type ? getInvoiceType(invoice.type) : "-"}</p>
+                                <p class="mb-0">${invoice.billing_type ? getInvoiceType(invoice.billing_type) : "-"}</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Status</label>
                                 <p class="mb-0">${invoice.status ? getInvoiceStatus(invoice.status) : "-"}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-4">
+                            <div class="form-group mb-2">
+                                <label class="fw-semibold">Payment Status</label>
+                                <p class="mb-0">${invoice.payment_status ? getPaymentStatus(invoice.payment_status) : "-"}</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
@@ -436,20 +449,20 @@
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
-                                <label class="fw-semibold">Payment Method</label>
-                                <p class="mb-0">${invoice.payment_method || "-"}</p>
+                                <label class="fw-semibold">Bill To</label>
+                                <p class="mb-0">${invoice.customer?.name || "-"}</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
-                                <label class="fw-semibold">Bill To</label>
-                                <p class="mb-0">${invoice.bill_to || "-"}</p>
+                                <label class="fw-semibold">Bank Account</label>
+                                <p class="mb-0">${invoice.pcmi_bank?.bank?.bank_name || "-"} (${invoice.pcmi_bank?.holder_name || "-"} / ${invoice.pcmi_bank?.account_no || "-"})</p>
                             </div>
                         </div>
                         <div class="col-md-6 col-xxl-4">
                             <div class="form-group mb-2">
                                 <label class="fw-semibold">Note</label>
-                                <p class="mb-0">${invoice.note || "-"}</p>
+                                <p class="mb-0">${invoice.description || "-"}</p>
                             </div>
                         </div>
                         <div class="form-group mb-2">
@@ -533,18 +546,28 @@
 
         function getInvoiceType(status) {
             switch (status) {
-                case 'Partial': return '<span class="badge badge-status bg-secondary">Partial</span>';
-                case 'Full': return '<span class="badge badge-status bg-success">Full</span>';
-                default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+                case 'Partly Payment': return '<span class="badge badge-status bg-secondary">Partial</span>';
+                case 'Full Amount': return '<span class="badge badge-status bg-success">Full</span>';
+                default: return `<span class="badge badge-status bg-secondary">${status || "Unknown"}</span>`;
             }
         }
 
         function getInvoiceStatus(status) {
             switch (status) {
-                case 'Unpaid': return '<span class="badge badge-status bg-secondary">Unpaid</span>';
-                case 'Paid': return '<span class="badge badge-status bg-success">Paid</span>';
-                case 'Cancelled': return '<span class="badge badge-status bg-danger">Cancelled</span>';
-                default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+                case 'PREPARED': return '<span class="badge badge-status bg-secondary">Prepared</span>';
+                case 'SENT': return '<span class="badge badge-status bg-info">Sent</span>';
+                case 'REVISED': return '<span class="badge badge-status bg-warning">Revised</span>';
+                case 'VOID': return '<span class="badge badge-status bg-danger">Void</span>';
+                default: return `<span class="badge badge-status bg-secondary">${status}</span>`;
+            }
+        }
+
+        function getPaymentStatus(status) {
+            switch (status) {
+                case 'UNPAID': return '<span class="badge badge-status bg-secondary">Unpaid</span>';
+                case 'PARTLY PAID': return '<span class="badge badge-status bg-info">Partly Paid</span>';
+                case 'FULLY PAID': return '<span class="badge badge-status bg-success">Fully Paid</span>';
+                default: return `<span class="badge badge-status bg-secondary">${status}</span>`;
             }
         }
 

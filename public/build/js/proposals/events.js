@@ -1286,7 +1286,7 @@ class ProposalForm {
         }
 
         if (!hasAtLeastOne) {
-          this.errors[`items_${id}_error`] = `Required at least one title key-value pair on row ${id}.`;
+          this.errors[`items_${id}_error`] = `Required at least one title key-value pair on this row.`;
         }
 
         payload.items.push(item);

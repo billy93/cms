@@ -349,6 +349,12 @@
                     </div>
                     <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
+                            <label class="fw-semibold">Invoice Number</label>
+                            <p class="mb-0 text-primary fw-bold">${inv.invoice_number || "-"}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
                             <label class="fw-semibold">Created</label>
                             <p class="mb-0">${inv.created_at ? formatDate(inv.created_at) : "-"}</p>
                         </div>
@@ -367,14 +373,26 @@
                     </div>
                     <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
-                            <label class="fw-semibold">Type</label>
-                            <p class="mb-0">${inv.type ? getInvoiceType(inv.type) : "-"}</p>
+                            <label class="fw-semibold">Taxation</label>
+                            <p class="mb-0">${inv.tax_type || "-"}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
+                            <label class="fw-semibold">Billing Type</label>
+                            <p class="mb-0">${inv.billing_type ? getInvoiceType(inv.billing_type) : "-"}</p>
                         </div>
                     </div>
                     <div class="col-md-6 col-xxl-4">
                         <div class="form-group mb-2">
                             <label class="fw-semibold">Status</label>
                             <p class="mb-0">${inv.status ? getInvoiceStatus(inv.status) : "-"}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xxl-4">
+                        <div class="form-group mb-2">
+                            <label class="fw-semibold">Bank Account</label>
+                            <p class="mb-0">${inv.pcmi_bank && inv.pcmi_bank.bank ? `${inv.pcmi_bank.bank.bank_name} - ${inv.pcmi_bank.account_no}` : "-"}</p>
                         </div>
                     </div>
                     <div class="col-md-6 col-xxl-4">
@@ -413,7 +431,7 @@
                             <p class="mb-0">${inv.bill_to || "-"}</p>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xxl-4">
+                    <div class="col-md-6 col-xxl-4 col-xxl-12">
                         <div class="form-group mb-2">
                             <label class="fw-semibold">Note</label>
                             <p class="mb-0">${inv.note || "-"}</p>
@@ -561,18 +579,20 @@
 
     function getInvoiceType(status) {
         switch (status) {
-            case 'Partial': return '<span class="badge badge-status bg-secondary">Partial</span>';
-            case 'Full': return '<span class="badge badge-status bg-success">Full</span>';
-            default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+            case 'Partly Payment': return '<span class="badge badge-status bg-secondary">Partly Payment</span>';
+            case 'Full Amount': return '<span class="badge badge-status bg-success">Full Amount</span>';
+            default: return `<span class="badge badge-status bg-secondary">${status || 'Unknown'}</span>`;
         }
     }
 
     function getInvoiceStatus(status) {
         switch (status) {
-            case 'Unpaid': return '<span class="badge badge-status bg-secondary">Unpaid</span>';
+            case 'PREPARED': return '<span class="badge badge-status bg-info">Prepared</span>';
+            case 'SENT': return '<span class="badge badge-status bg-primary">Sent</span>';
+            case 'REVISED': return '<span class="badge badge-status bg-warning">Revised</span>';
+            case 'VOID': return '<span class="badge badge-status bg-danger">Void</span>';
             case 'Paid': return '<span class="badge badge-status bg-success">Paid</span>';
-            case 'Cancelled': return '<span class="badge badge-status bg-danger">Cancelled</span>';
-            default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+            default: return `<span class="badge badge-status bg-secondary">${status || 'Unknown'}</span>`;
         }
     }
 

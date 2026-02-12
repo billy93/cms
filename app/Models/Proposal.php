@@ -69,7 +69,7 @@ class Proposal extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(ProposalItem::class);
+        return $this->hasMany(SalesItem::class);
     }
 
     public function invoices(): HasMany

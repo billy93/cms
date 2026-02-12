@@ -37,13 +37,14 @@ class InvoiceController extends Controller
         {
             $searchValue = $request->search;
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
-            $invoices = Invoice::with(['customer', 'proposal', 'items', 'project']);
+            $invoices = Invoice::with(['customer', 'proposal', 'items', 'project', 'pcmiBank.bank']);
 
             $result = DataTables::eloquent($invoices)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {
                         $query->where(function ($q) use ($search) {
                             $q->whereRaw('LOWER(code) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(invoice_number) LIKE ?', ["%{$search}%"])
                             ->orWhereRaw('LOWER(payment_method) LIKE ?', ["%{$search}%"])
                             ->orWhereRaw('LOWER(bill_to) LIKE ?', ["%{$search}%"])
                             ->orWhereRaw('LOWER(ship_to) LIKE ?', ["%{$search}%"])

@@ -15,10 +15,6 @@ class Customer extends Model
     protected $fillable = [
         'code',
         'name',
-        'address',
-        'contact_person',
-        'phone',
-        'email',
         'bank_name',
         'bank_account_number',
         'bank_account_name',
@@ -44,5 +40,10 @@ class Customer extends Model
     public function projects()
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function billingOptions()
+    {
+        return $this->hasMany(BillingOption::class);
     }
 } 

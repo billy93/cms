@@ -190,11 +190,21 @@ class ProposalService
                             // Type C/D: Use selling_price from payload
                             // Type C sends selling_price. Type D might need flexible handling but user said "ga ada amount".
                             
+                            $product = null;
                             if (!empty($itemData['product_id'])) {
                                 $product = Product::find($itemData['product_id']);
                                 if ($product) {
                                      $itemData['subheader'] = $itemData['subheader'] ?? $product->name;
                                      if (!$itemData['subheader']) $itemData['subheader'] = $product->name;
+                                }
+                            }
+
+                            // Calculate description priority: Manual > Product > Pricing Model Description
+                            if (empty($itemData['description'])) {
+                                if ($product && !empty($product->description)) {
+                                    $itemData['description'] = $product->description;
+                                } else {
+                                    $itemData['description'] = $proposal->pricing_model_description;
                                 }
                             }
                             
@@ -271,6 +281,7 @@ class ProposalService
                 ]);
             },
             'invoices.items',
+            'invoices.pcmiBank.bank',
         ])->find($id);
 
         if (!$proposal) {

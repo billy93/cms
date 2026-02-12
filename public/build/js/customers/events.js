@@ -46,10 +46,6 @@ class CustomerForm {
       code: "",
       status: "Active",
       name: "",
-      address: "",
-      contact_person: "",
-      phone: "",
-      email: "",
       bank_name: "",
       bank_account_number: "",
       bank_account_name: "",
@@ -60,10 +56,6 @@ class CustomerForm {
       value.code = this.data.code || "";
       value.status = this.data.status || "Active";
       value.name = this.data.name || "";
-      value.address = this.data.address || "";
-      value.contact_person = this.data.contact_person || "";
-      value.phone = this.data.phone || "";
-      value.email = this.data.email || "";
       value.bank_name = this.data.bank_name || "";
       value.bank_account_number = this.data.bank_account_number || "";
       value.bank_account_name = this.data.bank_account_name || "";
@@ -108,27 +100,6 @@ class CustomerForm {
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Contact Person</label>
-              <input type="text" id="input_customer_contact_person" class="form-control btn-disabled" value="${value.contact_person}">
-              <small id="input_customer_contact_person_error" class="text-danger mt-1" style="display: none;"></small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3">
-              <label class="col-form-label">Phone<span class="text-danger">*</span></label>
-              <input type="text" id="input_customer_phone" class="form-control btn-disabled" value="${value.phone}">
-              <small id="input_customer_phone_error" class="text-danger mt-1" style="display: none;"></small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3">
-              <label class="col-form-label">Email</label>
-              <input type="email" id="input_customer_email" class="form-control btn-disabled" value="${value.email}">
-              <small id="input_customer_email_error" class="text-danger mt-1" style="display: none;"></small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-3">
               <label class="col-form-label">Bank Name</label>
               <input type="text" id="input_customer_bank_name" class="form-control btn-disabled" value="${value.bank_name}">
               <small id="input_customer_bank_name_error" class="text-danger mt-1" style="display: none;"></small>
@@ -146,13 +117,6 @@ class CustomerForm {
               <label class="col-form-label">Bank Account Name</label>
               <input type="text" id="input_customer_bank_account_name" class="form-control btn-disabled" value="${value.bank_account_name}">
               <small id="input_customer_bank_account_name_error" class="text-danger mt-1" style="display: none;"></small>
-            </div>
-          </div>
-          <div class="col-md-12">
-            <div class="mb-3">
-              <label class="col-form-label">Address<span class="text-danger">*</span></label>
-              <textarea class="form-control" id="input_customer_address">${value.address}</textarea>
-              <small id="input_customer_address_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-12">
@@ -252,21 +216,6 @@ class CustomerForm {
         message: "Status is required."
       },
       {
-        field: "input_customer_contact_person",
-        required: false,
-        message: "Contact Person is required."
-      },
-      {
-        field: "input_customer_phone",
-        required: true,
-        message: "Phone is required."
-      },
-      {
-        field: "input_customer_email",
-        required: false,
-        message: "Email is required."
-      },
-      {
         field: "input_customer_bank_name",
         required: false,
         message: "Bank Name is required."
@@ -280,16 +229,6 @@ class CustomerForm {
         field: "input_customer_bank_account_name",
         required: false,
         message: "Bank Name is required."
-      },
-      {
-        field: "input_customer_bank_account_name",
-        required: false,
-        message: "Bank Name is required."
-      },
-      {
-        field: "input_customer_address",
-        required: true,
-        message: "Address is required."
       },
       {
         field: "input_customer_notes",

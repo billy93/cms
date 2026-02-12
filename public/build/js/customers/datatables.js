@@ -37,8 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       },
       initComplete: (settings, json) => {
-        $('.dataTables_paginate').appendTo('.datatable-paginate');
-        $('.dataTables_length').appendTo('.datatable-length');
+        const $wrapper = $(settings.nTableWrapper);
+        $wrapper.find('.dataTables_paginate').appendTo('.datatable-paginate');
+        $wrapper.find('.dataTables_length').appendTo('.datatable-length');
       },
       ajax: {
         url: $('#customer_list').data('url'),
@@ -67,10 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'code' },
         { data: 'name' },
-        { data: 'address' },
-        { data: 'contact_person' },
-        { data: 'phone' },
-        { data: 'email' },
         {
           data: 'status',
           render: function (data, type, row) {

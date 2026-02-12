@@ -30,7 +30,7 @@ class ProjectService
 
     public function getProjectById($id)
     {
-        $project = Project::with(['customer', 'proposals', 'invoices'])->find($id);
+        $project = Project::with(['customer', 'proposals', 'invoices.pcmiBank.bank', 'invoices.items'])->find($id);
         if (!$project) {
             throw new Exception("Project with ID {$id} not found");
         }

@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         { data: 'code', orderable: false },
+        { data: 'invoice_number', orderable: false },
         { data: 'project_name', orderable: false },
         { data: 'proposal_code', orderable: false },
         { data: 'sales_code', orderable: false },
@@ -83,13 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { data: 'invoice_amount', className: 'text-end' },
         {
-          data: 'type',
+          data: 'billing_type',
           render: function (data, type, row) {
             if (type === 'display') {
               switch (data) {
-                case 'Partial': return '<span class="badge badge-status bg-secondary">Partial</span>';
-                case 'Full': return '<span class="badge badge-status bg-success">Full</span>';
-                default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+                case 'Partly Payment': return '<span class="badge badge-status bg-secondary">Partly Payment</span>';
+                case 'Full Amount': return '<span class="badge badge-status bg-success">Full Amount</span>';
+                default: return `<span class="badge badge-status bg-secondary">${data || 'Unknown'}</span>`;
               }
             }
             return data;
@@ -99,10 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
           render: function (data, type, row) {
             if (type === 'display') {
               switch (data) {
-                case 'Unpaid': return '<span class="badge badge-status bg-secondary">Unpaid</span>';
+                case 'PREPARED': return '<span class="badge badge-status bg-info">Prepared</span>';
+                case 'SENT': return '<span class="badge badge-status bg-primary">Sent</span>';
+                case 'REVISED': return '<span class="badge badge-status bg-warning">Revised</span>';
+                case 'VOID': return '<span class="badge badge-status bg-danger">Void</span>';
                 case 'Paid': return '<span class="badge badge-status bg-success">Paid</span>';
-                case 'Cancelled': return '<span class="badge badge-status bg-dark">Cancelled</span>';
-                default: return '<span class="badge badge-status bg-secondary">Unknown</span>';
+                default: return `<span class="badge badge-status bg-secondary">${data || 'Unknown'}</span>`;
               }
             }
             return data;

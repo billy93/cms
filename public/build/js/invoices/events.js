@@ -7,7 +7,9 @@ class InvoiceForm {
   projects = [];
   proposal = null;
   proposals = [];
+  pcmibanks = [];
   data = {};
+  billingOptions = [];
   isFetching = false;
   errors = {};
 
@@ -80,12 +82,48 @@ class InvoiceForm {
     if (target.matches("#input_invoice_total_amount") || target.matches("#input_invoice_management_fee")) {
       this.calculateFitAmount();
     }
+
+    if (target.matches("#input_invoice_invoice_number")) {
+      let val = target.value;
+
+      // Enforce P- prefix
+      if (!val.startsWith("P-")) {
+        // If they deleted it or are starting to type
+        val = "P-" + val.replace(/^P-?/, "");
+      }
+
+      // Allow only P- followed by digits, then a / and then free text
+      // But the requirement says "Mandatory 3 digits" after P-
+      // Let's try to format it as P-XXX/
+
+      let parts = val.split("/");
+      let prefixPart = parts[0]; // Should be P-000
+      let restPart = parts.slice(1).join("/");
+
+      let digits = prefixPart.replace("P-", "").replace(/\D/g, "");
+
+      // Limit digits to 3 for the prefix part? 
+      // "Mandatory 3 digits" could mean exactly 3 or at least 3.
+      // Usually it's exactly 3 for sequencing.
+      if (digits.length > 3) {
+        digits = digits.substring(0, 3);
+      }
+
+      let newPrefixPart = "P-" + digits;
+
+      // Only auto-add / if we have 3 digits and no / yet
+      if (digits.length === 3 && parts.length === 1 && !val.endsWith("/")) {
+        target.value = newPrefixPart + "/";
+      } else {
+        target.value = newPrefixPart + (parts.length > 1 || val.endsWith("/") ? "/" : "") + restPart;
+      }
+    }
   }
   async handleDocumentChange(e) {
     const target = e.target;
 
     // Watch invoice type change
-    if (target.matches("#input_invoice_type")) {
+    if (target.matches("#input_invoice_billing_type")) {
       this.handleInvoiceTypeChange(target.value);
     }
 
@@ -109,6 +147,19 @@ class InvoiceForm {
         // Update Customer
         $("#input_invoice_customer").val(project?.customer?.name || "");
 
+        // Reset Billing Options
+        this.billingOptions = [];
+        const $billingSelect = $("#input_invoice_billing_option_id");
+        if ($billingSelect.length) {
+          $billingSelect.val("").trigger("change.select2").prop("disabled", true);
+        }
+
+        // Fetch Billing Options
+        const customerId = project?.customer?.id;
+        if (customerId) {
+          this.fetchBillingOptions(customerId);
+        }
+
         // Inject FIT Calculation Fields
         const fitHtml = this.getFitCalculationHTML();
         $("#invoice_fit_calculation_container").html(fitHtml);
@@ -130,6 +181,13 @@ class InvoiceForm {
 
         // Remove FIT Calculation Fields
         $("#invoice_fit_calculation_container").empty();
+
+        // Reset Billing Options
+        this.billingOptions = [];
+        const $billingSelect = $("#input_invoice_billing_option_id");
+        if ($billingSelect.length) {
+          $billingSelect.val("").trigger("change.select2").prop("disabled", true);
+        }
       }
     }
 
@@ -151,6 +209,19 @@ class InvoiceForm {
         // Update Customer
         $("#input_invoice_customer").val(proposal?.project?.customer?.name || "");
 
+        // Reset Billing Options
+        this.billingOptions = [];
+        const $billingSelect = $("#input_invoice_billing_option_id");
+        if ($billingSelect.length) {
+          $billingSelect.val("").trigger("change.select2").prop("disabled", true);
+        }
+
+        // Fetch Billing Options
+        const customerId = proposal?.project?.customer?.id;
+        if (customerId) {
+          this.fetchBillingOptions(customerId);
+        }
+
         // --- Dynamic Field Swap: Project Select -> Project Name Input ---
         let $projectContainer = $("#select_invoice_project_id").closest('.mb-3').parent();
         if ($projectContainer.length) {
@@ -164,10 +235,10 @@ class InvoiceForm {
         }
 
         // Inject Proposal Items Table (Manual Mode)
-        // Only if Type is NOT Full
-        const currentType = $("#input_invoice_type").val();
+        // Only if Type is NOT Full Amount
+        const currentType = $("#input_invoice_billing_type").val();
 
-        if (currentType !== 'Full') {
+        if (currentType !== 'Full Amount') {
           const tableHtml = this.getProposalItemTableHTML();
           $("#invoice_canvas_proposal_item_section").html(tableHtml);
           this.initDataTable();
@@ -180,6 +251,13 @@ class InvoiceForm {
 
         // --- Restore Project Select ---
         this.restoreProjectSelect();
+
+        // Reset Billing Options
+        this.billingOptions = [];
+        const $billingSelect = $("#input_invoice_billing_option_id");
+        if ($billingSelect.length) {
+          $billingSelect.val("").trigger("change.select2").prop("disabled", true);
+        }
 
         // Reset type options if both empty
         // Since we restored project select, it has no value.
@@ -239,7 +317,7 @@ class InvoiceForm {
 
   updateInvoiceTypeOptions(project, proposal) {
     let typeOptions = [];
-    const $typeSelect = $("#input_invoice_type");
+    const $typeSelect = $("#input_invoice_billing_type");
     let currentVal = $typeSelect.val();
 
     if (proposal) {
@@ -251,7 +329,6 @@ class InvoiceForm {
 
       const otherActiveInvoices = allInvoices.filter(inv => {
         if (currentInvoiceId && +inv.id === +currentInvoiceId) return false;
-        // if (inv.status === 'Cancelled') return false;
         return true;
       });
 
@@ -259,20 +336,20 @@ class InvoiceForm {
         isFullAllowed = false;
       }
 
-      // Pricing Model A -> Only Full
+      // Pricing Model A -> Only Full Amount
       if (proposal.pricing_model === 'A') {
-        typeOptions = ["Full"];
+        typeOptions = ["Full Amount"];
       } else {
         // If not A, check the other invoices rule
         if (!isFullAllowed) {
-          typeOptions = ["Partial"];
+          typeOptions = ["Partly Payment"];
         } else {
-          typeOptions = ["Full", "Partial"];
+          typeOptions = ["Full Amount", "Partly Payment"];
         }
       }
     } else if (project) {
-      // If Project (Fit) -> Defaults to ["Full", "Partial"]
-      typeOptions = ["Full", "Partial"];
+      // If Project (Fit) -> Defaults to ["Full Amount", "Partly Payment"]
+      typeOptions = ["Full Amount", "Partly Payment"];
     }
 
     // Rebuild Options
@@ -297,6 +374,30 @@ class InvoiceForm {
 
     // Trigger change to update UI alerts etc.
     $typeSelect.trigger('change');
+    this.updatePaymentStatusOptions($typeSelect.val());
+  }
+
+  updatePaymentStatusOptions(type) {
+    const $paymentStatusSelect = $("#input_invoice_payment_status");
+    let currentVal = $paymentStatusSelect.val();
+    let options = ["UNPAID"];
+
+    if (type === "Full Amount") {
+      options.push("FULLY PAID");
+    } else if (type === "Partly Payment") {
+      options.push("PARTLY PAID");
+    }
+
+    $paymentStatusSelect.empty();
+    options.forEach(opt => {
+      $paymentStatusSelect.append(new Option(opt, opt));
+    });
+
+    if (options.includes(currentVal)) {
+      $paymentStatusSelect.val(currentVal).trigger('change.select2');
+    } else {
+      $paymentStatusSelect.val(options[0]).trigger('change.select2');
+    }
   }
 
   // ---------------------------------------- FETCHER ----------------------------------------
@@ -363,6 +464,84 @@ class InvoiceForm {
       });
   }
 
+  async fetchPcmiBanks() {
+    this.isFetching = true;
+    this.showLoading();
+    return fetch(`/pcmibanks/all`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        this.pcmibanks = res.data || [];
+      })
+      .catch(err => {
+        console.error("Fetch pcmibanks error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        if (!this.isInit) this.hideLoading();
+      });
+  }
+
+  async fetchBillingOptions(customerId) {
+    if (!customerId) return;
+    this.isFetching = true;
+    this.showLoading();
+
+    return fetch(`/billing-options?customer_id=${customerId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+      },
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(res => {
+        this.billingOptions = res.data || [];
+        this.populateBillingOptions();
+      })
+      .catch(err => {
+        console.error("Fetch billing options error:", err);
+      })
+      .finally(() => {
+        this.isFetching = false
+        if (!this.isInit) this.hideLoading();
+      });
+  }
+
+  populateBillingOptions() {
+    const $select = $("#input_invoice_billing_option_id");
+    if (!$select.length) return;
+
+    $select.empty();
+    $select.append(new Option("-- Select Billing To --", ""));
+
+    this.billingOptions.forEach(opt => {
+      const label = `${opt.cp_name} (${opt.address})`;
+      const option = new Option(label, opt.id);
+      $select.append(option);
+    });
+
+    if (this.data && this.data.billing_option_id) {
+      $select.val(this.data.billing_option_id).trigger('change.select2');
+    }
+
+    $select.prop('disabled', this.billingOptions.length === 0);
+  }
+
   calculateFitAmount() {
     const basicPrice = parseFloat(normalizeFormatRupiah(this.form.querySelector("#input_invoice_total_amount")?.value || "0").replace(",", ".")) || 0;
     const vatRate = parseFloat(this.form.querySelector("#input_invoice_vat_rate")?.value || 0);
@@ -402,11 +581,11 @@ class InvoiceForm {
       })
     }
 
-    const typeSelect = this.form.querySelector("#input_invoice_type");
+    const typeSelect = this.form.querySelector("#input_invoice_billing_type");
 
     if (typeSelect && isAllSelected) {
-      $(typeSelect).val("Full").trigger('change.select2');
-      this.handleInvoiceTypeChange("Full");
+      $(typeSelect).val("Full Amount").trigger('change.select2');
+      this.handleInvoiceTypeChange("Full Amount");
     }
   }
 
@@ -466,38 +645,41 @@ class InvoiceForm {
   }
 
   handleInvoiceTypeChange(type) {
-    if (this.project) return;
-    if (!this.proposal) return; // Add this check to prevent premature init
-
     const proposalItemSection = document.getElementById("invoice_canvas_proposal_item_section");
     const alertInfo = document.getElementById("invoice_type_alert_container");
 
-    // Update alert info
+    // UI Updates (Relevant for both, though alerts are mainly for proposals)
     if (alertInfo) {
-      if (type === "Full") {
+      if (type === "Full Amount") {
         alertInfo.innerHTML = `
           <div class="alert alert-info">
             <i class="ti ti-info-circle me-2"></i>
-            Full Invoice: All available Items will be automatically included.
+            Full Amount Invoice: All available Items will be automatically included.
           </div>`;
       } else {
         alertInfo.innerHTML = `
           <div class="alert alert-info">
             <i class="ti ti-info-circle me-2"></i>
-            Partial Invoice: Please select specific Items to include in this invoice.
+            Partly Payment Invoice: Please select specific Items to include in this invoice.
           </div>`;
       }
     }
 
-    $(proposalItemSection).empty();
+    // Proposal-specific Item Selection logic
+    if (this.proposal && proposalItemSection) {
+      $(proposalItemSection).empty();
 
-    if (type === "Full") {
-      this.selectedItems = [];
-    } else {
-      $(proposalItemSection).append(this.getProposalItemTableHTML());
-      // Initialize DataTable for Partial
-      this.initDataTable();
+      if (type === "Full Amount") {
+        this.selectedItems = [];
+      } else {
+        $(proposalItemSection).append(this.getProposalItemTableHTML());
+        // Initialize DataTable for Partial
+        this.initDataTable();
+      }
     }
+
+    // Always update payment status options based on type
+    this.updatePaymentStatusOptions(type);
   }
 
   // ---------------------------------------- INIT ----------------------------------------
@@ -510,7 +692,17 @@ class InvoiceForm {
     this.data = data;
 
     if (!project && !proposal) {
-      await Promise.all([this.fetchProjects(), this.fetchProposals()]);
+      await Promise.all([this.fetchProjects(), this.fetchProposals(), this.fetchPcmiBanks()]);
+    } else {
+      await this.fetchPcmiBanks();
+    }
+
+    if (this.mode === "edit" && this.data?.customer_id) {
+      this.fetchBillingOptions(this.data.customer_id);
+    } else if (this.project?.customer?.id) {
+      this.fetchBillingOptions(this.project.customer.id);
+    } else if (this.proposal?.project?.customer?.id) {
+      this.fetchBillingOptions(this.proposal.project.customer.id);
     }
 
     const formWrapper = document.createElement("div");
@@ -524,7 +716,7 @@ class InvoiceForm {
     this.hideLoading();
 
     // Trigger initial invoice type change to set correct visibility
-    const typeSelect = this.form.querySelector("#input_invoice_type");
+    const typeSelect = this.form.querySelector("#input_invoice_billing_type");
     if (typeSelect) {
       this.handleInvoiceTypeChange(typeSelect.value);
     }
@@ -537,14 +729,14 @@ class InvoiceForm {
       customer_name: "",
       proposal_code: "",
       description: "",
-      type: "Full",
-      status: "Unpaid",
-      invoice_date: "",
-      due_date: "",
-      bill_to: "",
-      ship_to: "",
-      payment_method: "",
-      note: "",
+      invoice_number: "P-",
+      billing_type: "Full Amount",
+      status: "PREPARED",
+      tax_type: "Tax - Non WAPU",
+      pcmi_bank_id: "",
+      invoice_date: moment().format('DD/MM/YY'),
+      due_date: moment().add(30, 'days').format('DD/MM/YY'),
+      payment_status: "UNPAID",
       total_amount: "0",
       vat_rate: "11",
       management_fee: "0",
@@ -575,18 +767,18 @@ class InvoiceForm {
       }
 
       value.customer_name = this.data.customer?.name || "";
-      value.type = this.data?.type || "Full";
-      value.status = this.data?.status || "Unpaid";
+      value.billing_type = this.data?.billing_type || "Full Amount";
+      value.status = this.data?.status || "PREPARED";
+      value.payment_status = this.data?.payment_status || "UNPAID";
+      value.invoice_number = this.data?.invoice_number || "";
+      value.tax_type = this.data?.tax_type || "Tax - Non WAPU";
+      value.pcmi_bank_id = this.data?.pcmi_bank_id || "";
       value.invoice_date = this.data?.invoice_date
         ? moment(this.data.invoice_date).format("YYYY-MM-DD")
         : "";
       value.due_date = this.data?.due_date
         ? moment(this.data.due_date).format("YYYY-MM-DD")
         : "";
-      value.bill_to = this.data?.bill_to || "";
-      value.ship_to = this.data?.ship_to || "";
-      value.payment_method = this.data?.payment_method || "";
-      value.note = this.data?.note || "";
     }
 
     // Check if 'Full' type allowed
@@ -608,27 +800,35 @@ class InvoiceForm {
 
       if (otherActiveInvoices.length > 0) {
         isFullAllowed = false;
-        // Force type to Partial if Full was selected/defaulted but not allowed
-        if (value.type === 'Full') {
-          value.type = 'Partial';
+        // Force type to Partly Payment if Full Amount was selected/defaulted but not allowed
+        if (value.billing_type === 'Full Amount') {
+          value.billing_type = 'Partly Payment';
         }
       }
-      typeOptions = isFullAllowed ? ["Full", "Partial"] : ["Partial"];
-      // Type A: Only "Full" allowed
+      typeOptions = isFullAllowed ? ["Full Amount", "Partly Payment"] : ["Partly Payment"];
+      // Type A: Only "Full Amount" allowed
       if (this.proposal?.pricing_model === 'A' || this.data?.proposal?.pricing_model === 'A') {
-        typeOptions = ["Full"];
-        value.type = "Full";
+        typeOptions = ["Full Amount"];
+        value.billing_type = "Full Amount";
       }
     } else if (this.project) { // Project Fit
-      typeOptions = ["Full", "Partial"];
+      typeOptions = ["Full Amount", "Partly Payment"];
     }
 
     const selectTypeOptions = typeOptions.map(t => {
-      return `<option value="${t}" ${t === value.type ? "selected" : ""}>${t}</option>`;
+      return `<option value="${t}" ${t === value.billing_type ? "selected" : ""}>${t}</option>`;
     });
 
-    const selectStatusOptions = ["Unpaid", "Paid", "Cancelled"].map(t => {
+    const selectStatusOptions = ["VOID", "REVISED", "PREPARED", "SENT"].map(t => {
       return `<option value="${t}" ${t === value.status ? "selected" : ""}>${t}</option>`;
+    });
+
+    const selectTaxOptions = ["No Tax", "Tax - Non WAPU", "Tax - WAPU"].map(t => {
+      return `<option value="${t}" ${t === value.tax_type ? "selected" : ""}>${t}</option>`;
+    });
+
+    const selectBankOptions = this.pcmibanks.map(b => {
+      return `<option value="${b.id}" ${b.id == value.pcmi_bank_id ? "selected" : ""}>${b.bank?.bank_name || 'Bank'} - ${b.account_no}</option>`;
     });
 
     const selectProjectOptions = this.projects.map(t => {
@@ -678,6 +878,15 @@ class InvoiceForm {
             <small id="input_invoice_customer_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Billing To<span class="text-danger">*</span></label>
+            <select id="input_invoice_billing_option_id" class="select form-control" disabled>
+              <option value="">-- Select Billing To --</option>
+            </select>
+            <small id="input_invoice_billing_option_id_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
         ${this.proposal ? `
           <div class="col-md-6">
             <div class="mb-3">
@@ -690,10 +899,17 @@ class InvoiceForm {
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label">Type<span class="text-danger">*</span></label>
-            <select id="input_invoice_type" class="select form-control" ${typeOptions.length ? "" : "disabled"}>
+            <select id="input_invoice_billing_type" class="select form-control" ${typeOptions.length ? "" : "disabled"}>
               ${selectTypeOptions}
             </select>
-            <small id="input_invoice_type_error" class="text-danger mt-1" style="display: none;"></small>
+            <small id="input_invoice_billing_type_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Invoice Number<span class="text-danger">*</span></label>
+            <input type="text" id="input_invoice_invoice_number" class="form-control" value="${value.invoice_number}">
+            <small id="input_invoice_invoice_number_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
         <div class="col-md-6">
@@ -707,12 +923,41 @@ class InvoiceForm {
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label">Invoice Date<span class="text-danger">*</span></label>
+            <label class="col-form-label">Payment Status<span class="text-danger">*</span></label>
+            <select id="input_invoice_payment_status" class="select form-control">
+              <option value="UNPAID" ${value.payment_status === "UNPAID" ? "selected" : ""}>UNPAID</option>
+              <option value="PARTLY PAID" ${value.payment_status === "PARTLY PAID" ? "selected" : ""}>PARTLY PAID</option>
+              <option value="FULLY PAID" ${value.payment_status === "FULLY PAID" ? "selected" : ""}>FULLY PAID</option>
+            </select>
+            <small id="input_invoice_payment_status_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Taxation<span class="text-danger">*</span></label>
+            <select id="input_invoice_tax_type" class="select form-control">
+              ${selectTaxOptions}
+            </select>
+            <small id="input_invoice_tax_type_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Bank Account<span class="text-danger">*</span></label>
+            <select id="input_invoice_pcmi_bank_id" class="select form-control">
+              <option value="">-- Select Bank --</option>
+              ${selectBankOptions.join("")}
+            </select>
+            <small id="input_invoice_pcmi_bank_id_error" class="text-danger mt-1" style="display: none;"></small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label">Invoice Date</label>
             <div class="icon-form">
               <span class="form-icon"><i class="ti ti-calendar-event"></i></span>
-              <input id="input_invoice_invoice_date" type="text" class="form-control datetimepicker" placeholder="DD/MM/YY" value="${value.invoice_date}">
+              <input id="input_invoice_invoice_date" type="text" class="form-control btn-disabled" placeholder="DD/MM/YY" value="${value.invoice_date}" disabled>
             </div>
-            <small id="input_invoice_invoice_date_error" class="text-danger mt-1" style="display: none;"></small>
           </div>
         </div>
         <div class="col-md-6">
@@ -729,33 +974,6 @@ class InvoiceForm {
         <div class="col-md-12 mb-3" id="invoice_canvas_proposal_item_section">
           ${this.proposal && value.type !== "Full" ? this.getProposalItemTableHTML() : ""}
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label">Bill To</label>
-            <input type="text" id="input_invoice_bill_to" class="form-control" value="${value.bill_to}">
-            <small id="input_invoice_bill_to_error" class="text-danger mt-1" style="display: none;"></small>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label">Ship To</label>
-            <input type="text" id="input_invoice_ship_to" class="form-control" value="${value.ship_to}">
-            <small id="input_invoice_ship_to_error" class="text-danger mt-1" style="display: none;"></small>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label">Payment Method</label>
-            <input type="text" id="input_invoice_payment_method" class="form-control" value="${value.payment_method}">
-            <small id="input_invoice_payment_method_error" class="text-danger mt-1" style="display: none;"></small>
-          </div>
-        </div>
-        <div class="col-md-12">
-          <div class="mb-3">
-            <label class="col-form-label">Notes</label>
-            <textarea class="form-control" id="input_invoice_note">${value.note}</textarea>
-            <small id="input_invoice_note_error" class="text-danger mt-1" style="display: none;"></small>
-          </div>
         </div>
       </div>
       
@@ -887,6 +1105,8 @@ class InvoiceForm {
         return !item.invoice_id;
       });
     } else if (this.data?.proposal?.items && this.mode === "edit") {
+      console.log("ASU", this.data);
+
       data = this.data.proposal.items.filter(item => {
         const isSelected = this.data.items.some(b => b.id === item.id);
         // const isCancelled = this.proposal.invoices?.find(inv => inv.id === item.invoice_id)?.status.toLowerCase() === "cancelled";
@@ -972,7 +1192,8 @@ class InvoiceForm {
         const el = $(this);
         const rawValue = el.val();
         const isIso = rawValue && moment(rawValue, moment.ISO_8601, true).isValid();
-        const parsedDate = isIso ? moment(rawValue) : null;
+        const isFormat = rawValue && moment(rawValue, 'DD/MM/YY', true).isValid();
+        const parsedDate = isIso ? moment(rawValue) : (isFormat ? moment(rawValue, 'DD/MM/YY') : null);
 
         el.datetimepicker({
           format: 'DD/MM/YY',
@@ -1031,6 +1252,7 @@ class InvoiceForm {
     this.project = null;
     this.proposal = null;
     this.data = null;
+    this.billingOptions = [];
     this.errors = {};
     this.form.innerHTML = "";
     this.loadingEl = null;
@@ -1112,7 +1334,7 @@ class InvoiceForm {
 
     const inputs = [
       {
-        field: "input_invoice_type",
+        field: "input_invoice_billing_type",
         required: true,
         message: "Invoice Type is required."
       },
@@ -1122,10 +1344,19 @@ class InvoiceForm {
         message: "Status is required."
       },
       {
-        field: "input_invoice_invoice_date",
-        date: true,
+        field: "input_invoice_invoice_number",
         required: true,
-        message: "Invoice Date is required."
+        message: "Invoice Number is required."
+      },
+      {
+        field: "input_invoice_tax_type",
+        required: true,
+        message: "Taxation is required."
+      },
+      {
+        field: "input_invoice_pcmi_bank_id",
+        required: true,
+        message: "Bank Account is required."
       },
       {
         field: "input_invoice_due_date",
@@ -1134,24 +1365,14 @@ class InvoiceForm {
         message: "Due Date is required."
       },
       {
-        field: "input_invoice_bill_to",
-        required: false,
-        message: "Bill To is required."
+        field: "input_invoice_payment_status",
+        required: true,
+        message: "Payment status is required."
       },
       {
-        field: "input_invoice_ship_to",
-        required: false,
-        message: "Ship To is required."
-      },
-      {
-        field: "input_invoice_payment_method",
-        required: false,
-        message: "Payment Method is required."
-      },
-      {
-        field: "input_invoice_note",
-        required: false,
-        message: "Note is required."
+        field: "input_invoice_billing_option_id",
+        required: true,
+        message: "Billing address is required."
       },
     ];
 
@@ -1174,16 +1395,28 @@ class InvoiceForm {
         value = moment(value, 'DD/MM/YY').format('YYYY-MM-DD')
       }
 
-      payload[id.field.replace("input_invoice_", "")] = value;
+      if (id.field !== "input_invoice_invoice_date") {
+        payload[id.field.replace("input_invoice_", "")] = value;
+      }
 
       if (!value && id.required) {
         this.errors[id.field + "_error"] = id.message || "This field is required.";
       }
+
+      // Special validation for Invoice Number
+      if (id.field === "input_invoice_invoice_number" && value) {
+        const regex = /^P-\d{3}\//;
+        if (!regex.test(value)) {
+          this.errors[id.field + "_error"] = "Invoice Number must follow the format: P-000/ (Mandatory 3 digits).";
+        }
+      }
     });
 
-    if (payload.invoice_date && payload.due_date) {
-      if (moment(payload.due_date).isBefore(payload.invoice_date)) {
-        this.errors["input_invoice_due_date_error"] = "The due date field must be a date after or equal to invoice date.";
+    if (payload.due_date) {
+      const today = moment().startOf('day');
+      const dueDate = moment(payload.due_date);
+      if (!dueDate.isAfter(today)) {
+        this.errors["input_invoice_due_date_error"] = "Due date must be after invoice date.";
       }
     }
 
@@ -1192,11 +1425,11 @@ class InvoiceForm {
       if (payload.management_fee) payload.management_fee = parseFloat(normalizeFormatRupiah(payload.management_fee).replace(",", "."));
     }
 
-    // Only send item_ids for Partial invoice type
-    if (payload.type === "Partial" && payload.proposal_id) {
+    // Only send item_ids for Partly Payment invoice type
+    if (payload.billing_type === "Partly Payment" && payload.proposal_id) {
       payload.item_ids = this.selectedItems.map(obj => obj.id);
 
-      // Validate Item selection for Partial type
+      // Validate Item selection for Partly Payment type
       if (!payload.item_ids.length) {
         this.errors["invoice_proposal_item_error"] = "Please select at least one Item for partial invoice.";
       }

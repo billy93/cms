@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\PcmiBankService;
+use App\Models\PcmiBank;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Yajra\DataTables\Facades\DataTables;
 
 class PcmiBankController extends Controller
 {
@@ -23,35 +27,21 @@ class PcmiBankController extends Controller
             $search = strtolower(trim(is_array($searchValue) ? ($searchValue['value'] ?? '') : ($searchValue ?? '')));
             $pcmiBanks = PcmiBank::with(['bank']);
 
-            if($request->bank_id) {
-                $pcmiBanks->where('bank_id', $request->bank_id);
-            }
-
             return DataTables::eloquent($pcmiBanks)
                 ->filter(function ($query) use ($search) {
                     if ($search !== '') {
                         $query->where(function ($q) use ($search) {
-                            $q->whereRaw('LOWER(products.name) LIKE ?', ["%{$search}%"])
-                              ->orWhereRaw('LOWER(products.description) LIKE ?', ["%{$search}%"])
-                              ->orWhereHas('supplier', fn($p) =>
-                                  $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                              )
-                              ->orWhereHas('categories', fn($p) =>
-                                  $p->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                              );
+                            $q->whereHas('bank', fn($bk) =>
+                                $bk->whereRaw('LOWER(bank_name) LIKE ?', ["%{$search}%"])
+                                  ->orWhereRaw('LOWER(bank_code) LIKE ?', ["%{$search}%"])
+                            )
+                            ->orWhereRaw('LOWER(account_no) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(branch) LIKE ?', ["%{$search}%"])
+                            ->orWhereRaw('LOWER(holder_name) LIKE ?', ["%{$search}%"]);
                         });
                     }
                 })
-                ->addColumn('supplier_name', fn($p) => $p->supplier->name ?? '-')
-                ->addColumn('categories', function ($p) {
-                    if ($p->categories->isEmpty()) {
-                        return '-';
-                    }
-
-                    return $p->categories->map(function ($cat) {
-                        return '<span class="badge bg-primary me-1">' . e($cat->name) . '</span>';
-                    })->implode(' ');
-                })
+                ->addColumn('bank_name', fn($p) => $p->bank->bank_name ?? '-')
                 ->addColumn('actions', function ($p) {
                     return '
                         <div class="dropdown table-action">
@@ -61,71 +51,37 @@ class PcmiBankController extends Controller
                             <div class="dropdown-menu dropdown-menu-end">
                                 <a  
                                     class="dropdown-item" 
-                                    href="'.route('products.read', ['product_id' => $p->id]).'"
+                                    href="#"
                                 >
                                     <i class="ti ti-eye text-info"></i> View Detail
-                                </a>
-                                <a  
-                                    class="dropdown-item c_product_edit_btn" 
-                                    href="#" 
-                                    data-url="'.route('products.read', ['product_id' => $p->id]).'"
-                                >
-                                    <i class="ti ti-edit text-blue"></i> Edit
-                                </a>
-                                <a  
-                                    class="dropdown-item c_product_delete_btn" 
-                                    href="javascript:void(0);" 
-                                    data-url="'.route('products.delete', ['product_id' => $p->id]).'"
-                                >
-                                    <i class="ti ti-trash text-danger"></i> Delete
                                 </a>
                             </div>
                         </div>
                     ';
                 })
-                ->rawColumns(['categories', 'actions'])
+                ->rawColumns(['actions'])
                 ->make(true);
         }
 
-        return view('products');
+        return view('pcmibanks.index');
     }
 
     /**
-     * Create a new Product.
-     */
-    public function create(ProductRequest $request): JsonResponse
-    {
-        try {
-            $product = $this->productService->createProduct($request->validated());
-            return response()->json([
-                'success' => true,
-                'message' => 'Product created successfully',
-                'data' => $product
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create Product'
-            ], 500);
-        }
-    }
-
-    /**
-     * Read all products (JSON).
+     * Read all pcmi banks (JSON).
      */
     public function readAll(Request $request): JsonResponse
     {
         if ($request->wantsJson() || $request->ajax()) {
             try {
-                $products = $this->productService->getAllProducts();
+                $banks = $this->pcmiBankService->getAllPcmiBanks();
                 return response()->json([
                     'success' => true,
-                    'data' => $products
+                    'data' => $banks
                 ], 200);
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage() ?: 'Failed to fetch Products'
+                    'message' => $e->getMessage() ?: 'Failed to fetch PCMI Banks'
                 ], 500);
             }
         }
@@ -133,67 +89,26 @@ class PcmiBankController extends Controller
     }
 
     /**
-     * Read a single product by ID.
+     * Read a single pcmi bank by ID.
      */
-    public function read(Request $request, $product_id)
+    public function read(Request $request, $pcmibank_id)
     {
         if ($request->wantsJson() || $request->ajax()) {
             try {
-                $product = $this->productService->getProductById($product_id);
+                $bank = $this->pcmiBankService->getPcmiBankById($pcmibank_id);
                 return response()->json([
                     'success' => true,
-                    'data' => $product
+                    'data' => $bank
                 ], 200);
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to load Product'
+                    'message' => 'Failed to load PCMI Bank'
                 ], 500);
             }
         }
 
-        $product = $this->productService->getProductById($product_id);
-        return view('products.detail', compact('product'));
-    }
-
-    /**
-     * Update product.
-     */
-    public function update(ProductRequest $request, $product_id): JsonResponse
-    {
-        try {
-            $product = $this->productService->updateProduct($product_id, $request->validated());
-            return response()->json([
-                'success' => true,
-                'message' => 'Product updated successfully',
-                'data' => $product
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error updating Product: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update Product'
-            ], 500);
-        }
-    }
-
-    /**
-     * Delete product.
-     */
-    public function delete($product_id): JsonResponse
-    {
-        try {
-            $this->productService->deleteProduct($product_id);
-            return response()->json([
-                'success' => true,
-                'message' => 'Product deleted successfully'
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error deleting Product: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete Product'
-            ], 500);
-        }
+        $bank = $this->pcmiBankService->getPcmiBankById($pcmibank_id);
+        return view('pcmibanks.detail', compact('bank'));
     }
 }

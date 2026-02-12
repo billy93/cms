@@ -8,10 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('proposal_items', function (Blueprint $table) {
+        Schema::create('sales_items', function (Blueprint $table) {
             $table->id();
 
+            // Hybrid Flow: Parent can be Project (Direct Transaction) OR Proposal (Regular Flow)
+            $table->foreignId('project_id')
+                  ->nullable()
+                  ->constrained('projects')
+                  ->cascadeOnDelete();
+
             $table->foreignId('proposal_id')
+                  ->nullable()
                   ->constrained('proposals')
                   ->cascadeOnDelete();
 
@@ -21,16 +28,7 @@ return new class extends Migration
                   ->nullOnDelete();
                   
             $table->foreignId('product_id')
-                  ->nullable() // Proposal items might not always be linked to a product directly (e.g. ad-hoc items), verifying this assumption? boq_items had it nullable? checking previous file... 
-                  // Wait, boq_items file I read: 
-                  // $table->foreignId('product_id')->constrained('products')->cascadeOnDelete(); 
-                  // It was NOT nullable in boq_items. use matching logic unless user said otherwise. User didn't specify, but often proposal items are flexible. 
-                  // However, strict duplicate means constrained. But typical BOQ items usually need a product. 
-                  // Let's stick to the boq_items definition for product_id to be safe, but wait, 
-                  // In Type C/D logic in JS, product_id can be null if it's a manual input? 
-                  // "product_id: subheaderSelectEl?.value || null" in events.js line 1161.
-                  // So product_id MUST BE NULLABLE for the new flexible design.
-                  // I will make it nullable to support the unified pricing model where some items might be custom.
+                  ->nullable() 
                   ->constrained('products')
                   ->cascadeOnDelete();
             
@@ -68,6 +66,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('proposal_items');
+        Schema::dropIfExists('sales_items');
     }
 };

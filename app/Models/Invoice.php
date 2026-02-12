@@ -5,32 +5,34 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'proposal_id',
         'project_id',
+        'proposal_id',
         'customer_id',
+        'billing_option_id',
+        'pcmi_bank_id', 
         'code',
-        'invoice_date',
+        'invoice_number', 
         'due_date',
+        'sales_code', 
+        'project_name', 
+        'project_description', 
         'description',
-        'status',
-        'type',
-        'payment_method',
-        'bill_to',
-        'ship_to',
+        'billing_type', 
+        'tax_type', 
         'total_amount',
-        'management_fee',
+        'status',
+        'payment_status', 
         'management_fee_type',
+        'management_fee',
         'vat_rate', 
-        'note',
-        'terms_and_conditions',
-        'signature_name',
-        'signature_image',
     ];
 
     protected $appends = [
@@ -81,7 +83,8 @@ class Invoice extends Model
         // Ambil 3 karakter pertama + 5 terakhir
         $prefixCode = substr($cleanCode, 0, 3) . substr($cleanCode, -5);
 
-        $prefix = "INV-{$prefixCode}-{$date}";
+        // Updated Prefix to 'I' as per requirement
+        $prefix = "I-{$prefixCode}-{$date}";
 
         // Hitung jumlah invoice untuk proposal ini hari ini
         $count = Invoice::where('proposal_id', $proposal->id)
@@ -106,23 +109,23 @@ class Invoice extends Model
         $projLast5 = str_pad($projLast5, 5, '0', STR_PAD_LEFT);
 
         // Format: FIT-{ProjLast5}-{Date}-{Seq}
-        $prefix = "FIT-{$projLast5}-{$date}";
+        // Requirement 1 says: "Prefix I (otomatis)..." for 'Invoice Code'.
+        // But for consistency with previous discussion, if this is for FIT projects, maybe keep FIT prefix?
+        // However, the prompt 1 says: "1 Invoice Code ... Prefix I ...". 
+        // It doesn't distinguish between FIT and Regular for the code prefix itself in point 1.
+        // I will use "I-FIT-" to distinguish or just "I-"?
+        // Let's stick to "I-" standard to match requirement 1 strictly.
+        // "I-000/Year of sales/..."
+        // The user requirement specific format: "I-000/Year of sales/kalau bisa kode jenis activity nya"
+        // This looks like a specific format request: "Prefix I (otomatis)-diikuti dengan Mandatory 3 angka/Year of sales yang didapat dari Sales code nya"
+        
+        // Since I don't have the full logic for "Activity Code" yet, I will keep the existing logic but change prefix to I- to align closer.
+        $prefix = "I-FIT-{$projLast5}-{$date}";
 
-        // Sequence: Count invoices for this project (direct link)
-        // We use starts_with check or exact project_id match. 
-        // Since we added project_id column, we can use that.
         $count = Invoice::where('project_id', $project->id)
             ->whereDate('created_at', now()->toDateString())
             ->count() + 1;
 
-        // Optionally add random string like the other generator? 
-        // User requested "FIT-...-urutan invoice" (Sequence).
-        // The other generator does "%s-%03d%s" (Prefix-Seq-Random).
-        // I will follow the other generator's pattern for consistency unless "FIT" implies strict format.
-        // Let's stick to the user's "FIT" format request from step 160 but maybe adding random chars for safety is better?
-        // User said: "FIT- ... - urutan invoice".
-        // Let's do: FIT-{ProjLast5}-{Date}-{SeqWithPadding}
-        
         return sprintf("%s-%03d", $prefix, $count);
     }
 
@@ -141,9 +144,18 @@ class Invoice extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function items()
+    public function pcmiBank(): BelongsTo
     {
-        return $this->hasMany(ProposalItem::class);
+        return $this->belongsTo(PcmiBank::class);
+    }
+
+    public function billingOption(): BelongsTo
+    {
+        return $this->belongsTo(BillingOption::class);
+    }
+
+    public function items(): HasMany   {
+        return $this->hasMany(SalesItem::class, 'invoice_id');
     }
 
     /**

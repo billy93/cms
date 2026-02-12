@@ -21,14 +21,17 @@ class DatabaseSeeder extends Seeder
             AdminMenuSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,
+            BillingOptionSeeder::class,
             SupplierSeeder::class,       
             ProductCategorySeeder::class,
             ProductSeeder::class,
             ProjectSeeder::class,
             ProposalSeeder::class,
+            SalesItemSeeder::class, 
             InvoiceSeeder::class,
             BoqSeeder::class,
-            // BankSeeder::class,
+            BankSeeder::class,
+            PcmiBankSeeder::class,
             PdfTemplateSeeder::class
         ]);
     }

@@ -12,9 +12,10 @@ class ProductSeeder extends Seeder
         $productService = new ProductService();
         
         $products = [
+            // Generic Items
             [
                 'name' => 'Samsung Galaxy S24',
-                'description' => 'Latest flagship smartphone with advanced camera and AI features',
+                'description' => 'Latest flagship smartphone',
                 'unit' => 'Pcs',
                 'price' => '22.000.000,00',
                 'supplier_id' => 1,
@@ -22,41 +23,77 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'MacBook Pro 14"',
-                'description' => 'Professional laptop with M3 chip for creative professionals',
+                'description' => 'Professional laptop M3',
                 'unit' => 'Pcs',
-                'price' => '18.000.000,75',
+                'price' => '18.000.000,00',
                 'supplier_id' => 1,
                 'category_ids' => [1, 2],
             ],
+            
+            // Event Related Products (for Regular Project)
             [
-                'name' => 'Nike Air Max 270',
-                'description' => 'Comfortable running shoes with air cushioning technology',
-                'unit' => 'Pairs',
-                'price' => '2.000.000,00',
-                'supplier_id' => 1,
-                'category_ids' => [2, 3],
-            ],
-            [
-                'name' => 'Steel Rebar 12mm',
-                'description' => 'Construction grade steel reinforcement bar',
-                'unit' => 'Kg',
-                'price' => '50.000,00',
-                'supplier_id' => 1,
-                'category_ids' => [1],
-            ],
-            [
-                'name' => 'Cement Portland',
-                'description' => 'High quality portland cement for construction',
-                'unit' => 'Bag',
-                'price' => '125.000,00',
-                'supplier_id' => 1,
-                'category_ids' => [1],
-            ],
-            [
-                'name' => 'Project Management Service',
-                'description' => 'Complete project management and oversight service',
-                'unit' => 'Month',
+                'name' => 'Grand Ballroom Rental',
+                'description' => 'Full day usage of Grand Ballroom',
+                'unit' => 'Day',
                 'price' => '75.000.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Meeting Room Package',
+                'description' => 'Half day meeting room usage',
+                'unit' => 'Day',
+                'price' => '5.000.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Buffet Catering Package',
+                'description' => 'Standard International Buffet',
+                'unit' => 'Pax',
+                'price' => '350.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Live Band Performance',
+                'description' => 'Acoustic Band 4 Personnel',
+                'unit' => 'Show',
+                'price' => '15.000.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Event Photography',
+                'description' => 'Professional Photographer 8 Hours',
+                'unit' => 'Day',
+                'price' => '5.000.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+
+            // Travel Related Products (for FIT Project)
+            [
+                'name' => 'Flight Ticket DOM',
+                'description' => 'Domestic Flight Economy Class',
+                'unit' => 'Pax',
+                'price' => '1.500.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Hotel Voucher 5 Star',
+                'description' => '5 Star Hotel Room Voucher',
+                'unit' => 'Night',
+                'price' => '2.500.000,00',
+                'supplier_id' => 1,
+                'category_ids' => [3],
+            ],
+            [
+                'name' => 'Car Rental Luxury',
+                'description' => 'Alphard / Vellfire Rental with Driver',
+                'unit' => 'Day',
+                'price' => '2.500.000,00',
                 'supplier_id' => 1,
                 'category_ids' => [3],
             ],

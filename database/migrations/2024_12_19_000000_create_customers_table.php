@@ -15,10 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique()->comment('Kode unik customer');
             $table->string('name')->comment('Nama customer/perusahaan');
-            $table->text('address')->comment('Alamat lengkap customer');
-            $table->string('contact_person')->nullable()->comment('Nama kontak person');
-            $table->string('phone')->nullable()->comment('Nomor telepon');
-            $table->string('email')->nullable()->comment('Email customer');
             $table->string('bank_name')->nullable()->comment('Nama bank');
             $table->string('bank_account_number')->nullable()->comment('Nomor rekening bank');
             $table->string('bank_account_name')->nullable()->comment('Nama pemilik rekening');
@@ -32,6 +28,25 @@ return new class extends Migration
             $table->index('name');
             $table->index('status');
         });
+
+        Schema::create('billing_options', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
+            
+            // Contact Person
+            $table->string('cp_name')->nullable();
+            $table->string('cp_title_division')->nullable();
+            $table->string('cp_email')->nullable();
+            $table->string('cp_office_number')->nullable();
+            $table->string('cp_mobile_number')->nullable();
+
+            // Billing Address
+            $table->boolean('is_overseas')->default(false);
+            $table->text('address')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     /**
@@ -39,6 +54,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('billing_options');
         Schema::dropIfExists('customers');
     }
 }; 

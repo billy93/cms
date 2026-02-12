@@ -169,10 +169,6 @@
 											</th>
                                             <th>Customer Code</th>
                                             <th>Name</th>
-                                            <th>Address</th>
-                                            <th>Contact Person</th>
-                                            <th>Phone</th>
-                                            <th>Email</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>

@@ -18,6 +18,8 @@ use App\Http\Controllers\MenuController;
 use App\Http\Middlewares\AuthMiddleware;
 use App\Http\Middlewares\PermissionMiddleware;
 use App\Http\Controllers\BankController;
+use App\Http\Controllers\PcmiBankController;
+use App\Http\Controllers\BillingOptionController;
 
 // Route::get('deals-dashboard', [CustomAuthController::class, 'deals-dashboard']); 
 // Route::get('index', [CustomAuthController::class, 'index'])->name('index');
@@ -211,5 +213,13 @@ Route::middleware([AuthMiddleware::class, PermissionMiddleware::class])->group(f
         Route::delete('/{pcmibank_id}', 'delete')->name('delete'); 
     });
 
+    Route::prefix('billing-options')->name('billing-options.')
+    ->controller(BillingOptionController::class)->group(function() {
+        Route::get('/', 'index')->name('index'); 
+        Route::post('/', 'create')->name('create'); 
+        Route::get('/{billing_option_id}', 'read')->name('read'); 
+        Route::put('/{billing_option_id}', 'update')->name('update'); 
+        Route::delete('/{billing_option_id}', 'delete')->name('delete'); 
+    });
     
 });

@@ -15,12 +15,15 @@ return new class extends Migration
         // 1. Primary Key
         $table->id(); 
 
-        // 2. Bank Code (e.g., "BCA")
-        // I added 'unique' so you don't accidental create two banks with the same code.
-        $table->string('bank_code')->unique(); 
+        // 2. Bank Code (e.g., "014" for BCA)
+        // Modified to char(3)
+        $table->char('bank_code', 3)->unique(); 
 
         // 3. Bank Name (e.g., "Chase Bank")
         $table->string('bank_name')->index();
+
+        // 3b. Bank Brand (New column from merged migration)
+        $table->string('bank_brand', 50)->nullable();
 
         // 4. Bank Address
         // I used 'text' instead of 'string' allows for longer addresses.
