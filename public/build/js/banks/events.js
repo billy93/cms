@@ -20,6 +20,28 @@ class BankForm {
 
   async handleDocumentInput(e) {
     const target = e.target;
+
+    // 1. Bank Code Real-time Validation (Numeric Only + Length)
+    if (target.id === "input_bank_code") {
+      // Force Numeric Only
+      target.value = target.value.replace(/\D/g, "");
+
+      const errorEl = document.getElementById("input_bank_code_error");
+      if (errorEl) {
+        if (target.value.length > 0 && target.value.length !== 3) {
+          errorEl.innerText = "Bank Code must be exactly 3 digits.";
+          errorEl.style.display = "block";
+        } else {
+          errorEl.style.display = "none";
+        }
+      }
+    }
+
+    // 2. Clear other errors on input
+    const errorEl = document.getElementById(target.id + "_error");
+    if (errorEl && target.value.trim() !== "") {
+      errorEl.style.display = "none";
+    }
   }
 
   // ---------------------------------------- INIT ----------------------------------------
@@ -51,7 +73,7 @@ class BankForm {
     if (isEdit && this.data) {
       value.bank_code = this.data.bank_code || "";
       value.bank_name = this.data.bank_name || "";
-      value.bank_address = this.data.address || "";
+      value.bank_address = this.data.bank_address || "";
       value.bank_brand = this.data.bank_brand || "";
     }
 
@@ -74,7 +96,7 @@ class BankForm {
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Code<span class="text-danger">*</span></label>
-              <input type="text" id="input_bank_code" class="form-control" value="${value.bank_code}" ${isEdit ? "disabled" : ""}>
+              <input type="text" id="input_bank_code" class="form-control" value="${value.bank_code}" ${isEdit ? "disabled" : ""} maxlength="3" inputmode="numeric">
               <small id="input_bank_code_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
@@ -88,14 +110,14 @@ class BankForm {
           <div class="col-md-6">
             <div class="mb-3">
               <label class="col-form-label">Bank Address</label>
-              <input type="text" id="input_bank_address" class="form-control" value="${value.bank_address}" data-type="currency">
+              <input type="text" id="input_bank_address" class="form-control" value="${value.bank_address}">
               <small id="input_bank_address_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="col-form-label">Bank Brand<span class="text-danger">*</span></label>
-              <input type="tel" id="input_bank_brand" class="form-control" value="${value.bank_brand}" data-type="currency">
+              <label class="col-form-label">Bank Brand</label>
+              <input type="text" id="input_bank_brand" class="form-control" value="${value.bank_brand}" maxlength="50">
               <small id="input_bank_brand_error" class="text-danger mt-1" style="display: none;"></small>
             </div>
           </div>
@@ -213,6 +235,11 @@ class BankForm {
         required: false,
         message: "Bank Brand is required."
       },
+      {
+        field: "input_bank_address",
+        required: false,
+        message: "Bank Address is required."
+      },
     ];
 
     inputs.forEach(id => {
@@ -225,8 +252,21 @@ class BankForm {
 
       payload[id.field.replace("input_", "")] = value;
 
+      // Validation Logic
       if (!value && id.required) {
         this.errors[id.field + "_error"] = id.message;
+      } else if (value) {
+        // Specific Length & Numeric Validations
+        if (id.field === "input_bank_code") {
+          if (!/^\d+$/.test(value)) {
+            this.errors[id.field + "_error"] = "Bank Code must be numeric.";
+          } else if (value.length !== 3) {
+            this.errors[id.field + "_error"] = "Bank Code must be exactly 3 digits.";
+          }
+        }
+        if (id.field === "input_bank_brand" && value.length > 50) {
+          this.errors[id.field + "_error"] = "Bank Brand must not exceed 50 characters.";
+        }
       }
     });
 

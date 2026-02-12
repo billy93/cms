@@ -32,17 +32,23 @@ class BankRequest extends ApiFormRequest
     protected function createRules()
     {
         return [
-            'bank_code' => ['required', 'string', 'max:10'],
+            'bank_code' => ['required', 'digits:3', 'unique:banks,bank_code'],
             'bank_name' => ['required', 'string'],
             'bank_address' => ['nullable', 'string'],
+            'bank_brand' => ['nullable', 'string', 'max:50'],
         ];
     }
 
     protected function updateRules()
     {
-        return array_merge($this->createRules(), [
-            'id' => 'required|exists:banks,id',
-        ]);
+        $id = $this->route('bank_id');
+        return [
+            'id' => ['required', 'exists:banks,id'],
+            'bank_code' => ['required', 'digits:3', Rule::unique('banks', 'bank_code')->ignore($id)],
+            'bank_name' => ['required', 'string'],
+            'bank_address' => ['nullable', 'string'],
+            'bank_brand' => ['nullable', 'string', 'max:50'],
+        ];
     }
 
     public function authorize()
